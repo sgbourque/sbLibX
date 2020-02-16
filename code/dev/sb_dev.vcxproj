@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="final|x64">
+      <Configuration>final</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{12807A89-581B-4657-B794-A9A7F48F82D0}</ProjectGuid>
+    <RootNamespace>dev</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>sbDev</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>PGOptimize</WholeProgramOptimization>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='final|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);</LibraryPath>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions);SBDEBUG; SBWIN64</PreprocessorDefinitions>
+      <ForcedIncludeFiles>dev/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
+      <MSExtensions>false</MSExtensions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/Zc:twoPhase- /FS %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>dev/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ShowProgress>LinkVerboseCLR</ShowProgress>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <AdditionalDependencies>msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
+      <ProfileGuidedDatabase />
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+    </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);SBFINAL; SBWIN64</PreprocessorDefinitions>
+      <ForcedIncludeFiles>dev/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
+      <MSExtensions>false</MSExtensions>
+      <EnablePREfast>true</EnablePREfast>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/Zc:twoPhase- /FS %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>dev/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ShowProgress>LinkVerboseCLR</ShowProgress>
+      <SubSystem>NotSet</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>true</MapExports>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);SBRELEASE; SBWIN64</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>dev/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>dev/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
+      <MSExtensions>false</MSExtensions>
+      <EnablePREfast>false</EnablePREfast>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/Zc:twoPhase- /FS %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ShowProgress>LinkVerboseCLR</ShowProgress>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>true</MapExports>
+      <AssemblyDebug>true</AssemblyDebug>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\sb_dev_library.cpp" />
+    <ClCompile Include="src\sb_dev_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\sb_dev.h" />
+    <ClInclude Include="include\sb_dev_library.h" />
+    <ClInclude Include="include\sbDev_precompile.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="sb_debug.vcxproj">
+      <Project>{a180834d-4ad7-42c9-82d3-fec959ccbefa}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
