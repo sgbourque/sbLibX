@@ -148,8 +148,8 @@ int WinMain(
 	int return_code = kContinue;
 
 	constexpr size_t kMaxCommandline = 8192; // 8191 + 1. c.f., https://support.microsoft.com/en-us/help/830473/command-prompt-cmd-exe-command-line-string-limitation
-	using system_char_t = std::_Remove_cvref_t<decltype(*lpCmdLine)>;
-	std::basic_string<system_char_t> localCmdLine(lpCmdLine, kMaxCommandline);
+	using sys_char_t = std::remove_cv_t<std::remove_reference_t<decltype(*lpCmdLine)>>;
+	std::basic_string<sys_char_t> localCmdLine(lpCmdLine, kMaxCommandline);
 
 	std::string module_name;
 	std::string function_name;
