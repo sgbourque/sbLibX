@@ -27,6 +27,12 @@
     <ClInclude Include="include\sb_common.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_structured_buffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sb_type_hash.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

@@ -113,11 +113,12 @@ bool library::load(const char* libName)
 }
 bool library::free()
 {
+	// TODO : what if FreeLibrary fails?
 	while (data)
 	{
 		uint32_t error = 0;
 		HMODULE module = get_data<HMODULE>();
-		if (0 != FreeLibrary(module))
+		if (0 == FreeLibrary(module))
 		{
 			error = GetLastError();
 			if (error)

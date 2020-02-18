@@ -207,11 +207,11 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		auto chunk = GetData<data_chunk>(sblib_instance, get_value(sblib_instance.handle));
 	}
 
-	hash_t hashes[128]{};
+	xhash_t hashes[128]{};
 	for( size_t n = 0; n < 128; ++n )
 	{
 		const char data[] = {'.', static_cast<char>(n), 0 };
-		const auto hash = hashes[n] = xhash<hash_traits_t>(data);
+		const auto hash = hashes[n] = xhash_traits_t::hash(data);
 		std::cout << n << ": " << data << " -> "
 			<< (hash & 0x1) << "\t" << (hash & 0x3) << "\t" << (hash & 0x7) << "\t" << (hash & 0xF) << "\t" << (hash & 0xFF) << "\t" << hash
 			<< "\n";
@@ -219,11 +219,11 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 
 	constexpr size_t representation_size[] = { 4, 8, 16, 32, };
 	size_t has_representation[_countof(representation_size)]{}; for(auto&i:has_representation)i=true;
-	hash_t hash_index[_countof(representation_size)][32]{};
+	xhash_t hash_index[_countof(representation_size)][32]{};
 	size_t base = 'X';
 	for (size_t n = base; n < base + 32; ++n)
 	{
-		hash_t hash = hashes[n];
+		xhash_t hash = hashes[n];
 		for ( size_t rank = 0; rank < _countof(representation_size); ++rank )
 		{
 			size_t size = representation_size[rank];

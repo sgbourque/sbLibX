@@ -1,4 +1,6 @@
 #pragma once
+#include "common/include/sb_common.h"
+
 #include <cstdint>
 #include <algorithm>
 #include <string_view>
@@ -8,7 +10,7 @@ namespace SB { namespace LibX
 {
 ////
 	template<typename _CHAR_TYPE_, typename _HASH_VALUE_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_VALUE_T_ _QUASI_PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_VALUE_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
-struct default_hash_traits // default are related to the _xhashXX algorithms
+struct xhash_traits
 {
 	using char_t    = _CHAR_TYPE_;
 	using value_t   = _HASH_VALUE_T_;
@@ -29,37 +31,46 @@ struct default_hash_traits // default are related to the _xhashXX algorithms
 
 		prime_count    = 2,
 	};
+
+	static inline constexpr typename value_t
+	hash(const_pointer_t string, size_t length = default_length)
+	{
+		// TODO:get next unicode char from string instead of byte per byte
+		// so that different encodings of the same string will give the same result.
+		return string && *string ? (hash(++string, --length) + *string * quasi_prime) ^ coprime : 0;
+	}
 };
 
-	template<typename hash_traits>
-inline constexpr typename hash_traits::value_t
-xhash(typename hash_traits::const_pointer_t string, size_t length = hash_traits::default_length)
-{
-	return string && *string ? (xhash<hash_traits>(++string, --length) + *string * hash_traits::quasi_prime) ^ hash_traits::coprime : 0;
-}
 
 ////
 	template<typename _TRAITS_TYPE_>
-struct hashed_string
+struct xhash_string_view
 {
-	using hash_t = typename _TRAITS_TYPE_::value_t;
-	using char_t = typename _TRAITS_TYPE_::char_t;
+	using traits_t = _TRAITS_TYPE_;
+	using hash_t = typename traits_t::value_t;
+	using char_t = typename traits_t::char_t;
 	using key_t  = std::basic_string_view<char_t>;
 
 	hash_t hash;
 	key_t  name;
 
-	constexpr hashed_string(key_t _name = "\0") noexcept : name(_name), hash( xhash<_TRAITS_TYPE_>(_name.data(), _name.size()) ) {}
-	constexpr hashed_string(key_t _name, hash_t _hash) noexcept : name(_name), hash(_hash) {}
+	constexpr xhash_string_view() noexcept = default;
+	constexpr xhash_string_view( const xhash_string_view& ) noexcept = default;
+
+	constexpr xhash_string_view(key_t _name) noexcept : hash( traits_t::hash(_name.data(), _name.size()) ), name(_name) {}
+	constexpr xhash_string_view(hash_t _hash, key_t _name) noexcept : hash(_hash), name(_name) {}
+	constexpr xhash_string_view(const char_t* _name) noexcept : hash(traits_t::hash(_name)), name(_name) {}
 
 	constexpr operator hash_t() const { return hash; }
 	constexpr operator key_t() const { return name; }
 };
 
+
+////
 	template<typename _TRAITS_TYPE_>
-inline std::ostream& operator << (std::ostream& os, hashed_string< _TRAITS_TYPE_> hashed)
+inline std::ostream& operator << (std::ostream& os, xhash_string_view< _TRAITS_TYPE_> hash_string_view)
 {
-	return os << "{0x" << std::hex << hashed.hash << ", \"" << hashed.name << "\"}";
+	return os << "{0x" << std::hex << hash_string_view.hash << ", \"" << hash_string_view.name << "\"}";
 }
 
 
@@ -69,17 +80,13 @@ inline std::ostream& operator << (std::ostream& os, hashed_string< _TRAITS_TYPE_
 // with system-specific implementation for native <-> international (unicode) conversion.
 // ... eventually... well, that's the plan...
 using char_t = char; // lets focus on ascii -> UTF-8 first : system is ascii/native, user is UTF-8
-using hash_t = uint64_t;
-using hash_traits_t = default_hash_traits<char_t, hash_t>;
-using hashed_string_t = hashed_string<hash_traits_t>;
+using xhash_t = uint64_t;
+using xhash_traits_t = xhash_traits<char_t, xhash_t>;
+using xhash_string_view_t = xhash_string_view<xhash_traits_t>;
 
-//template<typename _TYPE_, typename _TRAITS_TYPE_> constexpr _TYPE_ get<_TYPE_>(hashed_string<_TRAITS_TYPE_> hashed);
-//template<typename _TRAITS_TYPE_> constexpr hash_t get<hash_t>(hashed_string<_TRAITS_TYPE_> hashed) { return hashed.hash; }
-//template<typename _TRAITS_TYPE_> constexpr const char_t* get<const char_t*>(hashed_string<_TRAITS_TYPE_> hashed) { return hashed.name; }
-
-constexpr hashed_string_t operator "" _xhash64([[maybe_unused]] const char_t * string, [[maybe_unused]] size_t length)
+constexpr xhash_string_view_t operator "" _xhash64(xhash_traits_t::const_pointer_t string, size_t length)
 {
-	return hashed_string_t{ string };
+	return xhash_string_view_t{ std::basic_string_view<xhash_traits_t::char_t>(string, length) };
 }
 
 

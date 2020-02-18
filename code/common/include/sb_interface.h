@@ -9,7 +9,7 @@ namespace SB { namespace LibX
 {
 
 // Each lib should make sure any resource handle it references is safe.
-	template< typename traits = hash_traits_t >
+	template< typename traits = xhash_traits_t >
 struct HandleBase { using hash_t = typename traits::value_t; using pointer_t = typename traits::pointer_t; union { hash_t value; pointer_t pointer; } key; };
 
 	template< typename _HANDLE_TYPE_ >
@@ -32,7 +32,7 @@ struct scoped_handle;
 BaseHandle AcquireResource(const char* name = nullptr); // name = nullptr correspond to the LibX::system interface
 BaseHandle AcquireResource(BaseHandle handler);
 BaseHandle AcquireResource(BaseHandle handler, const char* name); // if name = nullptr, same as BaseHandle AcquireResource(handler)
-BaseHandle AcquireResource(BaseHandle handler, hash_t hash); // if hash = invalid_hash, same as BaseHandle AcquireResource(handler)
+BaseHandle AcquireResource(BaseHandle handler, xhash_t hash); // if hash = invalid_hash, same as BaseHandle AcquireResource(handler)
 BaseHandle AcquireResource(BaseHandle handler, BaseHandle resource); // if resource = InvalidHandle, same as BaseHandle AcquireResource(handler)
 
 BaseHandle ReleaseResource(BaseHandle resource) noexcept;
@@ -65,11 +65,11 @@ public:
 inline auto GetName( BaseHandle handle )
 {
 #if 0 // static
-	enum : hash_t {
-		name_hash = hash_t(".name"_xhash64),
+	enum : xhash_t {
+		name_hash = xhash_t(".name"_xhash64),
 	};
 #else // dynamic
-	hash_t name_hash = ".name"_xhash64;
+	xhash_t name_hash = ".name"_xhash64;
 #endif
 	scoped_handle name = AcquireResource(handle, name_hash);
 	return get_pointer(name.handle);
@@ -98,10 +98,10 @@ struct UniqueChunk : Chunk<data_t>
 template<typename data_t>
 UniqueChunk<data_t> GetData(BaseHandle resource)
 {
-	enum : hash_t {
-		datasize_hash = hash_t(".datasize"_xhash64),
-		data_hash = hash_t(".data"_xhash64),
-		info_hash = hash_t(".info"_xhash64),
+	enum : xhash_t {
+		datasize_hash = xhash_t(".datasize"_xhash64),
+		data_hash = xhash_t(".data"_xhash64),
+		info_hash = xhash_t(".info"_xhash64),
 	};
 	// generic implementation : expect much better performance with specialised implementations.
 	Chunk<data_t> chunk = {

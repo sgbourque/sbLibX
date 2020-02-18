@@ -49,11 +49,11 @@
 #if defined(UNICODE)
 	#define STRINGIFY   WSTR
 	#define SYSTEM_STRING(X) L##X
-	namespace SBLib { using system_char_t = wchar_t; }
+	namespace SB { using system_char_t = wchar_t; }
 #else
 	#define STRINGIFY   CSTR
 	#define SYSTEM_STRING(X) X
-	namespace SBLib { using system_char_t = char; }
+	namespace SB { using system_char_t = char; }
 #endif
 	#define STR(X) SYSTEM_STRING(X)
 
@@ -66,5 +66,15 @@
 	#define SBPrint(...)
 #endif
 
-namespace SB { namespace LibX{} }
+#include <type_traits>
+// remove_cvref_t not part of std before 201705
+#if _MSVC_LANG < 201705
+	namespace SB { namespace LibX {
+		template<typename _TYPE_> using remove_cvref_t = std::remove_cv_t< std::remove_reference_t<_TYPE_> >;
+	}} // namespace SB:LibX
+#else
+	namespace SB { namespace LibX {
+		template<typename _TYPE_> using remove_cvref_t = std::remove_cvref_t<_TYPE_>;
+	}} // namespace SB:LibX
+#endif
 namespace sbLibX = SB::LibX;

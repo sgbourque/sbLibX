@@ -7,7 +7,7 @@
 namespace SB { namespace LibX
 {
 
-//	template< typename _VALUE_TYPE_, typename _HASH_TRAITS = hash_traits_t >
+//	template< typename _VALUE_TYPE_, typename _HASH_TRAITS = xhash_traits_t >
 //struct hashed_key_value
 //{
 //	using value_t = _VALUE_TYPE_;
@@ -17,14 +17,14 @@ namespace SB { namespace LibX
 	template<typename Implementation>
 struct StructuredBuffer
 {
-	static UniqueChunk<uint8_t> GetData(Implementation& obj, hash_t hash_value);
+	static UniqueChunk<uint8_t> GetData(Implementation& obj, xhash_t hash_value);
 };
 
 #define SB_STRUCT_BEGIN(STRUCT_NAME)\
 	struct STRUCT_NAME : StructuredBuffer<STRUCT_NAME> \
 	{\
-		template<hash_t _KEY_HASH_> struct traits;\
-		template<hash_t _KEY_HASH_> static constexpr typename traits<_KEY_HASH_>::return_t get(STRUCT_NAME& obj);
+		template<xhash_t _KEY_HASH_> struct traits;\
+		template<xhash_t _KEY_HASH_> static constexpr typename traits<_KEY_HASH_>::return_t get(STRUCT_NAME& obj);
 
 #define SB_STRUCT_MEMBER(TYPE, NAME, RETURN_TYPE)\
 	using NAME##_t = TYPE;\
@@ -35,11 +35,11 @@ struct StructuredBuffer
 
 #define SB_STRUCT_END(STRUCT_NAME)\
 	};\
-		template<hash_t _HASH_VALUE_>\
+		template<xhash_t _HASH_VALUE_>\
 	auto get(STRUCT_NAME& obj) { return STRUCT_NAME::get<_HASH_VALUE_>(obj); }
 
 	template<typename STRUCT_NAME>
-auto get(STRUCT_NAME& obj, hash_t hash_value)
+auto get(STRUCT_NAME& obj, xhash_t hash_value)
 {
 	return STRUCT_NAME::GetData(obj, hash_value);
 }
@@ -55,7 +55,7 @@ SB_STRUCT_MEMBER(uint32_t, version, uint32_t);
 SB_STRUCT_END(my_type);
 
 template<>
-UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, hash_t hash_value)
+UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, xhash_t hash_value)
 {
 	// loose implementation for demonstration
 	uint8_t* data = nullptr;
@@ -93,7 +93,7 @@ UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, hash_t has
 #define SBLIBX_VERSION_REVISION  (-1)
 #define SBLIBX_VERSION_STRING CSTR(SBLIBX_VERSION_MAJOR) "." CSTR(SBLIBX_VERSION_MINOR) "." CSTR(SBLIBX_VERSION_REVISION) 
 
-constexpr hashed_string_t SBLibX_MainInstance_ref = "SBLibX " SBLIBX_VERSION_STRING ""_xhash64;
+constexpr auto SBLibX_MainInstance_ref = "SBLibX " SBLIBX_VERSION_STRING ""_xhash64;
 constexpr BaseHandle SBLibX_MainInstance_handle{ SBLibX_MainInstance_ref.hash, };
 
 auto GetNameString(BaseHandle resource)
@@ -115,11 +115,11 @@ BaseHandle AcquireResource([[maybe_unused]] BaseHandle handler)
 BaseHandle AcquireResource([[maybe_unused]] BaseHandle handler, [[maybe_unused]] const char* name)
 {
 	// if name = nullptr, same as BaseHandle AcquireResource(handler)
-	BaseHandle resource = AcquireResource( handler, xhash<hash_traits_t>(name) );
+	BaseHandle resource = AcquireResource( handler, xhash_traits_t::hash(name) );
 	// assert(resource == InvalidHandle || GetName(resource) == name );
 	return resource;
 }
-BaseHandle AcquireResource([[maybe_unused]] BaseHandle handler, [[maybe_unused]] hash_t hash)
+BaseHandle AcquireResource([[maybe_unused]] BaseHandle handler, [[maybe_unused]] xhash_t hash)
 {
 	// if hash = invalid_hash, same as BaseHandle AcquireResource(handler)
 	my_type obj{
