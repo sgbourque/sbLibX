@@ -203,14 +203,24 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_
 	static constexpr key_info_array_t sort_key_info(TYPE_T... keys)
 	{
 		using key_info_t = key_info<typename type_t::hash_traits_t, type_info_hash_traits_t>;
-		key_info_array_t result{ key_info_t{{}, {}, ~0u}, keys... };
-		std::sort(result.begin(), result.end(), [](const key_info_t& a, const key_info_t& b) -> bool
+		key_info_array_t result{ key_info_t{}, keys... };
+		// sort all valid indices
+		std::sort(result.begin() + 1, result.end(), [&result](const key_info_t& a, const key_info_t& b) -> bool
 		{
-			size_t a_hint = (a.name_hash.hash % kKeyCount);
-			size_t b_hint = (b.name_hash.hash % kKeyCount);
-			return a_hint < b_hint
-				|| ( a_hint == b_hint && a.data_index < b.data_index );
+			size_t a_hint = (a.name_hash.hash % kKeyCount); const bool a_valid = a.name_hash.hash != type_t::hash_traits_t::invalid_hash;
+			size_t b_hint = (b.name_hash.hash % kKeyCount); const bool b_valid = b.name_hash.hash != type_t::hash_traits_t::invalid_hash;
+			return (a_hint < b_hint) && (a_valid && b_valid);
 		});
+		// push invalid data to "optimal" spot
+		for (size_t index = 1; index < result.size(); ++index)
+		{
+			auto& keyinfo = result[index];
+			size_t keyinfo_hint = (keyinfo.name_hash.hash % kKeyCount);
+			if (keyinfo_hint < index)
+				std::swap(keyinfo, result[index - 1]);
+			else
+				break;
+		}
 		return result;
 	}
 
