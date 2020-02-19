@@ -41,9 +41,9 @@ struct data_info_t
 namespace StructuredBuffer
 {
 	template<typename _IMPLEMENTATION_>
-static inline constexpr auto build_data_info(void) -> sbLibX::data_info_array<_IMPLEMENTATION_::kElementCount>;
+static inline constexpr auto build_data_info(void) -> sbLibX::data_info_array<_IMPLEMENTATION_::size()>;
 	template<typename _IMPLEMENTATION_>
-static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<typename _IMPLEMENTATION_::hash_traits_t, _IMPLEMENTATION_::kKeyCount>;
+static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<typename _IMPLEMENTATION_::hash_traits_t, _IMPLEMENTATION_::key_size()>;
 
 #ifndef SB_STRUCTURED_BUFFER_MODIFIER
 	#define SB_STRUCTURED_BUFFER_MODIFIER(...)
@@ -86,14 +86,18 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* Not supported (I will try to find a way) */
 #define SB_STRUCT_END( STRUCTURED_BUFFER_NAME, ... ) /* STRUCTURED_BUFFER_NAME in case we need to initialize static data*/\
 		static inline constexpr size_t kElementCount = __COUNTER__ - kElementIdOffset - 1;\
-		static inline constexpr size_t size() { return kElementCount; };\
-		static inline constexpr auto begin() { return data_info.begin(); };\
-		static inline constexpr auto end() { return data_info.end(); };\
+		static inline constexpr size_t size() { return kElementCount; }\
 		using data_info_array_t = sbLibX::data_info_array<kElementCount>;\
 		static const data_info_array_t data_info;\
-		static inline constexpr size_t kKeyCount = /*nextprime*/(kElementCount + 1);/*sbLibX::StructuredBuffer::compute_optimal_key_count<type_t>();*/\
+		static inline constexpr auto begin() { return data_info.begin(); }\
+		static inline constexpr auto end() { return data_info.end(); }\
+		\
+		static inline constexpr size_t kKeyCount = (kElementCount + 1);/*sbLibX::StructuredBuffer::compute_optimal_key_count<type_t>();*/\
+		static inline constexpr size_t key_size() { return kKeyCount; }\
 		using key_info_array_t = sbLibX::key_info_array<hash_traits_t, kKeyCount>;\
 		static const key_info_array_t key_info;\
+		static inline constexpr auto key_begin() { return key_info.begin(); }\
+		static inline constexpr auto key_end() { return key_info.end(); }\
 	};\
 	const typename STRUCTURED_BUFFER_NAME::key_info_array_t STRUCTURED_BUFFER_NAME::key_info = sbLibX::StructuredBuffer::build_key_info<type_t>();\
 	const typename STRUCTURED_BUFFER_NAME::data_info_array_t STRUCTURED_BUFFER_NAME::data_info = sbLibX::StructuredBuffer::build_data_info<type_t>();
@@ -143,7 +147,7 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::data_info_array
 	}
 };
 	template<typename _IMPLEMENTATION_>
-static inline constexpr data_info_array<_IMPLEMENTATION_::kElementCount> build_data_info(void)
+static inline constexpr data_info_array<_IMPLEMENTATION_::size()> build_data_info(void)
 {
 	return build_helper<_IMPLEMENTATION_, _IMPLEMENTATION_::data_info_array_t>();
 }
@@ -226,7 +230,7 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_
 
 };
 	template<typename _IMPLEMENTATION_>
-static inline constexpr key_info_array<typename _IMPLEMENTATION_::hash_traits_t, _IMPLEMENTATION_::kKeyCount> build_key_info(void)
+static inline constexpr key_info_array<typename _IMPLEMENTATION_::hash_traits_t, _IMPLEMENTATION_::key_size()> build_key_info(void)
 {
 	return build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_t>();
 }
@@ -238,7 +242,7 @@ static inline constexpr key_info_array<typename _IMPLEMENTATION_::hash_traits_t,
 auto get(_IMPLEMENTATION_* buffer) noexcept
 {
 	using type_t = typename _IMPLEMENTATION_::template data_traits<HASH, _IMPLEMENTATION_>::type_t;
-	return reinterpret_cast<type_t*>( reinterpret_cast<uint8_t*>(buffer) + _IMPLEMENTATION_::data_traits<HASH>::offset );
+	return reinterpret_cast<type_t*>( reinterpret_cast<uint8_t*>(buffer) + _IMPLEMENTATION_::template data_traits<HASH>::offset );
 }
 template<xhash_t HASH, typename _IMPLEMENTATION_> auto& get(_IMPLEMENTATION_& buffer) noexcept { return *get<HASH>(&buffer); }
 template<xhash_t HASH, typename _IMPLEMENTATION_> auto&& get(_IMPLEMENTATION_&& buffer) noexcept { return *get<HASH>(&buffer); }

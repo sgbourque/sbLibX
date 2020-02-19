@@ -343,7 +343,7 @@ InstanceHandle CreateInstance( [[maybe_unused]] const SB::Configuration* config 
 		case VK_ERROR_INCOMPATIBLE_DRIVER: __debugbreak(); break;
 		case VK_ERROR_EXTENSION_NOT_PRESENT: __debugbreak(); break;
 		default: __debugbreak(); break;
-		};
+		}
 	}
 	return err == VK_SUCCESS ? instance : nullptr;
 }
@@ -408,7 +408,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 			std::clog << "\t\tSparse binding\n";
 		if (queue_family.queueFlags & VK_QUEUE_PROTECTED_BIT)
 			std::clog << "\t\tProtected\n";
-		if (queue_family.queueFlags & ~(VK_QUEUE_GRAPHICS_BIT|VK_QUEUE_COMPUTE_BIT|VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT|VK_QUEUE_GRAPHICS_BIT))
+		if (queue_family.queueFlags & ~unsigned(VK_QUEUE_GRAPHICS_BIT|VK_QUEUE_COMPUTE_BIT|VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT|VK_QUEUE_GRAPHICS_BIT))
 			std::clog << "\t\t(unknown)\n";
 	}
 	std::clog.flush();

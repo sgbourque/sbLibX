@@ -77,7 +77,7 @@ SB_STRUCT_BEGIN(module_config_t, 0, 1, -1)
 	SB_STRUCT_MEMBER(sbLibX::xhash_string_view_t, name)        = "(...)";
 	SB_STRUCT_MEMBER(sbLibX::xhash_string_view_t, className)   = "";
 	SB_STRUCT_MEMBER(uint64_t,            moduleFlags) = 0; // or whatever...
-SB_STRUCT_END(module_config_t);
+SB_STRUCT_END(module_config_t)
 
 
 ////
@@ -98,7 +98,7 @@ SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")
 	// Also, I will have to deal with (virtual/non-virtual) functions (functions should be easier via enable_if).
 	//SB_STRUCT_MEMBER(long const int unsigned volatile long, try_not_to, inline static constexpr)(int n) { return {n != 3}; }
 	//SB_STRUCT_MEMBER(custom_class_t, do_weird_impl, virtual)(custom_class_t other) { other.config = {name, config.className, buffer[0] ^= 1}; return other; }
-SB_STRUCT_END(custom_class_t);
+SB_STRUCT_END(custom_class_t)
 #pragma warning(default:4324)
 
 
@@ -132,7 +132,59 @@ SB_STRUCT_BEGIN(compile_stress_t)
 	SB_STRUCT_MEMBER(int, n0e0); SB_STRUCT_MEMBER(int, n0e1); SB_STRUCT_MEMBER(int, n0e2); SB_STRUCT_MEMBER(int, n0e3); SB_STRUCT_MEMBER(int, n0e4); SB_STRUCT_MEMBER(int, n0e5); SB_STRUCT_MEMBER(int, n0e6); SB_STRUCT_MEMBER(int, n0e7); SB_STRUCT_MEMBER(int, n0e8); SB_STRUCT_MEMBER(int, n0e9); SB_STRUCT_MEMBER(int, n0ea); SB_STRUCT_MEMBER(int, n0eb); SB_STRUCT_MEMBER(int, n0ec); SB_STRUCT_MEMBER(int, n0ed); SB_STRUCT_MEMBER(int, n0ee); SB_STRUCT_MEMBER(int, n0ef);
 	SB_STRUCT_MEMBER(int, n0f0); SB_STRUCT_MEMBER(int, n0f1); SB_STRUCT_MEMBER(int, n0f2); SB_STRUCT_MEMBER(int, n0f3); SB_STRUCT_MEMBER(int, n0f4); SB_STRUCT_MEMBER(int, n0f5); SB_STRUCT_MEMBER(int, n0f6); SB_STRUCT_MEMBER(int, n0f7); SB_STRUCT_MEMBER(int, n0f8); SB_STRUCT_MEMBER(int, n0f9); SB_STRUCT_MEMBER(int, n0fa); SB_STRUCT_MEMBER(int, n0fb); SB_STRUCT_MEMBER(int, n0fc); SB_STRUCT_MEMBER(int, n0fd); SB_STRUCT_MEMBER(int, n0fe); SB_STRUCT_MEMBER(int, n0ff);
 #endif
-SB_STRUCT_END(compile_stress_t);
+SB_STRUCT_END(compile_stress_t)
+
+
+
+#if 0 // Just an overview of a typical structured_buffer instance
+	struct struct_buf {
+		using type_t = struct_buf;
+		using hash_traits_t = /*_TRAITS_;*//**/sbLibX::xhash_traits_t;/**/
+		using hash_string_view_t = sbLibX::xhash_string_view<hash_traits_t>;
+		using hash_t = typename hash_traits_t::value_t;
+		//static constexpr auto options = std::make_tuple({});
+		inline static constexpr hash_string_view_t struct_hash = "struct_buf" " " "" "";
+		
+		template<hash_t, typename IMPL = type_t> struct data_traits;
+		template<size_t, typename IMPL = type_t> struct key_traits;
+		static inline constexpr size_t kElementIdOffset = __COUNTER__;
+
+//#define SB_STRUCT_MEMBER( TYPE, NAME, ... ) /* note that TYPE can't be hashed by name */
+//		static inline constexpr size_t NAME##_id = __COUNTER__ - kElementIdOffset - 1;
+//		static_assert(NAME##_id < 64, "Too many unique data members. Try using sub-buffers or split the buffer.");
+//		static inline constexpr hash_string_view_t NAME##_hash = SB_MEMBER_ENTRY #NAME "";
+//		template<typename IMPL> struct data_traits<hash_traits_t::hash(SB_MEMBER_ENTRY #NAME ""), IMPL>
+//		{
+//			using type_t = decltype(IMPL::NAME);
+//			static inline constexpr size_t offset = offsetof(IMPL, NAME);
+//			static inline constexpr size_t size   = sizeof(type_t);
+//			using key_traits_t = key_traits<NAME##_id, IMPL>;
+//		};
+//		template<typename IMPL> struct key_traits<NAME##_id, IMPL>
+//		{
+//			static inline constexpr hash_string_view_t name_hash = IMPL::NAME##_hash;
+//			using type_t = decltype(IMPL::NAME);/* TODO: type hash */
+//			using data_traits_t = data_traits<name_hash, IMPL>;
+//		};
+//		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* Not supported (I will try to find a way) */
+
+		static inline constexpr size_t kElementCount = __COUNTER__ - kElementIdOffset - 1;
+		static inline constexpr size_t size() { return kElementCount; }
+		using data_info_array_t = sbLibX::data_info_array<kElementCount>;
+		static const data_info_array_t data_info;
+		static inline constexpr auto begin() { return data_info.begin(); }
+		static inline constexpr auto end() { return data_info.end(); }
+		
+		static inline constexpr size_t kKeyCount = (kElementCount + 1);/*sbLibX::StructuredBuffer::compute_optimal_key_count<type_t>();*/
+		static inline constexpr size_t key_size() { return kKeyCount; }
+		using key_info_array_t = sbLibX::key_info_array<hash_traits_t, kKeyCount>;
+		static const key_info_array_t key_info;
+		static inline constexpr auto key_begin() { return key_info.begin(); }
+		static inline constexpr auto key_end() { return key_info.end(); }
+	};
+	const typename struct_buf::key_info_array_t struct_buf::key_info = sbLibX::StructuredBuffer::build_key_info<type_t>();
+	const typename struct_buf::data_info_array_t struct_buf::data_info = sbLibX::StructuredBuffer::build_data_info<type_t>();
+#endif
 
 
 //#include <algorithm>

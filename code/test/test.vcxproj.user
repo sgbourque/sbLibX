@@ -21,4 +21,11 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
+    <LocalDebuggerCommandArguments>load $(ProjectName)/hash</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_$(Configuration).exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
+  </PropertyGroup>
 </Project>

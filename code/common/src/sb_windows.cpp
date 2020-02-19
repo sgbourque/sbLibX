@@ -127,13 +127,13 @@ RETURN_TYPE get([[maybe_unused]] _IMPLEMENTATION_* buffer, std::enable_if_t<std:
 	return reinterpret_cast<RETURN_TYPE>(reinterpret_cast<uint8_t*>(buffer) + datainfo.offset);
 }
 
-// slow "proof-of-concept" implementation (ideally a assumed as a reindexing map)
 	template<typename _IMPLEMENTATION_>
 data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unused]] xhash_t hash)
 {
 	// Normally here we should use _IMPLEMENTATION_'s traits
 	// to get the key_index from the hash and get the data_info
 	// from the corresponding data_index if the hash is valid.
+	// TODO : de-hardcode modulo as hash index map.
 	if (hash != _IMPLEMENTATION_::hash_traits_t::invalid_hash)
 	{
 		constexpr size_t key_info_count = _IMPLEMENTATION_::kKeyCount;
@@ -142,10 +142,8 @@ data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unused]] xhas
 		{
 			auto key_info = buffer->key_info[(hint + offset) % key_info_count];
 			if (key_info.name_hash.hash == hash)
-			{
-				std::cerr << offset << "iterations" << std::endl;
 				return _IMPLEMENTATION_::data_info[key_info.data_index];
-			}
+			std::cerr << "^";
 		}
 	}
 	return data_info_t{};
@@ -206,7 +204,8 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		<< "\n" << ".name"_xhash64 << ": " << sbLibX::get<".name"_xhash64>(local_config)
 		<< "\n" << ".className"_xhash64 << ": " << sbLibX::get(local_config, ".className"_xhash64, L"")
 		<< "\n" << ".windowFlags"_xhash64 << ": " << sbLibX::get(local_config, ".windowFlags"_xhash64, 0ull)
-		//"\n" << ".customDataFlags"_xhash64 << " (unknown): " << sbLibX::get<".customDataFlags"_xhash64>(local_config); // don't compile : customDataFlags is not defined
+		// following does not compile : customDataFlags is not defined
+		//"\n" << ".customDataFlags"_xhash64 << " (unknown): " << sbLibX::get<".customDataFlags"_xhash64>(local_config)
 		<< "\n" << ".customDataFlags"_xhash64 << " (unknown): " << sbLibX::get(local_config, ".customDataFlags"_xhash64, 0ull)
 		<< std::endl;
 
@@ -227,6 +226,21 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		for (size_t index = 0; index < local_datainfo.size; ++index)
 			std::cout << (char)raw_data[index];
 	}
-	std::cout << std::endl;
 
+	std::string input;
+	std::cout << std::endl << "Enter a member name (e.g., 'name'): ";
+	std::cin >> input;
+	{
+		auto hash = sbLibX::xhash_traits_t::hash(("." + input).c_str());
+		auto local_datainfo = sbLibX::get(local_config, hash);
+		uint8_t* raw_data = sbLibX::get<uint8_t*>(&local_config, local_datainfo);
+		for (size_t index = 0; index < local_datainfo.size; ++index)
+			std::cout << std::hex << uint32_t(raw_data[index]) << " ";
+		std::cout << "\n\t";
+		for (size_t index = 0; index < local_datainfo.size; ++index)
+			std::cout << (char)raw_data[index];
+	}
+
+
+	std::cout << std::endl;
 }

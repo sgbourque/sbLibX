@@ -17,7 +17,7 @@ namespace SBWin32
 // System-specific (mostly Win32x64 on Win10 target for now);
 using thread = std::thread;
 using mutex  = std::mutex;
-using future = std::future;
+template<class _Ty> using future = std::future<_Ty>;
 
 
 } // SBWin32
@@ -52,7 +52,7 @@ void CHECK_STDIO(); // test_main.cpp
 
 
 #if 1
-#include "windows.h"
+#include <Windows.h>
 #pragma comment(lib, "user32.lib")
 //#pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "Gdi32.lib")
@@ -64,7 +64,20 @@ void CHECK_STDIO(); // test_main.cpp
 
 
 volatile bool sbPrintAllMessages = false;
-std::map< UINT, std::function<LRESULT( WPARAM, LPARAM )> > callback;
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	// yes, this is a dirty win32 test app that could crash while unloading...
+	// however, it's currently single threaded and I free everything before leaving...
+	// so it will do until sbWin is ready
+	#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#endif
+std::map< UINT, std::function<LRESULT(WPARAM, LPARAM)> > callback;
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+	// yes, this is a dirty win32 test app so there are c-cast...
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 void InitCallback( HWND hwnd )
 {
 	callback[WM_DESTROY] = [hwnd]( WPARAM wParam, LPARAM lParam )
@@ -75,12 +88,17 @@ void InitCallback( HWND hwnd )
 		callback.clear();
 		return DefWindowProcW( hwnd, WM_DESTROY, wParam, lParam );
 	};
+
+	#if defined(__clang__)
+		// i must admit i dont understand that one
+		#pragma clang diagnostic ignored "-Wunused-lambda-capture"
+	#endif
 	volatile bool& printAllMessages = sbPrintAllMessages;
 	callback[WM_CLOSE] = [hwnd, &printAllMessages]( WPARAM wParam, LPARAM lParam )
 	{
 		(void)wParam;
 		(void)lParam;
-		sbPrintAllMessages = false;
+		printAllMessages = false;
 		wchar_t text[] = L"<\u2205|\xd835\xdfd9|\u2205> ~ 1\n" // <∅|𝟙|∅> ~ 1
 			L"1/\u221e ~ 0\n" // 1/∞ ~ 0
 			L"|(\u2124\u2295\u2124)\u2215\u2124| < |\u211D\u2216(\u2124\u2295\u2124)|"; // |(ℤ⊕ℤ)∕ℤ| < |ℝ∖(ℤ⊕ℤ)| 
@@ -127,7 +145,7 @@ int Test()
 	CHECK_STDIO();
 
 	const auto className = L"SBMainWinClass";
-	HINSTANCE hinstance = GetModuleHandleW( NULL );
+	HINSTANCE hinstance = GetModuleHandleW( nullptr );
 
 	WNDCLASSEXW wcx;
 
@@ -140,9 +158,9 @@ int Test()
 	wcx.cbClsExtra = 0;                  // no extra class memory 
 	wcx.cbWndExtra = 0;                  // no extra window memory 
 	wcx.hInstance = hinstance;           // handle to instance 
-	wcx.hIcon = LoadIcon( NULL,
+	wcx.hIcon = LoadIcon( nullptr,
 		IDI_WINLOGO );               // predefined app. icon 
-	wcx.hCursor = LoadCursor( NULL,
+	wcx.hCursor = LoadCursor( nullptr,
 		IDC_CROSS );                     // predefined arrow 
 	wcx.hbrBackground = (HBRUSH)GetStockObject(
 		DKGRAY_BRUSH );                   // white background brush 
@@ -282,7 +300,7 @@ int Test()
 
 		MSG msg;
 		BOOL fGotMessage;
-		while ((fGotMessage = GetMessage( &msg, (HWND)NULL, 0, 0 )) != 0 && fGotMessage != -1)
+		while ((fGotMessage = GetMessage( &msg, (HWND)nullptr, 0, 0 )) != 0 && fGotMessage != -1)
 		{
 			TranslateMessage( &msg );
 			DispatchMessage( &msg );
