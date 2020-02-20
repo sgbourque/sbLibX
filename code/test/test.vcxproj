@@ -27,6 +27,7 @@
     <ClCompile Include="src\test_main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\test_parser.cpp" />
     <ClCompile Include="src\test_vulkan.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
     </ClCompile>

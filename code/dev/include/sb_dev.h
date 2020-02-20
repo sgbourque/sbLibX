@@ -1,12 +1,13 @@
 #pragma once
 #include <common/include/sb_common.h>
 
+#define SB_CLANG_PREFIX_TARGET		"clang-"
 #if defined(SBDEBUG)
-#define SB_TARGET_CONFIGURATION		"Debug"
+#define SB_TARGET_CONFIGURATION		"debug"
 #elif defined(SBRELEASE)
-#define SB_TARGET_CONFIGURATION		"Release"
+#define SB_TARGET_CONFIGURATION		"release"
 #elif defined(SBFINAL)
-#define SB_TARGET_CONFIGURATION		"Final"
+#define SB_TARGET_CONFIGURATION		"final"
 #else
 #error "Unknown compilation configuration"
 #endif

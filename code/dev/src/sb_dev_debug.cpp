@@ -196,7 +196,7 @@ namespace SB { namespace LibX { namespace Debug
 
 	////
 #if SB_SUPPORTS(SBDEBUG_OUTPUT)
-	template<bool redirect_output>
+		template<bool redirect_output>
 	void WriteDebugOutput(const char* begin, const char* end)
 	{
 		using char_type = char;
@@ -207,7 +207,7 @@ namespace SB { namespace LibX { namespace Debug
 			std::cout << s;
 	#endif
 	};
-	template<bool redirect_output>
+		template<bool redirect_output>
 	void WriteDebugOutput(const wchar_t* begin, const wchar_t* end)
 	{
 		using char_type = wchar_t;
@@ -220,14 +220,14 @@ namespace SB { namespace LibX { namespace Debug
 	};
 
 
-	template<typename char_type, bool redirect_output, typename char_traits>
+		template<typename char_type, bool redirect_output, typename char_traits>
 	OutputDebugStringBuf<char_type, redirect_output, char_traits>::OutputDebugStringBuf() : rdbuf{}
 	{
 		std::basic_stringbuf<char_type, char_traits>::setg(nullptr, nullptr, nullptr);
 		std::basic_stringbuf<char_type, char_traits>::setp(rdbuf.data(), rdbuf.data(), rdbuf.data() + rdbuf.size());
 	}
 
-	template<typename char_type, bool redirect_output, typename char_traits>
+		template<typename char_type, bool redirect_output, typename char_traits>
 	int OutputDebugStringBuf<char_type, redirect_output, char_traits>::sync()
 	{
 		const auto begin = std::basic_stringbuf<char_type, char_traits>::pbase();
@@ -239,7 +239,7 @@ namespace SB { namespace LibX { namespace Debug
 		return 0;
 	}
 
-	template<typename char_type, bool redirect_output, typename char_traits>
+		template<typename char_type, bool redirect_output, typename char_traits>
 	typename OutputDebugStringBuf<char_type, redirect_output, char_traits>::int_type
 		 OutputDebugStringBuf<char_type, redirect_output, char_traits>
 		::overflow(int_type c)
@@ -253,9 +253,9 @@ namespace SB { namespace LibX { namespace Debug
 		return sync_result == -1 ? char_traits::eof() : 0;
 	}
 
-	template class OutputDebugStringBuf<char, true, std::char_traits<char>>;
-	template class OutputDebugStringBuf<char, false, std::char_traits<char>>;
-	template class OutputDebugStringBuf<wchar_t, true, std::char_traits<wchar_t>>;
+	template class OutputDebugStringBuf<char,     true, std::char_traits<char>>;
+	template class OutputDebugStringBuf<char,    false, std::char_traits<char>>;
+	template class OutputDebugStringBuf<wchar_t,  true, std::char_traits<wchar_t>>;
 	template class OutputDebugStringBuf<wchar_t, false, std::char_traits<wchar_t>>;
 #endif
 

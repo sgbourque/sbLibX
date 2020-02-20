@@ -83,7 +83,7 @@ private:
 
 #if SB_SUPPORTS(SBDEBUG_OUTPUT)
 // TODO : de-hardcode buffer size
-template<typename char_type, bool redirect_output, typename char_traits = std::char_traits<char_type>>
+	template<typename char_type, bool redirect_output, typename char_traits = std::char_traits<char_type>>
 class OutputDebugStringBuf : public std::basic_stringbuf<char_type, char_traits>
 {
 public:

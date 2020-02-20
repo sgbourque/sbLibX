@@ -68,7 +68,7 @@
 
 #include <type_traits>
 // remove_cvref_t not part of std before 201705
-#if _MSVC_LANG < 201705
+#if defined(_MSVC_LANG) && _MSVC_LANG < 201705
 	namespace SB { namespace LibX {
 		template<typename _TYPE_> using remove_cvref_t = std::remove_cv_t< std::remove_reference_t<_TYPE_> >;
 	}} // namespace SB:LibX

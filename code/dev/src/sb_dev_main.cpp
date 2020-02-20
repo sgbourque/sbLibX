@@ -292,6 +292,7 @@ int WinMain(
 				catch (std::exception except)
 				{
 					std::cerr << except.what() << " in '" << module_name << "/" << function_name << "'" << std::endl;
+					return_code = kError;
 				}
 				//debugConsole.RedirectStdIO();
 				//module_name.clear();

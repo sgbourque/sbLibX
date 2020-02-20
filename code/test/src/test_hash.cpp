@@ -29,12 +29,25 @@ namespace StructuredBuffer
 //	const STRUCTURED_BUFFER_NAME::key_info_array_t STRUCTURED_BUFFER_NAME::key_info = sbLibX::StructuredBuffer::build_key_info<type_t>();
 } // StructuredBuffer
 
-//template<template<typename> struct _ALLOCATOR_ = std::allocator>
+//template<
+//	typename info_traits_t,
+//	struct _DATAINFO_CONTAINER_ = std::vector<>,
+//	struct _KEYINFO_MAP_ = std::unordered_set<key_info<typename info_traits_t::hash_traits_t, type_info_hash_traits_t>, size_t>,
+//>
 //struct dynamic_buffer_descriptor
 //{
-//	using data_block_t = ;
-//	//template<typename> using allocator = _ALLOCATOR_;
-//	//std::vector<uint8_t,
+//
+//	//template<
+//	//	class Key,
+//	//	class Hash = std::hash<Key>,
+//	//	class KeyEqual = std::equal_to<Key>,
+//	//	class Allocator = std::allocator<Key>
+//	//> class unordered_set;
+//	using key_info_t = key_info<xhash_traits_t, type_info_hash_traits_t>;
+//	std::unordered_set<key_info_t, []
+////	using data_block_t = ;
+////	//template<typename> using allocator = _ALLOCATOR_;
+////	//std::vector<uint8_t,
 //};
 
 //	template<hash_t HASH, typename _IMPLEMENTATION_>

@@ -11,6 +11,13 @@
 #include <string>
 //#pragma warning(default)
 
+static constexpr const char* const inverse_ordered_configuration_tokens[] = {
+	"_" SB_TARGET_CONFIGURATION,
+	"_" SB_TARGET_PLATFORM,
+	"_" SB_CLANG_PREFIX_TARGET SB_TARGET_PLATFORM
+};
+
+
 
 ////
 #if defined(SBWIN64) || defined(SBWIN32)
@@ -32,42 +39,33 @@ bool iequal(const std::string name1, const std::string name2)
 						[](char c1, char c2) { return std::tolower(c1) == std::tolower(c2); } );
 }
 
+
 std::string sbDynLib_name_to_alias(std::string name)
 {
-	auto lastSeparator = name.find_last_of('_');
-	if (lastSeparator != std::string::npos)
+	size_t lastSeparator = std::string::npos;
+	for ( std::string token : inverse_ordered_configuration_tokens)
 	{
-		if ( iequal(std::string("_" SB_TARGET_CONFIGURATION), std::string(name.data() + lastSeparator, name.length() - lastSeparator)) )
-			name.resize(lastSeparator);
-	}
-	lastSeparator = name.find_last_of('_');
-	if (lastSeparator != std::string::npos)
-	{
-		if (iequal(std::string("_" SB_TARGET_PLATFORM), std::string(name.data() + lastSeparator, name.length() - lastSeparator)))
-			name.resize(lastSeparator);
+		lastSeparator = name.find_last_of('_');
+		if (lastSeparator != std::string::npos)
+		{
+			if (iequal(std::string(token), std::string(name.data() + lastSeparator, name.length() - lastSeparator)))
+				name.resize(lastSeparator);
+		}
 	}
 	return name;
 }
 std::string sbDynLib_alias_to_name(std::string name)
 {
-	auto lastSeparator = name.find_last_of('_');
-	if (lastSeparator != std::string::npos)
-	{
-		if (iequal(std::string("_" SB_TARGET_PLATFORM), std::string(name.data() + lastSeparator, name.length() - lastSeparator)))
-			name.resize(lastSeparator);
-	}
-	lastSeparator = name.find_last_of('_');
-	if (	lastSeparator == std::string::npos ||
-			!iequal(std::string("_" SB_TARGET_PLATFORM), std::string(name.data() + lastSeparator, name.length() - lastSeparator)))
-	{
-		name += std::string("_" SB_TARGET_PLATFORM);
-	}
-	lastSeparator = name.find_last_of('_');
-	if (	lastSeparator == std::string::npos ||
-			!iequal(std::string("_" SB_TARGET_CONFIGURATION), std::string(name.data() + lastSeparator, name.length() - lastSeparator)))
-	{
-		name += std::string("_" SB_TARGET_CONFIGURATION);
-	}
+	name = sbDynLib_name_to_alias(name);
+	name += std::string("_" SB_TARGET_PLATFORM);
+	name += std::string("_" SB_TARGET_CONFIGURATION);
+	return name;
+}
+std::string sbDynLib_alias_to_clang_name(std::string name)
+{
+	name = sbDynLib_name_to_alias(name);
+	name += std::string("_" SB_TARGET_PLATFORM);
+	name += std::string("_" SB_CLANG_PREFIX_TARGET SB_TARGET_CONFIGURATION);
 	return name;
 }
 
@@ -96,6 +94,12 @@ bool library::load(const char* libName)
 	{
 		// try full name
 		library_name = sbDynLib_alias_to_name(library_alias);
+		data = LoadLibraryA(library_name.c_str());
+	}
+	if (!data)
+	{
+		// try full name (w/ clang)
+		library_name = sbDynLib_alias_to_clang_name(library_alias);
 		data = LoadLibraryA(library_name.c_str());
 	}
 	if (!data)
