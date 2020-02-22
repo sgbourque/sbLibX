@@ -38,6 +38,7 @@ struct StructuredBuffer
 		template<xhash_t _HASH_VALUE_>\
 	auto get(STRUCT_NAME& obj) { return STRUCT_NAME::get<_HASH_VALUE_>(obj); }
 
+////
 	template<typename STRUCT_NAME>
 auto get(STRUCT_NAME& obj, xhash_t hash_value)
 {
@@ -54,7 +55,7 @@ SB_STRUCT_MEMBER(uint32_t, version, uint32_t);
 // ...
 SB_STRUCT_END(my_type);
 
-template<>
+	template<>
 UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, xhash_t hash_value)
 {
 	// loose implementation for demonstration

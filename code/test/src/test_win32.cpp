@@ -63,6 +63,7 @@ void CHECK_STDIO(); // test_main.cpp
 #include <functional>
 
 
+// Note : this is a bad design (I know)... still proof-of-concept prototyping.
 volatile bool sbPrintAllMessages = false;
 #if defined(__clang__)
 	#pragma clang diagnostic push
@@ -185,7 +186,7 @@ int Test()
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		nullptr, nullptr, hinstance, nullptr);
 
-#if SB_SUPPORTS( SBCONSOLE_UNICODE )
+#if 1//SB_SUPPORTS( SBCONSOLE_UNICODE )
 	if (!hwnd || true)
 	{
 		HRESULT hresult = GetLastError();
@@ -221,65 +222,21 @@ int Test()
 		if (NULL != errorText)
 #endif
 		{
-//			// Fuck! Why does the one in dev_Debug does not work?
-//			// Why do I have to setmode & reopen the streambuf again!
-//
-//			////UINT oldcp = GetConsoleOutputCP();
-			//SetConsoleOutputCP(CP_UTF8);
-			//// should not change input mode
-			//std::cout.flush(); _setmode(_fileno(stdout), _O_U8TEXT);
-			//std::cerr.flush(); _setmode(_fileno(stderr), _O_U8TEXT);
-			//std::locale::global( std::locale( "" ) );
-//
-			//CHECK_STDIO();
-			//LibX::Debug::Console debugConsole1;
-			//debugConsole1.SetUnicodeCodePage();
-			//debugConsole1.RedirectStdIO();
-			//CHECK_STDIO();
-			//LibX::Debug::Console debugConsole;
-			//debugConsole.RedirectStdIO();
+			// TODO: support unicode...
 			wchar_t test[] = L"A \u2295 B ~ \xd835\xdfd9";
 			std::wcout << test << " (console only)" << std::endl;
 			std::wclog << test << " (debug only)" << std::endl;
 			std::wcerr << test << " (both)" << std::endl;
 			CHECK_STDIO();
-			//
-//			//////UINT oldcp = GetConsoleOutputCP();
-//			//SetConsoleOutputCP(CP_UTF8);
-//			//// should not change input mode
-//			//std::cout.flush(); _setmode(_fileno(stdout), _O_U8TEXT);
-//			//std::cerr.flush(); _setmode(_fileno(stderr), _O_U8TEXT);
-//			//std::locale::global( std::locale( "" ) );
-//
-//			//std::wcerr << "Error " << hresult << ": " << errorText << std::endl;
-//
-//			//wchar_t test[] = L"A \u2295 B ~ \xd835\xdfd9";
-//			//std::wcout << test << " (console only)" << std::endl;
-//			//std::wclog << test << " (debug only)" << std::endl;
-//			////SetConsoleOutputCP(oldcp);
-//			////std::cerr.flush(); _setmode(_fileno(stderr), _O_U8TEXT);
-//			////std::wcout.flush(); _setmode(_fileno(stdout), _O_U8TEXT);
-//
-//			FILE* stdinbuf = nullptr;
-//			FILE* stdoutbuf = nullptr;
-//			FILE* stderrbuf = nullptr;
-//			int result = 0;
-//			result |= freopen_s(&stdinbuf, "CONIN$", "r", stdin);
-//			result |= freopen_s(&stdoutbuf, "CONOUT$", "w", stdout);
-//			result |= freopen_s(&stderrbuf, "CONOUT$", "w", stderr);
-//
-//
 			CHECK_STDIO();
-			//LibX::Debug::Console debugConsole2;
-			//debugConsole2.RedirectStdIO();
 			std::cin.get();
 			CHECK_STDIO();
-			//
-//#if !RESERVE_ERROR
-//			// release memory allocated by FormatMessage()
-//			LocalFree( errorText );
-//			errorText = NULL;
-//#endif
+
+#if !RESERVE_ERROR
+			// release memory allocated by FormatMessage()
+			LocalFree( errorText );
+			errorText = NULL;
+#endif
 		}
 
 		CHECK_STDIO();
@@ -327,7 +284,7 @@ int Test()
 //namespace SBLib::Mathematics
 //{
 //
-//template<typename _lowlevel_t, typename _dimension_t>
+//	template<typename _lowlevel_t, typename _dimension_t>
 //struct vector
 //{
 //};
@@ -336,15 +293,15 @@ int Test()
 //namespace SBMath = SBLib::Mathematics;
 
 
-template<typename float_type, size_t size = sizeof(float_type)>
+	template<typename float_type, size_t size = sizeof(float_type)>
 struct integer_traits;
 
-template<>
+	template<>
 struct integer_traits<float, sizeof(float)> { using type = unsigned int; static_assert(sizeof(float) == sizeof(type)); };
-template<>
+	template<>
 struct integer_traits<double, sizeof(double)> { using type = unsigned long long; static_assert(sizeof(double) == sizeof(type)); };
 
-template<typename _float_type>
+	template<typename _float_type>
 union float_int_union
 {
 	using float_type = _float_type;

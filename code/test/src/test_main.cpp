@@ -32,6 +32,29 @@ using namespace SB;
 
 int Test();
 
+
+#if 0
+// see https://www.codeproject.com/Articles/1045674/Load-EXE-as-DLL-Mission-Possible
+#pragma comment(linker, "/FIXED:NO")
+// but we should try using _DllMainCRTStartup instead of WinMainCRTStartup (or mainCRTStartp in the present case)
+extern "C" /*BOOL*/int /*WINAPI*/__cdecl _DllMainCRTStartup(
+	/*HINSTANCE*/void* const instance, // GetModuleHandle(0);
+	/*DWORD*/int     const reason, // 0: dll_detach;   1: dll_attach
+	/*LPVOID*/void*    const reserved // 0
+);
+SB_EXPORT_TYPE int __stdcall init([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+{
+	// see ParseIAT to be called before _DllMainCRTStartup
+	static volatile void* module = 0;
+	return _DllMainCRTStartup(const_cast<void*>(module), 1, 0);
+}
+SB_EXPORT_TYPE int __stdcall deinit([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+{
+	static volatile void* module = 0;
+	return _DllMainCRTStartup(const_cast<void*>(module), 0, 0);
+}
+#endif
+
 //LibX::Debug::Console debugConsole;
 SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
@@ -112,9 +135,9 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 template<typename float_type, size_t size = sizeof(float_type)>
 struct integer_traits;
 
-template<>
+	template<>
 struct integer_traits<float, sizeof(float)> { using type = unsigned int; static_assert(sizeof(float) == sizeof(type)); };
-template<>
+	template<>
 struct integer_traits<double, sizeof(double)> { using type = unsigned long long; static_assert(sizeof(double) == sizeof(type)); };
 
 template<typename _float_type>

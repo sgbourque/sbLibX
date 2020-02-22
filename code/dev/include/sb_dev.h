@@ -14,6 +14,9 @@
 #if defined(SBWIN64)
 #define SB_TARGET_PLATFORM			"x64"
 #endif
+#if defined(_DLL) && (_DLL != 1)
+#error "exe"
+#endif
 
 	template<typename ...T>
 static inline constexpr int sb_noop([[maybe_unused]] T...) { return 0; }

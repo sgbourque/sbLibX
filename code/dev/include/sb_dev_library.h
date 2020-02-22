@@ -21,10 +21,10 @@ public:
 	std::string name() const { return library_name; }
 	std::string alias() const { return library_alias; }
 
-	template<typename data_type>
+		template<typename data_type>
 	data_type get_data() const { return reinterpret_cast<data_type>(data); };
 
-	template<typename fct_type>
+		template<typename fct_type>
 	fct_type get(const char* fctName) { return reinterpret_cast<fct_type>( get_internal(fctName) ); }
 
 	operator bool () const { return data != 0; }

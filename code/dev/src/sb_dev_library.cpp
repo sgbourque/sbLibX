@@ -11,10 +11,16 @@
 #include <string>
 //#pragma warning(default)
 
+#define SBLIB_SUPPORT_EXE	(false)
+
 static constexpr const char* const inverse_ordered_configuration_tokens[] = {
 	"_" SB_TARGET_CONFIGURATION,
 	"_" SB_TARGET_PLATFORM,
 	"_" SB_CLANG_PREFIX_TARGET SB_TARGET_PLATFORM
+#if SBLIB_SUPPORT_EXE
+	"_" SB_TARGET_PLATFORM "-exec.exe",
+	"_" SB_CLANG_PREFIX_TARGET SB_TARGET_PLATFORM "-exec.exe",
+#endif
 };
 
 
@@ -102,6 +108,20 @@ bool library::load(const char* libName)
 		library_name = sbDynLib_alias_to_clang_name(library_alias);
 		data = LoadLibraryA(library_name.c_str());
 	}
+#if SBLIB_SUPPORT_EXE
+	if (!data)
+	{
+		// try exec
+		library_name = sbDynLib_alias_to_name(library_alias) + "-exec.exe";
+		data = LoadLibraryA(library_name.c_str());
+	}
+	if (!data)
+	{
+		// try exec (w/ clang)
+		library_name = sbDynLib_alias_to_clang_name(library_alias) + "-exec.exe";
+		data = LoadLibraryA(library_name.c_str());
+	}
+#endif
 	if (!data)
 	{
 		// try alias
@@ -180,6 +200,118 @@ typename library::raw_data_t library::get_internal(const char* fctName)
 	return fct;
 }
 
+#if 0
+// To be used if linking to an executable file
+// see https://www.codeproject.com/Articles/1045674/Load-EXE-as-DLL-Mission-Possible
+// Note : This is not my code. It is an exerpt from the above article that give a good
+// description of what needs to be done. Thanks to the author.
+//
+// It's worth a try some day, but I'm not there yet.
+// For the moment, the exe will load, we can call init which start CRT initialization
+// through either _DllWinMainCRTStartup (proceeding to init as a dll),
+// or main/WinMainCRTStartup which will go through the whole main/WinMain execution process.
+// however, I will usually crash at first function call most probably because of the
+// missing part described here.
+void ParseIAT(HINSTANCE h)
+{
+	// Find the IAT size
+	DWORD ulsize = 0;
+	PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)ImageDirectoryEntryToData(h, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &ulsize);
+	if (!pImportDesc)
+		return;
+
+	// Loop names
+	for (; pImportDesc->Name; pImportDesc++)
+	{
+		PSTR pszModName = (PSTR)((PBYTE)h + pImportDesc->Name);
+		if (!pszModName)
+			break;
+
+		HINSTANCE hImportDLL = LoadLibraryA(pszModName);
+		if (!hImportDLL)
+		{
+			// ... (error)
+		}
+
+		// Get caller's import address table (IAT) for the callee's functions
+		PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)
+			((PBYTE)h + pImportDesc->FirstThunk);
+
+		// Replace current function address with new function address
+		for (; pThunk->u1.Function; pThunk++)
+		{
+			FARPROC pfnNew = 0;
+			size_t rva = 0;
+#ifdef _WIN64
+			if (pThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG64)
+#else
+			if (pThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG32)
+#endif
+			{
+				// Ordinal
+#ifdef _WIN64
+				size_t ord = IMAGE_ORDINAL64(pThunk->u1.Ordinal);
+#else
+				size_t ord = IMAGE_ORDINAL32(pThunk->u1.Ordinal);
+#endif
+
+				PROC* ppfn = (PROC*)&pThunk->u1.Function;
+				if (!ppfn)
+				{
+					// ... (error)
+				}
+				rva = (size_t)pThunk;
+
+				char fe[100] = { 0 };
+				sprintf_s(fe, 100, "#%u", ord);
+				pfnNew = GetProcAddress(hImportDLL, (LPCSTR)ord);
+				if (!pfnNew)
+				{
+					// ... (error)
+				}
+			}
+			else
+			{
+				// Get the address of the function address
+				PROC* ppfn = (PROC*)&pThunk->u1.Function;
+				if (!ppfn)
+				{
+					// ... (error)
+				}
+				rva = (size_t)pThunk;
+				PSTR fName = (PSTR)h;
+				fName += pThunk->u1.Function;
+				fName += 2;
+				if (!fName)
+					break;
+				pfnNew = GetProcAddress(hImportDLL, fName);
+				if (!pfnNew)
+				{
+					// ... (error)
+				}
+			}
+
+			// Patch it now...
+			auto hp = GetCurrentProcess();
+			if (!WriteProcessMemory(hp, (LPVOID*)rva, &pfnNew, sizeof(pfnNew), NULL) && (ERROR_NOACCESS == GetLastError()))
+			{
+				DWORD dwOldProtect;
+				if (VirtualProtect((LPVOID)rva, sizeof(pfnNew), PAGE_WRITECOPY, &dwOldProtect))
+				{
+					if (!WriteProcessMemory(GetCurrentProcess(), (LPVOID*)rva, &pfnNew, sizeof(pfnNew), NULL))
+					{
+						// ... (error)
+					}
+					if (!VirtualProtect((LPVOID)rva, sizeof(pfnNew), dwOldProtect, &dwOldProtect))
+					{
+						// ... (error)
+					}
+				}
+			}
+		}
+	}
+}
+#endif
 
 }} // namespace SB::LibX
 using namespace SB;

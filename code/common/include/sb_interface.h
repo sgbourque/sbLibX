@@ -95,7 +95,7 @@ struct UniqueChunk : Chunk<data_t>
 	UniqueChunk(UniqueChunk&& rref) { std::swap(*this = UniqueChunk<data_t>{}, rref); }
 	virtual ~UniqueChunk() { ReleaseResource(Chunk<data_t>::info); }
 };
-template<typename data_t>
+	template<typename data_t>
 UniqueChunk<data_t> GetData(BaseHandle resource)
 {
 	enum : xhash_t {
@@ -112,7 +112,7 @@ UniqueChunk<data_t> GetData(BaseHandle resource)
 	return UniqueChunk<data_t>(chunk);
 }
 
-template<typename data_t, typename _KEYTYPE_>
+	template<typename data_t, typename _KEYTYPE_>
 UniqueChunk<data_t> GetData(BaseHandle handler, _KEYTYPE_ key)
 {
     BaseHandle resource = AcquireResource(handler, key);

@@ -1,4 +1,4 @@
-#include <common/include/sb_hash.h>
+ï»¿#include <common/include/sb_hash.h>
 #include <common/include/sb_structured_buffer.h>
 
 namespace SB { namespace LibX
@@ -15,7 +15,7 @@ namespace SB { namespace LibX
 //struct data_info_t
 //{		//	size_t offset;//	size_t size;//	size_t align;//	size_t key_index;		//};
 
-struct raw_data_t;
+struct raw_data_t; // (currently unused: for future testing with dynamic data)
 struct raw_data_t
 {
 	void* data;
@@ -96,7 +96,7 @@ SB_STRUCT_END(module_config_t)
 ////
 #include <iostream>
 #pragma warning(disable:4324)
-	// warning C4324: 'custom_class_t' : la structure a été remplie en raison du spécificateur d'alignement
+	// warning C4324: 'custom_class_t'Â : la structure a Ã©tÃ© remplie en raison du spÃ©cificateur d'alignement
 	// because of that really weird __m128 in the middle of nowhere (ideally: try aligning your stuff)...
 	// (BTW: also tried to see what happens with template... possible but not easy to support).
 SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")

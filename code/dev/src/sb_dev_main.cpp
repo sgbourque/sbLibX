@@ -28,7 +28,7 @@ using namespace SB;
 
 
 ////
-template<size_t kMaxArgc>
+	template<size_t kMaxArgc>
 int getCommandArgv( const char* argv[kMaxArgc], char* commandline )
 {
 	// TODO : use a real parser w/ config file/script

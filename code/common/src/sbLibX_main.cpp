@@ -18,7 +18,7 @@ namespace SB { namespace LibX
 
 #define SB_HASH_TRAITS
 #if defined( SB_HASH_TRAITS )
-template<typename hash_type>
+	template<typename hash_type>
 struct base_hash_traits;
 
 template<> struct base_hash_traits<uint32_t>
@@ -60,7 +60,7 @@ struct case_insensitive_hash_traits
 		return default_hash_traits<value_type>::const_hash_append(hash, cur_value < fast_lower ? fast_lower : cur_value);
 	}
 };
-//template<typename hash_type>
+//	template<typename hash_type>
 //struct case_asymetric_hash_traits
 //{
 //	using value_type = hash_type;
@@ -77,10 +77,10 @@ struct case_insensitive_hash_traits
 
 static constexpr char toggle_case( char n ) { return n ^ ' '; }
 
-template<typename int_type = uint32_t>
+	template<typename int_type = uint32_t>
 constexpr int_type static_log2(int_type n) { return n < 2 ? 0 : 1 + static_log2(n/2); }
 
-template<typename hash_type = uint32_t, template<typename> class traits >
+	template<typename hash_type = uint32_t, template<typename> class traits >
 constexpr hash_type const_hash(const char* s)
 {
 	hash_type hash = 0;
@@ -89,7 +89,7 @@ constexpr hash_type const_hash(const char* s)
 	return hash;
 }
 
-//template<typename K, K ..._K>
+//	template<typename K, K ..._K>
 //struct static_print_helper;
 //static_assert(
 //		(const_hash<uint64_t, case_asymetric_hash_traits>("test")

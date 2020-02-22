@@ -10,7 +10,7 @@
 
 #define SB_HASH_TRAITS
 #if defined( SB_HASH_TRAITS )
-template<typename hash_type>
+	template<typename hash_type>
 struct hash_traits;
 
 template<> struct hash_traits<uint64_t>
@@ -34,7 +34,7 @@ template<> struct hash_traits<uint32_t>
 };
 
 
-template<typename hash_type = uint32_t, template<typename> class traits = hash_traits >
+	template<typename hash_type = uint32_t, template<typename> class traits = hash_traits >
 constexpr hash_type const_hash(const char* s)
 {
 	hash_type hash = 0;
@@ -49,11 +49,11 @@ constexpr hash_type const_hash(const char* s)
 
 //#define SB_VULKAN_TRAITS
 #if defined( SB_VULKAN_TRAITS )
-template<typename extension_type = void>
+	template<typename extension_type = void>
 struct vulkan_traits;
 
 #define DEFINE_VULKAN_TRAITS( index, ExtensionMacroName, ExtensionTypeName ) \
-	template<> \
+		template<> \
 	struct vulkan_traits<ExtensionTypeName> \
 	{ \
 		using type = ExtensionTypeName; \
@@ -91,7 +91,7 @@ namespace SB { namespace LibX { namespace vulkan
 
 ////
 // would be nice to try C++ static reflection here... maybe traits would do to : TODO!
-template<typename _TYPE_, typename ..._OTHERS_>
+	template<typename _TYPE_, typename ..._OTHERS_>
 std::vector<_TYPE_> enumerate( _OTHERS_...);
 
 ////
@@ -100,7 +100,7 @@ struct instance_layer
 	using properties_t = VkLayerProperties;
 };
 
-template<>
+	template<>
 std::vector<instance_layer::properties_t> enumerate<instance_layer::properties_t>(const uint32_t max_count)
 {
 	uint32_t count = 0;
@@ -119,7 +119,7 @@ std::vector<instance_layer::properties_t> enumerate<instance_layer::properties_t
 	return result;
 }
 
-template<>
+	template<>
 std::vector<instance_layer::properties_t> enumerate<instance_layer::properties_t>()
 {
 	return enumerate<instance_layer::properties_t>(~0u);
@@ -171,7 +171,7 @@ struct instance_extension
 		};
 };
 
-template<>
+	template<>
 std::vector<instance_extension::properties_t> enumerate<instance_extension::properties_t>(const uint32_t max_count, const char* const layer_name)
 {
 	uint32_t count = 0;
@@ -190,13 +190,13 @@ std::vector<instance_extension::properties_t> enumerate<instance_extension::prop
 	return result;
 }
 
-template<>
+	template<>
 std::vector<instance_extension::properties_t> enumerate<instance_extension::properties_t>(const char* const layer_name)
 {
 	return enumerate<instance_extension::properties_t>(~0u, layer_name);
 }
 
-template<>
+	template<>
 std::vector<instance_extension::properties_t> enumerate<instance_extension::properties_t>()
 {
 	return enumerate<instance_extension::properties_t>(static_cast<const char* const>(nullptr));
@@ -208,7 +208,7 @@ struct physical_device
 	using device_t = VkPhysicalDevice;
 };
 
-template<>
+	template<>
 std::vector<physical_device::device_t> enumerate<physical_device::device_t>(const uint32_t max_count, InstanceHandle instance)
 {
 	uint32_t count = 0;
@@ -227,7 +227,7 @@ std::vector<physical_device::device_t> enumerate<physical_device::device_t>(cons
 	return result;
 }
 
-template<>
+	template<>
 std::vector<physical_device::device_t> enumerate<physical_device::device_t>(InstanceHandle instance)
 {
 	return enumerate<physical_device::device_t>(~0u, instance);
@@ -239,7 +239,7 @@ struct device_extension
 	using properties_t = VkExtensionProperties;
 };
 
-template<>
+	template<>
 std::vector<device_extension::properties_t> enumerate<device_extension::properties_t>(const uint32_t max_count, AdapterHandle adapter, const char* const layer_name)
 {
 	uint32_t count = 0;
@@ -258,13 +258,13 @@ std::vector<device_extension::properties_t> enumerate<device_extension::properti
 	return result;
 }
 
-template<>
+	template<>
 std::vector<device_extension::properties_t> enumerate<device_extension::properties_t>(AdapterHandle adapter, const char* const layer_name)
 {
 	return enumerate<device_extension::properties_t>(~0u, adapter, layer_name);
 }
 
-template<>
+	template<>
 std::vector<device_extension::properties_t> enumerate<device_extension::properties_t>(AdapterHandle adapter)
 {
 	return enumerate<device_extension::properties_t>(adapter, static_cast<const char* const>(nullptr));
@@ -275,7 +275,7 @@ struct queue_families
 	using properties_t = VkQueueFamilyProperties;
 };
 
-template<>
+	template<>
 std::vector<queue_families::properties_t> enumerate<queue_families::properties_t>(const uint32_t max_count, AdapterHandle adapter)
 {
 	uint32_t count = 0;
@@ -292,7 +292,7 @@ std::vector<queue_families::properties_t> enumerate<queue_families::properties_t
 	return result;
 }
 
-template<>
+	template<>
 std::vector<queue_families::properties_t> enumerate<queue_families::properties_t>(AdapterHandle adapter)
 {
 	return enumerate<queue_families::properties_t>(~0u, adapter);
@@ -454,7 +454,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 		.ppEnabledLayerNames = nullptr,
 		.enabledExtensionCount = 0,//TODO
 		.ppEnabledExtensionNames = nullptr,//TODO
-		.pEnabledFeatures = nullptr,  // If specific features are required, pass them in here
+		.pEnabledFeatures = nullptr,  // If specific features are desired, pass them in here
 	};
 
 	DeviceHandle device;
@@ -517,19 +517,7 @@ int TestVulkan()
 	//+ [8]{ extensionName = 0x000002a3b04f2820 "VK_EXT_swapchain_colorspace" specVersion = 3 }	VkExtensionProperties
 	//+ [9]{ extensionName = 0x000002a3b04f2924 "VK_EXT_debug_report" specVersion = 9 }	VkExtensionProperties
 	//+ [10]{ extensionName = 0x000002a3b04f2a28 "VK_EXT_debug_utils" specVersion = 1 }	VkExtensionProperties
-	auto vulkan_instance_extensions = vulkan::instance_extension::enumerate();
-	for (int id = 0; id < vulkan::instance_extension::required_count; ++id)
-	{
-		std::string cur_name = vulkan::instance_extension::name[id];
-		auto is_equal = [id, cur_name](const vulkan::instance_extension::properties_t& properties) -> bool { return cur_name == properties.extensionName; };
-		if (std::find_if(vulkan_instance_extensions.begin(), vulkan_instance_extensions.end(), is_equal) == vulkan_instance_extensions.end())
-			__debugbreak(); // not found
-	}
-
-	auto vulkan_instance = vulkan::CreateInstance();
 #endif
-
-
 	std::clog << "/////////////////////////////////////////////" << std::endl;
 	std::clog << "Enumerating devices w/extensions" << std::endl;
 	std::clog << "/////////////////////////////////////////////" << std::endl;
@@ -548,5 +536,8 @@ int TestVulkan()
 		}
 		vulkan_devices.emplace_back(vulkan_device(adapter));
 	}
+
+	[[maybe_unused]]
+	auto vulkan_instance = vulkan::CreateInstance();
 	return 0;
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <common/include/sb_type_hash.h>
 
 #include <array>
@@ -17,7 +17,16 @@ static inline constexpr size_t align_up(size_t size, size_t align) { return alig
 
 //	So the idea here is to have a key mapping to a hash;
 //	That hash will be used through the key_info_array which maps it to its data_info.
-template<typename, typename> struct key_info;
+//
+//	We assume from now on that all structured buffer (including dynamic ones to be defined later)
+//	have an array-like data_info member and a set-like structure key_info.
+//	There is a 1:1 correspondence for all valid keys and ∞:0 for invalid keys from a key_info
+//	to a data_info. Generically, neither data_info nor key_info are assumed to be ordered containers
+//	as far as data_info[valid_key] is valid while data_info[invalid_key] is invalid.
+//	It is however assumed that both data_info and key_info are iterable containers.
+//	With begin() and end() as data_info iterators and key_begin() and key_end() as key_info
+//	iterators.
+	template<typename, typename> struct key_info;
 struct data_info_t;
 
 template<typename _HASH_TRAITS_, size_t _DIMENSION_> using key_info_array = std::array<key_info<_HASH_TRAITS_, type_info_hash_traits_t>, _DIMENSION_>;
@@ -50,21 +59,29 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 #else
 	#define SB_STRUCTURED_BUFFER_MODIFIER(...) __VA_ARGS__
 #endif
+#define SB_USE_TEMPLATE_STRUCT	(true)
+#if (SB_USE_TEMPLATE_STRUCT)
+	#define SB_STRUCT_DECL_PREFIX	template<typename _TYPE_>
+	#define SB_STRUCT_POSTFIX    	<_TYPE_>
+#else
+	#define SB_STRUCT_DECL_PREFIX	
+	#define SB_STRUCT_POSTFIX    	
+#endif
 #ifndef SB_MEMBER_ENTRY
 	#define SB_MEMBER_ENTRY "."
 #endif
-#define SB_STRUCT_BEGIN( STRUCTURED_BUFFER_NAME, ... )\
-		/*template<typename _TRAITS_ = sbLibX::xhash_traits_t>*/\
+#define SB_STRUCT_BEGIN( STRUCTURED_BUFFER_NAME, ... ) SB_STRUCT_BEGIN_TRAITS( STRUCTURED_BUFFER_NAME, sbLibX::xhash_traits_t, __VA_ARGS__ )
+#define SB_STRUCT_BEGIN_TRAITS( STRUCTURED_BUFFER_NAME, _TRAITS_, ... )\
 	struct STRUCTURED_BUFFER_NAME {\
 		using type_t = STRUCTURED_BUFFER_NAME;\
-		using hash_traits_t = /*_TRAITS_;*//**/sbLibX::xhash_traits_t;/**/\
+		using hash_traits_t = _TRAITS_;/*sbLibX::xhash_traits_t;*/\
 		using hash_string_view_t = sbLibX::xhash_string_view<hash_traits_t>;\
 		using hash_t = typename hash_traits_t::value_t;\
 		static constexpr auto options = std::make_tuple(__VA_ARGS__);\
 		inline static constexpr hash_string_view_t struct_hash = #STRUCTURED_BUFFER_NAME " " #__VA_ARGS__ "";\
 		\
-		template<hash_t, typename IMPL = type_t> struct data_traits;\
-		template<size_t, typename IMPL = type_t> struct key_traits;\
+		template<hash_t, typename = type_t> struct data_traits;\
+		template<size_t, typename = type_t> struct key_traits;\
 		static inline constexpr size_t kElementIdOffset = __COUNTER__;
 #define SB_STRUCT_MEMBER( TYPE, NAME, ... ) /* note that TYPE can't be hashed by name */\
 		static inline constexpr size_t NAME##_id = __COUNTER__ - kElementIdOffset - 1;\
@@ -83,7 +100,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 			using type_t = decltype(IMPL::NAME);/* TODO: type hash */\
 			using data_traits_t = data_traits<name_hash, IMPL>;\
 		};\
-		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* Not supported (I will try to find a way) */
+		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* modifiers NOT supported yet (I will try to find a way) */
 #define SB_STRUCT_END( STRUCTURED_BUFFER_NAME, ... ) /* STRUCTURED_BUFFER_NAME in case we need to initialize static data*/\
 		static inline constexpr size_t kElementCount = __COUNTER__ - kElementIdOffset - 1;\
 		static inline constexpr size_t size() { return kElementCount; }\
@@ -99,8 +116,10 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		static inline constexpr auto key_begin() { return key_info.begin(); }\
 		static inline constexpr auto key_end() { return key_info.end(); }\
 	};\
-	const typename STRUCTURED_BUFFER_NAME::key_info_array_t STRUCTURED_BUFFER_NAME::key_info = sbLibX::StructuredBuffer::build_key_info<type_t>();\
-	const typename STRUCTURED_BUFFER_NAME::data_info_array_t STRUCTURED_BUFFER_NAME::data_info = sbLibX::StructuredBuffer::build_data_info<type_t>();
+	const typename STRUCTURED_BUFFER_NAME::key_info_array_t\
+	STRUCTURED_BUFFER_NAME::key_info = sbLibX::StructuredBuffer::build_key_info<type_t>();\
+	const typename STRUCTURED_BUFFER_NAME::data_info_array_t\
+	STRUCTURED_BUFFER_NAME::data_info = sbLibX::StructuredBuffer::build_data_info<type_t>();
 
 ////
 	template<typename _IMPLEMENTATION_, typename _FACET_>
