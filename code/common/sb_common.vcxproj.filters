@@ -33,6 +33,9 @@
     <ClInclude Include="include\sb_type_hash.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_range.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

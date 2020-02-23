@@ -196,17 +196,19 @@ template<xhash_t HASH> using key_traits = typename config_traits<HASH>::key_trai
 SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator ""_xhash64;
+	using sbLibX::StructuredBuffer::get;
+	using sbLibX::get;
 	//sbLibX::Debug::Console debugConsole; debugConsole.RedirectStdIO();
 
 	std::cout << "\nTesting static & dynamic bindings...\n";
 	config_t local_config{ L"my application name", L"my class name", 0xFull };
 	std::cout << std::endl
-		<< "\n" << ".name"_xhash64 << ": " << sbLibX::get<".name"_xhash64>(local_config)
-		<< "\n" << ".className"_xhash64 << ": " << sbLibX::get(local_config, ".className"_xhash64, L"")
-		<< "\n" << ".windowFlags"_xhash64 << ": " << sbLibX::get(local_config, ".windowFlags"_xhash64, 0ull)
+		<< "\n" << ".name"_xhash64 << ": " << get<".name"_xhash64>(local_config)
+		<< "\n" << ".className"_xhash64 << ": " << get(local_config, ".className"_xhash64, L"")
+		<< "\n" << ".windowFlags"_xhash64 << ": " << get(local_config, ".windowFlags"_xhash64, 0ull)
 		// following does not compile : customDataFlags is not defined
 		//"\n" << ".customDataFlags"_xhash64 << " (unknown): " << sbLibX::get<".customDataFlags"_xhash64>(local_config)
-		<< "\n" << ".customDataFlags"_xhash64 << " (unknown): " << sbLibX::get(local_config, ".customDataFlags"_xhash64, 0ull)
+		<< "\n" << ".customDataFlags"_xhash64 << " (unknown): " << get(local_config, ".customDataFlags"_xhash64, 0ull)
 		<< std::endl;
 
 	std::cout << "\nTesting dynamic bindings...\n";
@@ -215,8 +217,8 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		auto hash = local_config.key_info[datainfo.key_index].name_hash;
 
 		// Assume we received some hash to be resolved dynamically
-		auto local_datainfo = sbLibX::get(local_config, hash);
-		uint8_t* raw_data = sbLibX::get<uint8_t*>(&local_config, local_datainfo);
+		auto local_datainfo = get(local_config, hash);
+		uint8_t* raw_data = get<uint8_t*>(&local_config, local_datainfo);
 
 		auto local_keyinfo  = local_config.key_info[local_datainfo.key_index];
 		std::cout << "\n" << local_keyinfo.type_hash << " " << local_keyinfo.name_hash << ":\n\t";
@@ -232,8 +234,8 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 	std::cin >> input;
 	{
 		auto hash = sbLibX::xhash_traits_t::hash(("." + input).c_str());
-		auto local_datainfo = sbLibX::get(local_config, hash);
-		uint8_t* raw_data = sbLibX::get<uint8_t*>(&local_config, local_datainfo);
+		auto local_datainfo = get(local_config, hash);
+		uint8_t* raw_data = get<uint8_t*>(&local_config, local_datainfo);
 		for (size_t index = 0; index < local_datainfo.size; ++index)
 			std::cout << std::hex << uint32_t(raw_data[index]) << " ";
 		std::cout << "\n\t";

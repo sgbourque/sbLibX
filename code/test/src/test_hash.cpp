@@ -210,7 +210,7 @@ SB_STRUCT_END(compile_stress_t)
 SB_EXPORT_TYPE int __stdcall test_hash([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator "" _xhash64;
-	using sbLibX::get;
+	using sbLibX::StructuredBuffer::get;
 	using std::get;
 	// This is not legal since custom_class_t has virtual members and custom weird stuffs:
 	//	custom_class_t custom = {

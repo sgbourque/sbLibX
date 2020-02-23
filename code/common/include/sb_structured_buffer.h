@@ -254,9 +254,6 @@ static inline constexpr key_info_array<typename _IMPLEMENTATION_::hash_traits_t,
 	return build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_t>();
 }
 
-} // StructuredBuffer
-
-
 	template<xhash_t HASH, typename _IMPLEMENTATION_>
 auto get(_IMPLEMENTATION_* buffer) noexcept
 {
@@ -265,6 +262,8 @@ auto get(_IMPLEMENTATION_* buffer) noexcept
 }
 template<xhash_t HASH, typename _IMPLEMENTATION_> auto& get(_IMPLEMENTATION_& buffer) noexcept { return *get<HASH>(&buffer); }
 template<xhash_t HASH, typename _IMPLEMENTATION_> auto&& get(_IMPLEMENTATION_&& buffer) noexcept { return *get<HASH>(&buffer); }
+
+} // StructuredBuffer
 
 //#include <sb_dynamic_buffer.h>
 // Let's assume for now that we have the following :

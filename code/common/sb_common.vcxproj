@@ -193,6 +193,7 @@
     <ClInclude Include="include\sb_hash.h" />
     <ClInclude Include="include\sb_interface.h" />
     <ClInclude Include="include\sbLibX_precompile.h" />
+    <ClInclude Include="include\sb_range.h" />
     <ClInclude Include="include\sb_structured_buffer.h" />
     <ClInclude Include="include\sb_type_hash.h" />
   </ItemGroup>

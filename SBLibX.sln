@@ -28,7 +28,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sbWindows", "code\common\sb
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LibCommon", "LibCommon", "{653492CE-56C1-454D-BF3A-2976187ED9E7}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
+		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LibDev", "LibDev", "{F4B334AB-28CD-45B6-BA55-893352BC3F91}"
