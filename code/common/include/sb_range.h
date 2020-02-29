@@ -160,7 +160,7 @@ struct basic_index_range_t : basic_range_t< typename std::conditional_t<std::is_
 	static constexpr iterator& end( range_t& range ) { return RangeAccessors::get<1>(RangeAccessors::get<data_t>( range ) ); }
 
 	// as a pointer, the index range is directly a view over a container's data
-	template< typename is_pointer = std::void_t< std::is_pointer<basic_index_range_t> > >
+		template< typename is_pointer = std::void_t< std::is_pointer<basic_index_range_t> > >
 	iterator data() const { return begin(); }
 
 	static constexpr size_t size( const range_t& range )
@@ -169,21 +169,21 @@ struct basic_index_range_t : basic_range_t< typename std::conditional_t<std::is_
 		return static_cast<size_t>(RangeAccessors::distance( std::begin( index_range ), std::end( index_range ) ) );
 	}
 };
-template< typename index_type, typename data_type >
+	template< typename index_type, typename data_type >
 constexpr bool operator ==( const basic_index_range_t<index_type, data_type>& range1, const basic_index_range_t<index_type, data_type>& range2 )
 {
 	return RangeAccessors::get<data_type>( range1 ) == RangeAccessors::get<data_type>( range2 );
 }
-template< typename ostream_type, typename index_type, typename data_type >
-auto& operator <<( ostream_type& out, const basic_index_range_t<index_type, data_type>& range )
-{
-	return out << sbLibX::get<data_type>( range );
-}
+//	template< typename ostream_type, typename index_type, typename data_type >
+//auto& operator <<( ostream_type& out, const basic_index_range_t<index_type, data_type>& range )
+//{
+//	return out << sbLibX::get<data_type>( range );
+//}
 
-template< typename index_type, typename private_type = void >
+	template< typename index_type, typename private_type = void >
 using index_range_t = basic_index_range_t< index_type, std::tuple<index_type, index_type> >;
 
-template< typename char_type, typename char_traits = std::char_traits<char_type> >
+	template< typename char_type, typename char_traits = std::char_traits<char_type> >
 struct string_view : basic_index_range_t< const char_type*, std::basic_string_view<char_type, char_traits> >
 {
 	using value_type = char_type;
@@ -208,21 +208,21 @@ struct string_view : basic_index_range_t< const char_type*, std::basic_string_vi
 	value_type operator[]( size_t index ) const { assert( index < size() ); return *( begin() + index ); }
 };
 
-template< typename value_type >
+	template< typename value_type >
 constexpr auto get_pointer( value_type& value )
 {
 	return &value;
 }
-template< typename value_type >
+	template< typename value_type >
 constexpr auto get_pointer( value_type* const value )
 {
 	return value;
 }
 
-template< typename view_type, typename container_type, typename range_type >
+	template< typename view_type, typename container_type, typename range_type >
 struct range_view_helper;
 
-template< typename view_type, typename container_type, typename index_type, typename data_type >
+	template< typename view_type, typename container_type, typename index_type, typename data_type >
 struct range_view_helper<view_type, container_type, basic_index_range_t<index_type, data_type>>
 {
 	static_assert(
@@ -239,12 +239,12 @@ struct range_view_helper<view_type, container_type, basic_index_range_t<index_ty
 		return view_type{ reinterpret_cast<const view_type::value_type* const>( container_ptr->data() ) + range.begin(), range.end() - range.begin() };
 	}
 };
-template< typename view_type, typename container_type, typename range_type >
+	template< typename view_type, typename container_type, typename range_type >
 constexpr view_type to_view( const container_type& container, const range_type& range )
 {
 	return range_view_helper<view_type, container_type, range_type>::apply( container, range );
 }
-template< typename char_type, typename container_type, typename range_type >
+	template< typename char_type, typename container_type, typename range_type >
 constexpr string_view<char_type> to_string_view( const container_type& container, const range_type& range )
 {
 	return range_view_helper<string_view<char_type>, container_type, range_type>::apply( container, range );
@@ -253,10 +253,10 @@ constexpr string_view<char_type> to_string_view( const container_type& container
 
 namespace
 {
-template< typename view_t >
+	template< typename view_t >
 struct hash : std::hash<view_t> {};
 
-template< typename char_type >
+	template< typename char_type >
 struct hash< string_view<char_type> > : std::hash< typename string_view<char_type>::data_t >
 {
 	using view_t = string_view<char_type>;
@@ -269,7 +269,7 @@ struct hash< string_view<char_type> > : std::hash< typename string_view<char_typ
 };
 }
 
-template< typename container_type, typename view_traits_t, typename hash_base_t = hash<typename view_traits_t::view_t> >
+	template< typename container_type, typename view_traits_t, typename hash_base_t = hash<typename view_traits_t::view_t> >
 struct range_hash_t : hash_base_t
 {
 	using container_t = container_type;
@@ -278,7 +278,7 @@ struct range_hash_t : hash_base_t
 
 	range_hash_t( const container_t* container ) : container( container ) {}
 
-	template< typename range_type >
+		template< typename range_type >
 	constexpr auto operator()( const range_type& range ) const
 	{
 		return hash::operator()( to_view<view_t>( container, range ) );
@@ -286,7 +286,7 @@ struct range_hash_t : hash_base_t
 private:
 	const container_t* container;
 };
-template< typename container_type, typename view_traits_t >
+	template< typename container_type, typename view_traits_t >
 struct range_equal_t
 {
 	using container_t = container_type;
@@ -294,7 +294,7 @@ struct range_equal_t
 
 	range_equal_t( const container_t* container ) : container( container ) {}
 
-	template< typename range_type >
+		template< typename range_type >
 	constexpr bool operator ()( const range_type& a, const range_type& b ) const
 	{
 		return to_view<view_t>( container, a ) == to_view<view_t>( container, b );

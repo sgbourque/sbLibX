@@ -59,14 +59,6 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 #else
 	#define SB_STRUCTURED_BUFFER_MODIFIER(...) __VA_ARGS__
 #endif
-#define SB_USE_TEMPLATE_STRUCT	(true)
-#if (SB_USE_TEMPLATE_STRUCT)
-	#define SB_STRUCT_DECL_PREFIX	template<typename _TYPE_>
-	#define SB_STRUCT_POSTFIX    	<_TYPE_>
-#else
-	#define SB_STRUCT_DECL_PREFIX	
-	#define SB_STRUCT_POSTFIX    	
-#endif
 #ifndef SB_MEMBER_ENTRY
 	#define SB_MEMBER_ENTRY "."
 #endif
@@ -97,7 +89,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		template<typename IMPL> struct key_traits<NAME##_id, IMPL>\
 		{\
 			static inline constexpr hash_string_view_t name_hash = IMPL::NAME##_hash;\
-			using type_t = decltype(IMPL::NAME);/* TODO: type hash */\
+			using type_t = decltype(IMPL::NAME);\
 			using data_traits_t = data_traits<name_hash, IMPL>;\
 		};\
 		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* modifiers NOT supported yet (I will try to find a way) */
@@ -142,7 +134,7 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::data_info_array
 			using data_traits = typename key_traits::data_traits_t;
 			return range_t<BEGIN, END - 1>::get_data_info(
 				data_info_t{
-					SB_STRUCT_SET(.offset    =) data_traits::offset, // TODO: what to do with static data & members?
+					SB_STRUCT_SET(.offset    =) data_traits::offset, // TODO: what to do with static data & members? (might have to deal with more tables)
 					SB_STRUCT_SET(.size      =) sizeof(typename data_traits::type_t),
 					SB_STRUCT_SET(.align     =) alignof(typename data_traits::type_t),
 					SB_STRUCT_SET(.key_index =) find_key_index(END - 1),

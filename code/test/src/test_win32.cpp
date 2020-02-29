@@ -189,7 +189,7 @@ int Test()
 #if 1//SB_SUPPORTS( SBCONSOLE_UNICODE )
 	if (!hwnd || true)
 	{
-		HRESULT hresult = GetLastError();
+		auto hresult = GetLastError();
 #define RESERVE_ERROR 0
 #if RESERVE_ERROR
 		wchar_t errorText[256];
@@ -206,7 +206,7 @@ int Test()
 			// Important! will fail otherwise, since we're not 
 			// (and CANNOT) pass insertion parameters
 			| FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,    // unused with FORMAT_MESSAGE_FROM_SYSTEM
+			nullptr,    // unused with FORMAT_MESSAGE_FROM_SYSTEM
 			hresult,
 			MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
 #if RESERVE_ERROR
@@ -216,10 +216,10 @@ int Test()
 			(wchar_t*)&errorText,  // output 
 			0, // minimum size for output buffer
 #endif
-			NULL );   // arguments - see note 
+			nullptr);   // arguments - see note 
 
 #if !RESERVE_ERROR
-		if (NULL != errorText)
+		if (nullptr != errorText)
 #endif
 		{
 			// TODO: support unicode...
@@ -235,7 +235,7 @@ int Test()
 #if !RESERVE_ERROR
 			// release memory allocated by FormatMessage()
 			LocalFree( errorText );
-			errorText = NULL;
+			errorText = nullptr;
 #endif
 		}
 

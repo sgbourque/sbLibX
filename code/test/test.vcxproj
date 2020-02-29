@@ -39,6 +39,7 @@
     <ClInclude Include="include\test_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
     <ClCompile Include="src\test_main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>

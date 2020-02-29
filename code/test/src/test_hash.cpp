@@ -149,7 +149,7 @@ SB_STRUCT_END(compile_stress_t)
 
 
 
-#if 0 // Just an overview of a typical structured_buffer instance
+#if 1 // Just an overview of a typical structured_buffer instance
 	struct struct_buf {
 		using type_t = struct_buf;
 		using hash_traits_t = /*_TRAITS_;*//**/sbLibX::xhash_traits_t;/**/
@@ -162,6 +162,28 @@ SB_STRUCT_END(compile_stress_t)
 		template<size_t, typename IMPL = type_t> struct key_traits;
 		static inline constexpr size_t kElementIdOffset = __COUNTER__;
 
+#if 0
+	//SB_STRUCT_MEMBER(long const int unsigned volatile long, try_not_to, inline static constexpr)(int n) { return {n != 3}; }
+		static inline constexpr size_t try_not_to_id = __COUNTER__ - kElementIdOffset - 1;
+		static_assert(try_not_to_id < 64, "Too many unique data members. Try using sub-buffers or split the buffer.");
+		static inline constexpr hash_string_view_t try_not_to_hash = SB_MEMBER_ENTRY "try_not_to";
+		template<typename IMPL> struct data_traits<hash_traits_t::hash(SB_MEMBER_ENTRY "try_not_to"), IMPL>
+		{
+			using type_t = decltype(IMPL::try_not_to);
+			static inline constexpr size_t offset = 
+				std::conditional_t<true, std::integral_constant<size_t, ~0ull>
+										, std::integral_constant<size_t, offsetof(IMPL, try_not_to)>>::value;
+				//sb_offsetof(IMPL, try_not_to);
+			static inline constexpr size_t size   = sizeof(type_t);
+			using key_traits_t = key_traits<try_not_to_id, IMPL>;
+		};
+		template<typename IMPL> struct key_traits<try_not_to_id, IMPL>
+		{
+			static inline constexpr hash_string_view_t name_hash = IMPL::try_not_to_hash;
+			using type_t = decltype(IMPL::try_not_to);/* TODO: type hash */
+			using data_traits_t = data_traits<name_hash, IMPL>;
+		};
+		using try_not_to_base_t = long const int unsigned volatile long; /*inline static constexpr*/ try_not_to_base_t try_not_to /* Not supported (I will try to find a way) */ (int n) { return { n != 3 }; }
 //#define SB_STRUCT_MEMBER( TYPE, NAME, ... ) /* note that TYPE can't be hashed by name */
 //		static inline constexpr size_t NAME##_id = __COUNTER__ - kElementIdOffset - 1;
 //		static_assert(NAME##_id < 64, "Too many unique data members. Try using sub-buffers or split the buffer.");
@@ -180,6 +202,7 @@ SB_STRUCT_END(compile_stress_t)
 //			using data_traits_t = data_traits<name_hash, IMPL>;
 //		};
 //		using NAME##_base_t = TYPE; SB_STRUCTURED_BUFFER_MODIFIER(__VA_ARGS__) NAME##_base_t NAME /* Not supported (I will try to find a way) */
+#endif
 
 		static inline constexpr size_t kElementCount = __COUNTER__ - kElementIdOffset - 1;
 		static inline constexpr size_t size() { return kElementCount; }
@@ -268,7 +291,8 @@ SB_EXPORT_TYPE int __stdcall test_hash([[maybe_unused]] int argc, [[maybe_unused
 	//std::cout.flush();
 
 	//compile_stress_t test;
-	auto& test = custom;
+	struct_buf test = {};
+	//auto& test = custom;
 	std::cout << "\ndynamic data information for " << test.struct_hash << "\n";
 	for (auto data_info : test)
 	{

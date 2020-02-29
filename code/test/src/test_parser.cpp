@@ -12,6 +12,8 @@
 	do{ if (!(X)) __debugbreak(); } while(false)
 
 
+#define VALIDATE (false)
+
 namespace SB { namespace LibX
 {
 
@@ -100,23 +102,23 @@ std::string UTF32_to_UTF8(const char32_t utf32)
 	else if (utf32 < 0x0800)
 	{
 		utf8.resize(2);
-		utf8[0] = 0xC0 | ((utf32 >> 6) & 0x3F);
-		utf8[1] = 0x80 | (utf32 & 0x3F);
+		utf8[0] = static_cast<char>(0xC0 | ((utf32 >> 6) & 0x3F));
+		utf8[1] = static_cast<char>(0x80u | (utf32 & 0x3Fu));
 	}
 	else if (utf32 < 0x00010000)
 	{
 		utf8.resize(3);
-		utf8[0] = 0xE0 | ((utf32 >> 12) & 0x3F);
-		utf8[1] = 0x80 | ((utf32 >> 6) & 0x3F);
-		utf8[2] = 0x80 | (utf32 & 0x3F);
+		utf8[0] = static_cast<char>(0xE0 | ((utf32 >> 12) & 0x3F));
+		utf8[1] = static_cast<char>(0x80 | ((utf32 >> 6) & 0x3F));
+		utf8[2] = static_cast<char>(0x80 | (utf32 & 0x3F));
 	}
 	else
 	{
 		utf8.resize(4);
-		utf8[0] = 0xF0 | ((utf32 >> 18) & 0x3F);
-		utf8[1] = 0x80 | ((utf32 >> 12) & 0x3F);
-		utf8[2] = 0x80 | ((utf32 >> 6) & 0x3F);
-		utf8[3] = 0x80 | (utf32 & 0x3F);
+		utf8[0] = static_cast<char>(0xF0 | ((utf32 >> 18) & 0x3F));
+		utf8[1] = static_cast<char>(0x80 | ((utf32 >> 12) & 0x3F));
+		utf8[2] = static_cast<char>(0x80 | ((utf32 >> 6) & 0x3F));
+		utf8[3] = static_cast<char>(0x80 | (utf32 & 0x3F));
 	}
 	assert(std::get<0>(UTF8_to_UTF32(&utf8[0], 4)) == utf32);
 	return utf8;
@@ -137,7 +139,7 @@ struct token_hash_t : std::hash< std::basic_string_view<typename _CONTAINER_::va
 	using string_view = std::basic_string_view<value_t>;
 	using hash_traits = _HASH_TRAITS_;
 
-	token_hash_t(const container_t* container) : container(container) {}
+	token_hash_t(const container_t* _container) : container(_container) {}
 
 		template< typename token_type >
 	auto operator()(const token_type& token) const
@@ -154,7 +156,7 @@ struct token_equal_t
 	using value_t = typename container_t::value_type;
 	using string_view = std::basic_string_view<value_t>;
 
-	token_equal_t(const container_t* container) : container(container) {}
+	token_equal_t(const container_t* _container) : container(_container) {}
 
 	template< typename token_type >
 	bool operator ()(const token_type& a, const token_type& b) const
@@ -299,7 +301,7 @@ auto symbol_lexer_t<char_type>::get_next_char(bounds bounds)
 		{
 			length = 0;
 			bounds.end() = bounds.begin();
-			next_char = char32_t(-1);;
+			next_char = char32_t(-1);
 		}
 	}
 	if (length > 0)
@@ -357,7 +359,7 @@ std::basic_string_view<char_type> symbol_lexer_t<char_type>::input(const view_t 
 	while (current != next)
 		std::tie(current, next) = get_next_token({ { current, end } }).bounds();
 
-	return std::basic_string_view<char_type>(next, std::distance(next, end));
+	return std::basic_string_view<char_type>(next, static_cast<size_t>(std::distance(next, end)));
 }
 
 ////
@@ -423,11 +425,11 @@ SB_EXPORT_TYPE int __stdcall test_parser([[maybe_unused]] int argc, [[maybe_unus
 		std::vector<char> content;
 		while (input_file)
 		{
-			enum { read_size = 512, };
+			enum { read_size = 32 * 1024, };
 			const auto current_size = content.size();
 			content.resize(current_size + read_size);
 			const auto read_count = input_file.read(content.data() + current_size, read_size).gcount();
-			content.resize(current_size + read_count);
+			content.resize(current_size + static_cast<size_t>(read_count));
 			std::string_view content_data(content.data(), content.size());
 			std::string_view unprocessed_content = lexer.input(module_name, file_name, content_data);
 
