@@ -192,6 +192,22 @@ namespace SB { namespace LibX { namespace Debug
 	#endif
 		return result == 0;
 	}
+	// From the one of the worst formatted single line ever : https://support.microsoft.com/fr-ca/help/99261/how-to-performing-clear-screen-cls-in-a-console-application
+	//void cls(HANDLE hConsole)
+	//{
+	//	COORD coordScreen = { 0, 0 };
+	//	BOOL bSuccess;
+	//	DWORD cCharsWritten;
+	//	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	//	DWORD dwConSize;
+	//	bSuccess = GetConsoleScreenBufferInfo(hConsole, &csbi);
+	//	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+	//	bSuccess = FillConsoleOutputCharacter(hConsole, (TCHAR)' ', dwConSize, coordScreen, &cCharsWritten);
+	//	bSuccess = GetConsoleScreenBufferInfo(hConsole, &csbi);
+	//	bSuccess = FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
+	//	bSuccess = SetConsoleCursorPosition(hConsole, coordScreen);
+	//	return;
+	//}
 
 
 	////

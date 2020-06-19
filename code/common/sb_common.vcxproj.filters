@@ -13,6 +13,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="include\internal">
+      <UniqueIdentifier>{c08fc95c-ebe7-41cf-8d68-f89667a797c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sbLibX_precompile.h">
@@ -36,12 +39,24 @@
     <ClInclude Include="include\sb_range.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_interface_asio.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\device_generic_internal.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\interface_asio_error.hpp">
+      <Filter>include\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\sb_interface.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sb_interface_asio.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

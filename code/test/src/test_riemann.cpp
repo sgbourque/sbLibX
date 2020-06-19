@@ -28,10 +28,12 @@ constexpr real_topology_point<_TYPE_> ln2_slow_series_nth_term(const int64_t n)
 	};
 }
 
+// These are the straightforward ln(2) series expension of ln(1+x) at x -> 1.
+// high_precision calculates smallest terms first while low_precision starts with the largest one.
 	template< typename _TYPE_>
 constexpr real_topology_point<_TYPE_> ln2_slow_series_high_precision( const int64_t termsCount = 0 )
 {
-	// starting from smallest numbers to largest will allow to use best floating point precision
+	// starting from smallest numbers to largest will allow to achieve best floating point precision
 	using type_t = _TYPE_;
 	auto result = real_topology_point<type_t>{
 		.value     = type_t(0),
@@ -48,7 +50,8 @@ constexpr real_topology_point<_TYPE_> ln2_slow_series_high_precision( const int6
 	template< typename _TYPE_>
 constexpr real_topology_point<_TYPE_> ln2_slow_series_low_precision( const int64_t termsCount = 0 )
 {
-	// starting from largest numbers to smallest will loose some precision : last digit(s) can be off because of the floating point nature
+	// starting from largest numbers to smallest will loose some precision : the converging value is off because of the floating point nature
+	// (and because this series converges too slowly...)
 	using type_t = _TYPE_;
 	auto result = real_topology_point<type_t>{
 		.value     = type_t(0),
@@ -64,6 +67,10 @@ constexpr real_topology_point<_TYPE_> ln2_slow_series_low_precision( const int64
 }
 
 ////
+// This simulates as if the ln2_slow_series_low_precision was rearranged such that two threads,
+// running at different frequency, are accumulating partial sums for positive and negative terms.
+// At every loop, the value from each thread are read and the partial sum is returned once
+// we reach at least termsCount.
 	template< typename _TYPE_>
 constexpr real_topology_point<_TYPE_> rearranged_slow_series(int64_t termsCount = 0, int64_t positives = 1, int64_t negatives = 1)
 {
@@ -83,6 +90,9 @@ constexpr real_topology_point<_TYPE_> rearranged_slow_series(int64_t termsCount 
 	{
 		const auto current_precision = (positives / type_t(2 * positiveCount + 1) - negatives / type_t(2 * (negativeCount + negatives + 1)));
 		auto positiveValue = type_t(0);
+		//auto [&positiveValue, &positiveCount]()->type_t
+		//{
+		//}
 		for (int64_t p = 0; p < positives; ++p)
 		{
 			auto next_term = type_t(2 * positiveCount - 1); // next largest odd value
@@ -106,6 +116,7 @@ constexpr real_topology_point<_TYPE_> rearranged_slow_series(int64_t termsCount 
 }
 
 ////
+// be aware that code below is not particularly
 #include <iostream>
 bool reset_bad_stream( std::istream& is )
 {
@@ -136,7 +147,7 @@ void testing_series_part1()
 
 		int64_t loops;
 	retry_count:
-		std::cout << "enter loop count: ";
+		std::cout << "enter total terms count: ";
 		std::cin >> loops;
 		if (reset_bad_stream(std::cin))
 		{
@@ -175,7 +186,7 @@ void testing_series_part2()
 
 		int64_t loops;
 	retry_count2:
-		std::cout << "enter loop count: ";
+		std::cout << "enter minimum terms count: ";
 		std::cin >> loops;
 		if (reset_bad_stream(std::cin))
 		{
@@ -213,6 +224,7 @@ void testing_series_part2()
 
 		auto result = rearranged_slow_series<type_t>(loops, p, n);
 		type_t expected = log(type_t(2) * sqrt(type_t(p) / type_t(n)));
+		std::cout.precision(std::numeric_limits<type_t>::max_digits10);
 		std::cout << "\trearranged series ...  " << result.value << std::endl;
 		std::cout << "show expected result? ";
 

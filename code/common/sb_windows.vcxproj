@@ -179,10 +179,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\sbwin_interface_asio.cpp" />
     <ClCompile Include="src\sb_windows.cpp" />
+    <ClCompile Include="src\sb_windows_registry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sbWindows_precompile.h" />
+    <ClInclude Include="include\sb_windows_registry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

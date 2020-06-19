@@ -3,7 +3,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_$(Configuration).exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>load $(ProjectName)/main</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run $(ProjectName)/asio</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">

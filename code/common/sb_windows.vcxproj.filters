@@ -18,9 +18,18 @@
     <ClInclude Include="include\sbWindows_precompile.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_windows_registry.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sb_windows.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sb_windows_registry.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sbwin_interface_asio.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

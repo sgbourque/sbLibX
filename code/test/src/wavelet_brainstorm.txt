@@ -1,0 +1,122 @@
+﻿Point de départ
+En précision de 24-bits on a une racine k-ième p-principale :
+p := nextprime( 2^24 );
+                         p := 16777259
+f := ((2^32 / (p-1)) mod p);
+                           f := 11008
+``(f) = ifactor( p - 1 );
+                (11008) = (2) (23) (103) (3541)
+k := ( 2 * 23 * 103 );
+                           k := 4738
+u := (f^((p - 1)/(k)) mod p);
+                          u := 2357250
+``(u)^`k` mod ``(p) = u^k mod p;
+'sum'(``(u)^(j), j = 0..(k - 1)) mod ``(p) = add(u^(j), j = 0..k - 1) mod p;
+              /         4738\                   
+              \(2357250)    / = 1 mod (16777259)
+et
+             / 4737          \                   
+             |-----          |                   
+             | \             |                   
+             |  )            |                   
+             | /    (2357250)| = 0 mod (16777259)
+             |-----          |                   
+             \j = 0          /                   
+
+En 48kHz, 4738 samples correspond a une latence d'environ 10ms :
+rate := 48000;
+                         rate := 48000
+evalf( k * ( sample / (rate * sample / s)) );
+                        0.09870833333 s
+
+Et à une réponse en fréquence de ~10kHz à 24kHz :
+min_freq = evalf( rate * ( Hz * sample / (k * sample) ) );
+                   min_freq = 10.13085690 Hz
+
+
+En 96kHz, on peut choisir un nombre de samples différent pour conserver un réponse en fréquence similaire :
+k_med := 3541*2;
+rate_med := 96000;
+u_med := (f^((p - 1)/(k_med)) mod p);
+evalf( k_med * ( sample / (rate_med * sample / s)) );
+evalf( rate_med * ( Hz * sample / (k_med * sample) ) );
+u_med^k_med mod p;
+add(u_med^(j), j = 0..k_med - 1) mod p;
+                         k_med := 7082
+                       rate_med := 96000
+                       u_med := 13662009
+                        0.07377083333 s
+                         13.55549280 Hz
+                               1
+                               0
+
+En 192kHz, le choix suivant pourrait être envisagé :
+k_high := 3541*23;
+rate_high := 192000;
+u_high := (f^((p - 1)/(k_high)) mod p);
+evalf( k_high * ( sample / (rate_high * sample / s)) );
+evalf( rate_high * ( Hz * sample / (k_high * sample) ) );
+u_high^k_high mod p;
+#add(u_high^(j)  mod p, j = 0..k_high - 1) mod p;#not sure it is principal (direct calculation too long)...
+                        k_high := 81443
+                      rate_high := 192000
+                       u_high := 10103844
+                         0.4241822917 s
+                         2.357477008 Hz
+                               1
+mais je n'ai pas vérifié que cette racine est principale donc c'est à valider.
+
+
+En 44.1kHz, on pourrait se limiter à :
+k_low := 3541;
+rate_low := 44100;
+u_low := (f^((p - 1)/(k_low)) mod p);
+evalf( k_low * ( sample / (rate_low * sample / s)) );
+evalf( rate_low * ( Hz * sample / (k_low * sample) ) );
+u_low^k_low mod p;
+add(u_low^(j), j = 0..k_low - 1) mod p;
+                         k_low := 3541
+                       rate_low := 44100
+                       u_low := 10648468
+                        0.08029478458 s
+                         12.45410901 Hz
+                               1
+                               0
+
+or plus k contient de facteurs, plus le calcul peut être optimisé.
+
+
+Nous avons donc les nombres suivants :
+    -   b = 24; // 24-bits
+    -   p = 16777259 = 2^24 + 43; // le plus petit nombre premier plus grand que 2^24
+    -   f = 11008; // est une racine p-ième de l'unité, telle que f^(p - 1) = 1 mod p
+    -   k = 4738 = ( 2 * 23 * 103 ); // une combinaison des facteurs de ( 2 * 23 * 103 * 3541 ) = (p - 1)
+    -   minus_k_inv = 3541; //  = ( -1 / k ) mod p = (p - 1) / k
+    -   u = f^(-1 / k); // une racine (2*k)-ième de l'unité
+    -   r = la fréquence d'échantillonage (e.g., 48kHz)
+
+Alors, supposons qu'on ait en entrée une séquence de nombres
+    X = [x_0, x_1, ..., x_(k - 1)]
+auquel on fait correspondre le polynôme
+    X[s] = sum{x_j * s^j, j = 0 .. k - 1} mod p
+et on s'intéresse aux évaluations 
+    FX = [X[u^0], X[u^1], ..., X[u^(k-1)]]
+
+
+L'idée ici est de considérer u comme
+    u ~ exp[(pi / k) sqrt(-1)]; avec u^(2*k) = 1
+et alors on a
+    u^j ~ exp[pi (j / k) sqrt(-1)];
+on a aussi les conjugués :
+    u* = u^(-1) ~ exp[-(pi / k) sqrt(-1)]
+et
+    (u*)^j ~ exp[-pi (j / k) sqrt(-1)];
+
+Puisque k est le nombre de samples, alors on peut écrire :
+    u^j ~ exp[ pi(j/k) r t ]
+La fréquence angulaire fondamentale est omega = pi r/(2k) et on défini f_0 = omega / Pi.
+Par exemple f_0 =  r / 2k ~ 5Hz et on a ensuite les harmoniques,
+r (j/2k) ~ 5 (j) Hz [la fréquence la plus proche de 440Hz est r (87/2k) ~ 440.7Hz].
+La fréquence la plus aigûe est r/2 = 24kHz. Les fréquences de résonances intrinsèques sont
+les diviseurs de k, soit f_2 ~ 10Hz, f_23 ~ 116Hz et f_103 ~ 522Hz.
+

@@ -86,6 +86,9 @@ struct vulkan_traits;
 //constexpr size_t vkExtSwapchain_id = const_hash<uint32_t>(CSTR(VK_KHR_Swapchain));
 #endif // #if defined( SB_VULKAN_TRAITS )
 
+
+
+#pragma comment(lib, "vulkan-1.lib")
 namespace SB { namespace LibX { namespace vulkan
 {
 
@@ -298,7 +301,7 @@ std::vector<queue_families::properties_t> enumerate<queue_families::properties_t
 	return enumerate<queue_families::properties_t>(~0u, adapter);
 }
 
-InstanceHandle CreateInstance( [[maybe_unused]] const SB::Configuration* config )
+InstanceHandle CreateInstance( [[maybe_unused]] const Configuration* config )
 {
 	const VkApplicationInfo app = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -348,7 +351,7 @@ InstanceHandle CreateInstance( [[maybe_unused]] const SB::Configuration* config 
 	return err == VK_SUCCESS ? instance : nullptr;
 }
 
-bool DestroyInstance(InstanceHandle instance, [[maybe_unused]] const SB::Configuration* config)
+bool DestroyInstance(InstanceHandle instance, [[maybe_unused]] const Configuration* config)
 {
 	if (instance)
 	{
@@ -357,29 +360,28 @@ bool DestroyInstance(InstanceHandle instance, [[maybe_unused]] const SB::Configu
 	return true;
 }
 
-adapter_array_t GetDeviceAdapters( InstanceHandle instance )
+adapter_array_t EnumerateAdapters([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] size_t maxCount)
 {
 	return enumerate<physical_device::device_t>(instance);
 }
 
 DeviceInfo GetDeviceInfo( AdapterHandle adapter )
 {
-	VkPhysicalDeviceProperties device_properties;
-	vkGetPhysicalDeviceProperties(adapter, &device_properties);
+	VkPhysicalDeviceProperties adapter_properties;
+	vkGetPhysicalDeviceProperties(adapter, &adapter_properties);
 	DeviceInfo device_info = {
-		.description = "",
-		.vendorID = device_properties.vendorID,
-		.deviceID = device_properties.deviceID,
-		.apiID = device_properties.apiVersion,
-		.driverVersion = device_properties.driverVersion,
-		.deviceType = static_cast<uint32_t>(device_properties.deviceType),
-		.uid = "",
+		.description = {},
+		.vendorID = adapter_properties.vendorID,
+		.deviceID = adapter_properties.deviceID,
+		.apiID = adapter_properties.apiVersion,
+		.driverVersion = adapter_properties.driverVersion,
+		.uid = {}
 	};
-	static_assert( sizeof(device_info.description) == sizeof(device_properties.deviceName) );
-	memcpy( const_cast<char*>(device_info.description), device_properties.deviceName, sizeof(device_properties.deviceName) );
+	static_assert(sizeof(device_info.uid) >= sizeof(adapter_properties.pipelineCacheUUID));
+	memcpy(device_info.uid, adapter_properties.pipelineCacheUUID, sizeof(adapter_properties.pipelineCacheUUID));
+	static_assert( sizeof(device_info.description) >= sizeof(adapter_properties.deviceName) );
+	memcpy(device_info.description, adapter_properties.deviceName, sizeof(adapter_properties.deviceName) );
 
-	static_assert( sizeof(device_info.uid) == sizeof(device_properties.pipelineCacheUUID) );
-	memcpy( const_cast<char*>(device_info.uid), device_properties.pipelineCacheUUID, sizeof(device_properties.pipelineCacheUUID) );
 	return device_info;
 }
 
@@ -521,9 +523,9 @@ int TestVulkan()
 	std::clog << "/////////////////////////////////////////////" << std::endl;
 	std::clog << "Enumerating devices w/extensions" << std::endl;
 	std::clog << "/////////////////////////////////////////////" << std::endl;
-	auto vulkan_adapters = vulkan::GetDeviceAdapters(instance);
+	auto vulkan_adapters = vulkan::EnumerateAdapters(instance);
 
-	std::vector<vulkan_device> vulkan_devices;
+	std::vector<std::tuple<vulkan_device, vulkan::DeviceInfo>> vulkan_devices;
 	vulkan_devices.reserve(vulkan_adapters.size());
 	for (const auto& adapter : vulkan_adapters)
 	{
@@ -534,7 +536,7 @@ int TestVulkan()
 		{
 			std::clog << "\t" << extension_properties.extensionName << std::endl;
 		}
-		vulkan_devices.emplace_back(vulkan_device(adapter));
+		vulkan_devices.emplace_back(std::make_tuple(vulkan_device(adapter), device_info));
 	}
 
 	[[maybe_unused]]

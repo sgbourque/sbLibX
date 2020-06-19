@@ -291,8 +291,8 @@ SB_EXPORT_TYPE int __stdcall test_hash([[maybe_unused]] int argc, [[maybe_unused
 	//std::cout.flush();
 
 	//compile_stress_t test;
-	struct_buf test = {};
-	//auto& test = custom;
+	//struct_buf test = {};
+	auto& test = custom;
 	std::cout << "\ndynamic data information for " << test.struct_hash << "\n";
 	for (auto data_info : test)
 	{

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="clang-release-exec|x64">
@@ -39,6 +39,7 @@
     <ClInclude Include="include\test_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
     <ClCompile Include="src\test_main.cpp">
@@ -50,6 +51,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\test_wavelet.cpp" />
     <ClCompile Include="src\test_win32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
@@ -153,7 +155,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -162,7 +164,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -173,7 +175,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -184,7 +186,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -195,7 +197,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -206,7 +208,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -217,7 +219,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(IncludePath);$(SolutionDir)code;$(VCClangInstallDir)include;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -228,7 +230,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(IncludePath);$(SolutionDir)code;$(VCClangInstallDir)include;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <ClCompile>
@@ -256,7 +258,7 @@
       <ShowProgress>LinkVerboseCLR</ShowProgress>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
       <ProfileGuidedDatabase />
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
@@ -292,7 +294,7 @@
       <ShowProgress>LinkVerboseCLR</ShowProgress>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
       <ProfileGuidedDatabase>
       </ProfileGuidedDatabase>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -337,7 +339,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary />
     </Link>
   </ItemDefinitionGroup>
@@ -375,7 +377,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>
       </ImportLibrary>
     </Link>
@@ -413,7 +415,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
@@ -450,7 +452,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
@@ -488,7 +490,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
@@ -526,7 +528,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalDependencies>$(VULKAN_SDK)\Source\lib\vulkan-1.lib;msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>

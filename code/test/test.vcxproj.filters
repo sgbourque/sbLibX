@@ -29,6 +29,12 @@
     <ClCompile Include="src\test_riemann.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\test_processing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_wavelet.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\test_precompile.h">

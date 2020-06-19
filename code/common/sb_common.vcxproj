@@ -187,12 +187,16 @@
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp" />
     <ClCompile Include="src\sb_interface.cpp" />
+    <ClCompile Include="src\sb_interface_asio.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\device_generic_internal.h" />
+    <ClInclude Include="include\internal\interface_asio_error.hpp" />
     <ClInclude Include="include\sb_common.h" />
     <ClInclude Include="include\sb_hash.h" />
     <ClInclude Include="include\sb_interface.h" />
     <ClInclude Include="include\sbLibX_precompile.h" />
+    <ClInclude Include="include\sb_interface_asio.h" />
     <ClInclude Include="include\sb_range.h" />
     <ClInclude Include="include\sb_structured_buffer.h" />
     <ClInclude Include="include\sb_type_hash.h" />
