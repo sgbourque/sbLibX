@@ -10,7 +10,7 @@ struct IUnknown
 {
 	using HRESULT = long;
 	using ULONG = unsigned long;
-	union GUID { struct CLSID { uint32_t data1; uint16_t data2; uint16_t data3; uint8_t data4[8]; }; struct UID { uint64_t dataHi; uint64_t dataLow; }; uint8_t data[16]; };
+	union GUID { struct CLSID { uint32_t data1; uint16_t data2; uint16_t data3; uint8_t data4[8]; } clsid; struct UID { uint64_t dataHi; uint64_t dataLow; } uid; uint8_t data[16]; };
 	virtual HRESULT __stdcall QueryInterface(GUID riid, void** ppvObject) = 0;
 	virtual ULONG __stdcall AddRef() = 0;
 	virtual ULONG __stdcall Release() = 0;

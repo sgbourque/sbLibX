@@ -12,26 +12,31 @@
 
 namespace SB { namespace LibX { namespace ASIO {
 
-struct CLSID
+using HRESULT = IUnknown::HRESULT;
+using ULONG = IUnknown::ULONG;
+using GUID = IUnknown::GUID;
+
+using CLSID = ::CLSID;
+
+static inline bool operator ==(const GUID& idA, const GUID& idB)
 {
-	union
-	{
-		uint8_t  data8[8];
-		uint64_t data64[2];
-	};
-};
-static inline bool operator ==(const CLSID& clsidA, const CLSID& clsidB)
-{
-	return memcmp(&clsidA, &clsidB, sizeof(clsidA)) == 0;
+	return memcmp(&idA, &idB, sizeof(GUID)) == 0;
 }
-struct CLSIDHaser
+static inline bool operator ==(const CLSID& idA, const CLSID& idB)
 {
-	inline size_t operator ()(const CLSID& clsid) const
+	return memcmp(&idA, &idB, sizeof(CLSID)) == 0;
+}
+struct GUIDHasher
+{
+	inline size_t operator ()(const GUID& id) const
 	{
-		return clsid.data64[0];
+		return id.uid.dataHi;
+	}
+	inline size_t operator ()(const CLSID& id) const
+	{
+		return *reinterpret_cast<const size_t*>(id.Data4);
 	}
 };
-
 
 template<typename base_t, typename derived_t>
 HRESULT QueryInterface(base_t* base, derived_t** derived)
@@ -125,7 +130,7 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 	}
 
 public:
-	static inline GUID clsid = {0x02,0x9A,0xBF,0x3D, 0x8B,0x08, 0x4A,0x4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44,};
+	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
 
 	static constexpr size_t kDescSize = 256;
 	static constexpr size_t kIIDSize = 16;
@@ -163,14 +168,14 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 	}
 
 public:
-	static inline GUID clsid = { 0x02,0x9A,0xBF,0x3D, 0x8B,0x08, 0x4A,0x4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
+	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
 
 	friend InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
 	friend bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);
 	static InstanceImpl1 sInstance;
 
 public:
-	std::unordered_map<CLSID, AdapterImpl1, CLSIDHaser> asioAdapters;
+	std::unordered_map<CLSID, AdapterImpl1, GUIDHasher> asioAdapters;
 };
 InstanceImpl1 InstanceImpl1::sInstance{};
 
@@ -233,7 +238,7 @@ adapter_array_t EnumerateAdapters(InstanceHandle instance, size_t maxCount)
 static std::wstring GetAsioDllPath( CLSID deviceId )
 {
 	wchar_t idName[64] = {};
-	StringFromGUID2((REFGUID)deviceId.data8, idName, sizeof(idName));
+	StringFromGUID2( deviceId, idName, sizeof(idName) );
 
 	static constexpr wchar_t COM_CLSID[] = L"clsid";
 	static constexpr wchar_t INPROC_SERVER[] = L"InprocServer32";
@@ -268,7 +273,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 	//DeviceHandle handle{};
 	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
 	{
-		GUID clsid = *reinterpret_cast<GUID*>(ptr->deviceInfo.uid);
+		const CLSID& clsid = *reinterpret_cast<CLSID*>(ptr->deviceInfo.uid);
 		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf() );
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
