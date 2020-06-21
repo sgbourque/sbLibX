@@ -18,8 +18,10 @@ struct Instance : IUnknown
 {
 };
 // This is where device driver binding is setup
+struct DeviceInfo;
 struct Adapter : IUnknown
 {
+	virtual void GetDeviceInfo( DeviceInfo* ) const = 0;
 };
 
 struct DeviceInfo

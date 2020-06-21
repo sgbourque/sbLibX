@@ -129,6 +129,14 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 		memcpy( driverPath, path.data(), path.size() * sizeof(*path.data()) );
 	}
 
+	virtual void GetDeviceInfo( DeviceInfo* info ) const override
+	{
+		if( info )
+		{
+			memcpy( info, &deviceInfo, sizeof(deviceInfo) );
+		}
+	}
+
 public:
 	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
 
@@ -277,12 +285,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf() );
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
-			std::cout << "ASIO drivers '" << ptr->deviceInfo.description << "' not available" << std::endl;
 			handle = nullptr;
-		}
-		else
-		{
-			std::cout << "ASIO drivers '" << ptr->deviceInfo.description << "' loaded" << std::endl;
 		}
 	}
 	return handle;
@@ -307,22 +310,36 @@ bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* co
 SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	auto asioInstance = sbLibX::asio_instance{};
-	auto deviceInfoArray = EnumerateAdapters(asioInstance);
+	auto adapterArray = EnumerateAdapters(asioInstance);
 	std::vector<sbLibX::asio_device> deviceArray;
-	deviceArray.reserve(deviceInfoArray.size());
-	for ( auto adapter : deviceInfoArray )
+	deviceArray.reserve(adapterArray.size());
+	for ( auto adapter : adapterArray )
 	{
+		sbLibX::ASIO::DeviceInfo deviceInfo;
+		adapter->GetDeviceInfo( &deviceInfo );
+
 		sbLibX::asio_device device(adapter);
 		if( device )
 		{
 			// starts processing, this is the last steps for validating 
-			if( !succeeded( device->start() ) )
-				device.Release();
+			auto result = device->start();
+			if( !succeeded( result ) )
+			{
+				device.Detach();
+				std::cout << "ASIO driver '" << deviceInfo.description << "': " << sbLibX::ASIO::to_cstring(result) << std::endl;
+			}
+			else
+			{
+				std::cout << "ASIO driver '" << deviceInfo.description << "': Available." << std::endl;
+			}
 
 			// Please do not call controlPanel unless current process is managing its message queue.
 		}
+		else
+		{
+			std::cout << "ASIO driver '" << deviceInfo.description << "': " << sbLibX::ASIO::to_cstring(sbLibX::ASIO::ErrorType::NotPresent) << std::endl;
+		}
 		deviceArray.emplace_back( std::move(device) );
 	}
-	std::cin.get();
 	return 0;
 }

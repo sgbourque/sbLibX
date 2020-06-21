@@ -30,30 +30,37 @@ bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);
 
 struct instance
 {
-	instance(const Configuration* config = nullptr) { handle = CreateInstance(config); }
-	instance(instance&& other) { handle = other.handle; other.handle = InstanceHandle{}; }
-	~instance() { DestroyInstance( std::move(handle) ); }
+	explicit instance(const Configuration* config = nullptr) { handle = CreateInstance(config); }
+	explicit instance(instance&& other) { handle = other.handle; other.Detach(); }
+	explicit instance(const instance& other) = delete;
+	~instance() { if( handle ) DestroyInstance( std::move(handle) ); }
+
+	void Detach() { handle = InstanceHandle{}; }
+
+	InstanceHandle& operator ->() { return handle; }
+	const InstanceHandle& operator ->() const { return handle; }
 
 	operator InstanceHandle() const { return handle; }
+	operator bool() const { return handle; }
 public:
-	// TODO : should validate that it is ref counted
 	InstanceHandle handle;
 };
 
 struct device
 {
-	explicit device(AdapterHandle adapter = {}, const Configuration* config = nullptr) { handle = CreateDevice(adapter, config); }
-	explicit device(device&& other) { handle = other.handle; other.handle = DeviceHandle{}; }
-	~device() { DestroyDevice(handle); }
+	explicit device(AdapterHandle adapter = {}, const Configuration* config = nullptr) { if( adapter ) handle = CreateDevice(adapter, config); }
+	explicit device(device&& other) { handle = other.handle; other.Detach(); }
+	explicit device(const device& other) = delete;
 
-	void Release() { handle = DeviceHandle{}; }
+	~device() { if( handle ) DestroyDevice(handle); }
 
-	DeviceHandle operator ->() { return handle; }
-	DeviceHandle operator ->() const { return handle; }
+	void Detach() { handle = DeviceHandle{}; }
+
+	DeviceHandle& operator ->() { return handle; }
+	const DeviceHandle& operator ->() const { return handle; }
 
 	operator DeviceHandle() const { return handle; }
 	operator bool() const { return handle; }
 public:
-	// TODO : should validate that it is ref counted
 	DeviceHandle handle;
 };
