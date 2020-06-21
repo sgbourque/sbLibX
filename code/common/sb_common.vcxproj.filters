@@ -42,10 +42,16 @@
     <ClInclude Include="include\sb_interface_asio.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\device_generic_internal.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\internal\interface_asio_error.hpp">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\interface_asio_base.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\ref_ptr.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\device_generic.h">
       <Filter>include\internal</Filter>
     </ClInclude>
   </ItemGroup>

@@ -190,8 +190,10 @@
     <ClCompile Include="src\sb_interface_asio.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\device_generic_internal.h" />
+    <ClInclude Include="include\internal\device_generic.h" />
+    <ClInclude Include="include\internal\interface_asio_base.h" />
     <ClInclude Include="include\internal\interface_asio_error.hpp" />
+    <ClInclude Include="include\internal\ref_ptr.h" />
     <ClInclude Include="include\sb_common.h" />
     <ClInclude Include="include\sb_hash.h" />
     <ClInclude Include="include\sb_interface.h" />

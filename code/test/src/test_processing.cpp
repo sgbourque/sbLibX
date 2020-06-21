@@ -29,7 +29,7 @@ using AdapterHandle = com_ptr<IDXGIAdapter>; // IDXGIAdapter4
 using DeviceHandle = com_ptr<ID3D12Device>; // ID3D12Device6
 
 #define SBLIB_DECLARE_DEVICE_INTERNAL
-#include <common/include/device_generic_internal.h>
+#include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 }
 using dx12_instance = dx12::instance;

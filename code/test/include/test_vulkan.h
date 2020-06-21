@@ -22,7 +22,7 @@ using AdapterHandle = VkPhysicalDevice;
 using DeviceHandle = VkDevice;
 
 #define SBLIB_DECLARE_DEVICE_INTERNAL
-#include <common/include/device_generic_internal.h>
+#include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 }
 using vulkan_instance = vulkan::instance;

@@ -1,5 +1,5 @@
 #ifndef SBLIB_DECLARE_DEVICE_INTERNAL
-#error "Test file should be included from elsewhere..."
+#error "If you see this, you probably messed up something..."
 #endif
 
 InstanceHandle CreateInstance( const Configuration* config = nullptr );
@@ -32,7 +32,7 @@ struct instance
 {
 	instance(const Configuration* config = nullptr) { handle = CreateInstance(config); }
 	instance(instance&& other) { handle = other.handle; other.handle = InstanceHandle{}; }
-	~instance() { DestroyInstance(handle); }
+	~instance() { DestroyInstance( std::move(handle) ); }
 
 	operator InstanceHandle() const { return handle; }
 public:

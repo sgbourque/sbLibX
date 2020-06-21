@@ -6,22 +6,243 @@
 
 #include "Windows.h"
 
+#include <cassert>
+
 #pragma comment( lib, "Ole32.lib" )
 
 namespace SB { namespace LibX { namespace ASIO {
 
-static constexpr wchar_t ASIO_PATH[] = L"software\\asio";
-static constexpr wchar_t INPROC_SERVER[] = L"InprocServer32";
-static constexpr wchar_t ASIODRV_DESC[] = L"description";
-
-
-static std::wstring GetAsioDllPath(const wchar_t deviceCLSID[])
+struct CLSID
 {
+	union
+	{
+		uint8_t  data8[8];
+		uint64_t data64[2];
+	};
+};
+static inline bool operator ==(const CLSID& clsidA, const CLSID& clsidB)
+{
+	return memcmp(&clsidA, &clsidB, sizeof(clsidA)) == 0;
+}
+struct CLSIDHaser
+{
+	inline size_t operator ()(const CLSID& clsid) const
+	{
+		return clsid.data64[0];
+	}
+};
+
+
+template<typename base_t, typename derived_t>
+HRESULT QueryInterface(base_t* base, derived_t** derived)
+{
+	return base->QueryInterface(derived_t::clsid, (void**)derived);
+}
+
+template<typename _base_t_>
+struct RefCountedImpl : _base_t_
+{
+	virtual ULONG __stdcall AddRef() override = 0;
+	virtual ULONG __stdcall Release() override = 0;
+
+protected:
+	mutable volatile long ref_count = 0;
+};
+
+	template<typename _type_t_, typename _base_t_>
+struct RefClassImpl : RefCountedImpl<_base_t_>
+{
+	virtual HRESULT __stdcall QueryInterface(GUID riid, void** ppvObject) override
+	{
+		if( !ppvObject )
+			return E_INVALIDARG;
+
+		static_assert(sizeof(_type_t_::clsid) == 16);
+		if ( memcmp(riid.data, &_type_t_::clsid, sizeof(_type_t_::clsid)) == 0 )
+			*ppvObject = static_cast<_type_t_*>( this );
+		return *ppvObject ? S_OK : E_NOINTERFACE;
+	}
+
+	virtual ULONG __stdcall AddRef() override
+	{
+		ULONG refCount;
+		do 
+		{
+			refCount = _InterlockedExchange(&ref_count, -1);
+			if (refCount == 0)
+			{
+				static_cast<_type_t_*>(this)->init();
+			}
+		} while ( refCount < 0 );
+		_InterlockedExchange(&ref_count, refCount + 1);
+		return refCount + 1;
+	}
+	virtual ULONG __stdcall Release() override
+	{
+		ULONG refCount;
+		do
+		{
+			refCount = _InterlockedExchange(&ref_count, -1);
+			if (refCount == 1)
+			{
+				static_cast<_type_t_*>(this)->shutdown();
+			}
+		}
+		while (refCount < 0);
+		_InterlockedExchange(&ref_count, refCount - 1);
+		return refCount - 1;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
+static std::wstring GetAsioDllPath( CLSID deviceId );
+struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
+{
+	virtual HRESULT __stdcall QueryInterface(GUID riid, void** ppvObject) override
+	{
+		HRESULT result = RefClassImpl::QueryInterface(riid, ppvObject);
+		if (result < 0)
+		{
+			// pass to children
+		}
+		return result;
+	}
+
+	bool init()
+	{
+		return true;
+	}
+	void shutdown()
+	{
+	}
+
+	AdapterImpl1( CLSID deviceId, std::wstring_view desc )
+	{
+		memcpy( deviceInfo.uid, &deviceId, sizeof(DeviceInfo::uid) );
+		WideCharToMultiByte( CP_UTF8, 0, desc.data(), (int)desc.size(), deviceInfo.description, sizeof(deviceInfo.description), nullptr, nullptr );
+		auto path = GetAsioDllPath( deviceId );
+		memcpy( driverPath, path.data(), path.size() * sizeof(*path.data()) );
+	}
+
+public:
+	static inline GUID clsid = {0x02,0x9A,0xBF,0x3D, 0x8B,0x08, 0x4A,0x4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44,};
+
+	static constexpr size_t kDescSize = 256;
+	static constexpr size_t kIIDSize = 16;
+	DeviceInfo deviceInfo{};
+	wchar_t  driverPath[MAX_PATH]{};
+};
+
+struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
+{
+	virtual HRESULT __stdcall QueryInterface( GUID riid, void** ppvObject ) override
+	{
+		HRESULT result = RefClassImpl::QueryInterface(riid, ppvObject);
+		if( result < 0 )
+		{
+			// pass to children
+		}
+		return result;
+	}
+
+	bool init()
+	{
+		// initialize COM : ASIO requires appartment model
+		auto result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+		return SUCCEEDED( result );
+	}
+	void shutdown()
+	{
+		CoUninitialize();
+	}
+
+	AdapterHandle AllocateAdapter( CLSID deviceId, std::wstring_view keyname )
+	{
+		auto it = asioAdapters.emplace( std::make_pair( deviceId, AdapterImpl1{ deviceId, keyname } ) );
+		return &it.first->second;
+	}
+
+public:
+	static inline GUID clsid = { 0x02,0x9A,0xBF,0x3D, 0x8B,0x08, 0x4A,0x4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
+
+	friend InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
+	friend bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);
+	static InstanceImpl1 sInstance;
+
+public:
+	std::unordered_map<CLSID, AdapterImpl1, CLSIDHaser> asioAdapters;
+};
+InstanceImpl1 InstanceImpl1::sInstance{};
+
+//////////////////////////////////////////////////////////////////////////
+InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config)
+{
+	return &InstanceImpl1::sInstance;
+}
+bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config)
+{
+	instance = nullptr;
+	return ( InstanceImpl1::sInstance.ref_count == 0 );
+}
+
+
+auto FindDeviceCLSID( HKEY hkey, std::wstring_view keyName )
+{
+	static constexpr wchar_t COM_CLSID[] = L"clsid";
+	CLSID deviceId{};
+	using SBWindows::RegistryKey;
+	if (auto clsidKey = RegistryKey(hkey, RegistryKey::Query, keyName.data()))
+	{
+		auto deviceCLSID = clsidKey.getValue<std::wstring>(COM_CLSID);
+		if (!deviceCLSID.empty())
+		{
+			CLSIDFromString(deviceCLSID.c_str(), reinterpret_cast<LPCLSID>(&deviceId));
+		}
+	}
+	return deviceId;
+}
+
+
+using adapter_array_t = std::vector<AdapterHandle>;
+adapter_array_t EnumerateAdapters(InstanceHandle instance, size_t maxCount)
+{
+	static constexpr wchar_t ASIO_PATH[] = L"software\\asio";
+	using instance_t = InstanceImpl1;
+	using SBWindows::RegistryKey;
+	adapter_array_t result{};
+	if (instance_t* ptr; QueryInterface(instance.Get(), &ptr) == S_OK)
+	{
+		if (maxCount < ~0u)
+			result.reserve(maxCount);
+		if (auto asioDeviceKey = RegistryKey(HKEY_LOCAL_MACHINE, RegistryKey::Query | RegistryKey::Enumerate, ASIO_PATH))
+		{
+			for (std::wstring keyName : asioDeviceKey)
+			{
+				if (!keyName.empty())
+				{
+					CLSID deviceId = FindDeviceCLSID( asioDeviceKey, keyName );
+					result.emplace_back( ptr->AllocateAdapter( deviceId, keyName ) );
+				}
+			}
+		}
+	}
+	return result;
+}
+
+
+static std::wstring GetAsioDllPath( CLSID deviceId )
+{
+	wchar_t idName[64] = {};
+	StringFromGUID2((REFGUID)deviceId.data8, idName, sizeof(idName));
+
+	static constexpr wchar_t COM_CLSID[] = L"clsid";
+	static constexpr wchar_t INPROC_SERVER[] = L"InprocServer32";
+	static constexpr wchar_t ASIODRV_DESC[] = L"description";
 	using SBRegistryKey = SBWindows::RegistryKey;
 	std::wstring path;
-	if (auto clsidKey = SBRegistryKey(HKEY_CLASSES_ROOT, SBRegistryKey::Read | SBRegistryKey::Query, SBWindows::COM_CLSID))
+	if (auto clsidKey = SBRegistryKey(HKEY_CLASSES_ROOT, SBRegistryKey::Read | SBRegistryKey::Query, COM_CLSID))
 	{
-		if (auto subKey = SBRegistryKey(clsidKey, SBRegistryKey::Read, deviceCLSID))
+		if (auto subKey = SBRegistryKey(clsidKey, SBRegistryKey::Read, idName))
 		{
 			if (auto pathKey = SBRegistryKey(subKey, SBRegistryKey::Query, INPROC_SERVER))
 			{
@@ -41,351 +262,42 @@ static std::wstring GetAsioDllPath(const wchar_t deviceCLSID[])
 	return path;
 }
 
-class Adapter_impl : public Adapter
+DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)
 {
-public:
-	virtual HRESULT __stdcall QueryInterface(char riid[16], void** ppvObject);
-	virtual ULONG __stdcall AddRef();
-	virtual ULONG __stdcall Release();
-
-	Adapter_impl( SBWindows::RegistryKey asioDeviceKey, const wchar_t* keyName )
+	DeviceHandle handle;
+	//DeviceHandle handle{};
+	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
 	{
-		AddRef();
-		GatherDeviceInfo( asioDeviceKey, keyName );
-	}
-	~Adapter_impl()
-	{
-		Release();
-	}
-
-	DeviceInfo* GetDeviceInfo() { return &deviceInfo; }
-	const DeviceInfo* GetDeviceInfo() const { return &deviceInfo; }
-	static inline char clsid[16] = { 'S','B',':',':','A','S','I','O',':',':','A','d','a','p','t', };
-
-private:
-	bool GatherDeviceInfo( HKEY hkey, const wchar_t* keyname )
-	{
-		using SBWindows::RegistryKey;
-		if (auto clsidKey = RegistryKey(hkey, RegistryKey::Query, keyname))
+		GUID clsid = *reinterpret_cast<GUID*>(ptr->deviceInfo.uid);
+		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf() );
+		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
-			auto deviceCLSID = clsidKey.getValue<std::wstring>(SBWindows::COM_CLSID);
-			if (!deviceCLSID.empty())
-			{
-				static_assert( sizeof(CLSID) == sizeof(deviceInfo.uid) );
-				CLSIDFromString(deviceCLSID.c_str(), reinterpret_cast<CLSID*>(&deviceInfo.uid));
-				//device.path = GetAsioDllPath(deviceCLSID.c_str());
-				//if (device)
-				//{
-				//	auto desc = clsidKey.getValue(ASIODRV_DESC);
-				//	if (!desc.empty())
-				//	{
-				//		deviceInfo.name = desc;
-				//	}
-				//	else
-				//	{
-				//		//_wcstrcpy( deviceInfo.description, keyname, std::min(  ) );
-				//	}
-				//}
-			}
+			std::cout << "ASIO drivers '" << ptr->deviceInfo.description << "' not available" << std::endl;
+			handle = nullptr;
+		}
+		else
+		{
+			std::cout << "ASIO drivers '" << ptr->deviceInfo.description << "' loaded" << std::endl;
 		}
 	}
-
-private:
-	mutable volatile long refCount;
-	DeviceInfo deviceInfo;
-	wchar_t driverPath[MAX_PATH];
-};
-HRESULT __stdcall Adapter_impl::QueryInterface([[maybe_unused]] char riid[16], void** ppvObject)
-{
-	if (ppvObject)
-	{
-		static_assert(sizeof(clsid) == 16);
-		*ppvObject = memcmp(riid, clsid, sizeof(clsid)) == 0 ? this : nullptr;
-	}
-	return ppvObject && *ppvObject ? S_OK : E_NOINTERFACE;
+	return handle;
 }
-ULONG __stdcall Adapter_impl::AddRef()
+bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* config)
 {
-	auto resultRef = _InterlockedIncrement(&refCount);
-	if (resultRef == 1)
-	{
-
-	}
-	return resultRef;
-}
-ULONG __stdcall Adapter_impl::Release()
-{
-	auto resultRef = _InterlockedDecrement(&refCount);
-	if (resultRef == 0)
-	{
-	}
-	return resultRef;
-}
-
-DeviceInfo GetDeviceInfo(AdapterHandle adapter)
-{
-	Adapter_impl* ptr = nullptr;
-	if( adapter.Get() && adapter->QueryInterface(Adapter_impl::clsid, (void**)&ptr) )
-	{
-	}
-	return ptr ? *ptr->GetDeviceInfo() : DeviceInfo{};
+	auto refCount = device.Release();
+	return refCount == 0;
 }
 
 
-
-class Instance_impl : public Instance
-{
-public:
-	virtual HRESULT __stdcall QueryInterface(char riid[16], void** ppvObject);
-	virtual ULONG __stdcall AddRef();
-	virtual ULONG __stdcall Release();
-
-	//AdapterHandle adapter = ptr->CreateAdapter(asioDeviceKey, keyName.c_str());
-	AdapterHandle FindAdapter( HKEY hkey, const wchar_t* keyName )
-	{
-		using SBWindows::RegistryKey;
-		if (auto clsidKey = RegistryKey(hkey, RegistryKey::Query, keyName) )
-		{
-			auto deviceCLSID = clsidKey.getValue<std::wstring>(SBWindows::COM_CLSID);
-			if (!deviceCLSID.empty())
-			{
-				CLSID deviceId;
-				CLSIDFromString( deviceCLSID.c_str(), &deviceId );
-				__debugbreak();
-				//device.path = GetAsioDllPath(deviceCLSID.c_str());
-				//if (device)
-				//{
-				//	auto desc = clsidKey.getValue(ASIODRV_DESC);
-				//	if (!desc.empty())
-				//	{
-				//		deviceInfo.name = desc;
-				//	}
-				//	else
-				//	{
-				//		//_wcstrcpy( deviceInfo.description, keyname, std::min(  ) );
-				//	}
-				//}
-			}
-		}
-		return nullptr;
-	}
-
-	static inline char clsid[16] = { 'S','B',':',':','L','i','b','X',':',':','A','S','I','O',':',':', };
-private:
-	mutable volatile long refCount;
-
-	using CLSID = SBWindows::CLSID;
-	using CLSIDHaser = SBWindows::CLSIDHaser;
-	std::unordered_map<CLSID, ASIO::Adapter_impl, CLSIDHaser> asioDevices;
-};
-HRESULT __stdcall Instance_impl::QueryInterface( [[maybe_unused]] char riid[16], void** ppvObject )
-{
-	if( ppvObject )
-	{
-		static_assert( sizeof(clsid) == 16 );
-		*ppvObject = memcmp( riid, clsid, sizeof(clsid) ) == 0 ? this : nullptr;
-	}
-	return ppvObject && *ppvObject ? S_OK : E_NOINTERFACE;
-}
-ULONG __stdcall Instance_impl::AddRef()
-{
-	auto resultRef = _InterlockedIncrement( &refCount );
-	if( resultRef == 1 )
-	{
-		// initialize COM
-		// TODO: once threaded, try using concurrency mode (COINIT_MULTITHREADED | COINIT_SPEED_OVER_MEMORY)
-		CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-	}
-	return resultRef;
-}
-ULONG __stdcall Instance_impl::Release()
-{
-	auto resultRef = _InterlockedDecrement( &refCount );
-	if ( resultRef == 0 )
-	{
-		asioDevices.clear();
-		CoUninitialize();
-	}
-	return resultRef;
-}
-
-static Instance_impl s_comInstance;
-InstanceHandle CreateInstance( [[maybe_unused]] const Configuration* config )
-{
-	return InstanceHandle{ &s_comInstance };
-}
-bool DestroyInstance( [[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config )
-{
-	// nothing to do
-	return true;
-}
-
-
-using adapter_array_t = std::vector<AdapterHandle>;
-adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount )
-{
-	using SBWindows::RegistryKey;
-	adapter_array_t result{};
-	if ( Instance_impl* ptr; instance->QueryInterface(Instance_impl::clsid, (void**)&ptr) == S_OK )
-	{
-		if( maxCount < ~0u )
-			result.reserve(maxCount);
-		if (auto asioDeviceKey = RegistryKey(HKEY_LOCAL_MACHINE, RegistryKey::Query | RegistryKey::Enumerate, ASIO_PATH))
-		{
-			for (std::wstring keyName : asioDeviceKey)
-			{
-				if (!keyName.empty())
-				{
-					AdapterHandle adapter = ptr->FindAdapter( asioDeviceKey, keyName.c_str() );
-					auto deviceInfo = GetDeviceInfo( adapter );
-					//if (deviceInfo.deviceID)
-					//{
-					//	result.emplace_back(deviceInfo);
-					//}
-					//else
-					//{
-					//	std::wcerr << "Could not read ASIO device: " << keyName << std::endl;
-					//}
-				}
-			}
-		}
-	}
-	return result;
-}
-//std::vector<AsioDeviceInfo> EnumerateASIODevices()
-//{
-//	std::vector<AsioDeviceInfo> deviceList;
-//	deviceList.reserve(16);
-//	if (auto asioDeviceKey = SBRegistryKey(HKEY_LOCAL_MACHINE, SBRegistryKey::Query | SBRegistryKey::Enumerate, ASIO_PATH))
-//	{
-//		for (std::wstring keyName : asioDeviceKey)
-//		{
-//			if (!keyName.empty())
-//			{
-//				auto device = ReadASIODevice(asioDeviceKey, keyName.c_str());
-//				if (device)
-//				{
-//					deviceList.emplace_back(device);
-//				}
-//				else
-//				{
-//					std::wcerr << "Could not read ASIO device: " << keyName << std::endl;
-//				}
-//			}
-//		}
-//	}
-//	return deviceList;
-//}
 
 }}}
-
-
-//
-//
-//void ASIOInitialize()
-//{
-//	// initialize COM
-//	// TODO: once threaded, try using concurrency mode (COINIT_MULTITHREADED | COINIT_SPEED_OVER_MEMORY)
-//	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-//	_InterlockedIncrement( &s_coInitializeCount );
-//}
-//
-//void ASIOShutdown()
-//{
-//	assert( s_coInitializeCount > 0 );
-//	{
-//		for( auto& it : s_asioDevices )
-//		{
-//			if( it.second )
-//			{
-//				it.second->stop();
-//				it.second.Reset();
-//			}
-//		}
-//		s_asioDevices.clear();
-//	}
-//	_InterlockedDecrement( &s_coInitializeCount );
-//	CoUninitialize();
-//}
-//
-//AsioDriverResult CreateAsioDriver(const AsioDeviceInfo::CLSID& deviceId)
-//{
-//	if (s_coInitializeCount > 0)
-//	{
-//		auto it = s_asioDevices.find(deviceId);
-//		if (it != s_asioDevices.end())
-//		{
-//			return AsioDriverResult::AlreadyExists;
-//		}
-//		else
-//		{
-//			// TODO: Support CoCreateInstanceEx for remote audio rendering?
-//			CLSID clsid = *reinterpret_cast<const CLSID*>(&deviceId);
-//			SBAsioHandle handle;
-//			long result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, (void**)handle.ReleaseAndGetAddressOf() );
-//			if (S_OK == result)
-//			{
-//				s_asioDevices.insert({deviceId, handle});
-//				return AsioDriverResult::Success;
-//			}
-//			else
-//			{
-//				return AsioDriverResult::Error_Failed;
-//			}
-//		}
-//	}
-//	else
-//	{
-//		return AsioDriverResult::Error_Unitialized;
-//	}
-//}
-//
-//AsioDriverResult ReleaseAsioDriver(const AsioDeviceInfo::CLSID& deviceId)
-//{
-//	if (s_coInitializeCount > 0)
-//	{
-//		auto it = s_asioDevices.find(deviceId);
-//		if( it != s_asioDevices.end() )
-//		{
-//			const bool release = it->second.Reset() == 0;
-//			s_asioDevices.erase(it);
-//			return release ? AsioDriverResult::Success : AsioDriverResult::AlreadyExists;
-//		}
-//		else
-//		{
-//			return AsioDriverResult::Error_Failed;
-//		}
-//	}
-//	else
-//	{
-//		return AsioDriverResult::Error_Unitialized;
-//	}
-//}
-//
-//SBAsioHandle QueryInterface(const AsioDeviceInfo& device)
-//{
-//	SBAsioHandle handle = nullptr;
-//	auto it = s_asioDevices.find(device.classID);
-//	if (it == s_asioDevices.end())
-//	{
-//		CreateAsioDriver(device.classID);
-//		it = s_asioDevices.find(device.classID);
-//	}
-//
-//	if (it != s_asioDevices.end())
-//	{
-//		handle = it->second;
-//	}
-//	return handle;
-//}
-//
-//}}
 
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
-	using namespace SB::LibX::ASIO;
-	auto asioInstance = CreateInstance();
+	auto asioInstance = sbLibX::asio_instance{};
 	auto deviceInfoArray = EnumerateAdapters(asioInstance);
+	for ( auto adapter : deviceInfoArray )
+		sbLibX::asio_device device(adapter);
 	return 0;
 }

@@ -15,6 +15,20 @@ static constexpr wchar_t INPROC_SERVER[] = L"InprocServer32";
 static constexpr wchar_t ASIODRV_DESC[] = L"description";
 
 
+RegistryKey::RegistryKey(HKEY parentKey, AccessMask access, const char* keyname)
+{
+	if (ERROR_SUCCESS != RegOpenKeyExA(parentKey, keyname, 0, access, &hkey))
+	{
+		hkey = nullptr;
+	}
+}
+RegistryKey::RegistryKey(const RegistryKey& parentKey, AccessMask access, const char* keyname)
+{
+	if (ERROR_SUCCESS != RegOpenKeyExA(parentKey, keyname, 0, access, &hkey))
+	{
+		hkey = nullptr;
+	}
+}
 RegistryKey::RegistryKey(HKEY parentKey, AccessMask access, const wchar_t* keyname)
 {
 	if (ERROR_SUCCESS != RegOpenKeyExW(parentKey, keyname, 0, access, &hkey))

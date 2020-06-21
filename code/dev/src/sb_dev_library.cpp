@@ -11,6 +11,10 @@
 #include <string>
 //#pragma warning(default)
 
+// c.f.,
+// https://docs.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symenumeratesymbols
+// for how to enumerate symbols in non-retail env.
+
 #define SBLIB_SUPPORT_EXE	(false)
 
 static constexpr const char* const inverse_ordered_configuration_tokens[] = {

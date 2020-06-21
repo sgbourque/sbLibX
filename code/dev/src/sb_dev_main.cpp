@@ -95,6 +95,9 @@ function_exception_helper<fct_type> unsafe_entry([[maybe_unused]] fct_type _func
 }
 
 
+#include <future>
+#include <thread>
+
 //#pragma warning(disable:4711) // main can be inlined
 #pragma comment(linker, "/subsystem:windows")
 int WinMain(
@@ -287,7 +290,14 @@ int WinMain(
 				const char** local_argv = local_argc > 0 ? &argv[entryArgOffset] : nullptr;
 				try
 				{
-					return_code = unsafe_entry(local_main)(local_argc, local_argv);
+					// run on a separate thread (still sync'ed for now)
+					// Note : running on a separate thread is needed for any DLL that requires a particular thread appartment models (as ASIO).
+					std::packaged_task<int()> run_task(
+						[&local_main, local_argc, local_argv]() { return unsafe_entry(local_main)(local_argc, local_argv); }
+					);
+					std::future<int> result = run_task.get_future();
+					std::thread(std::move(run_task)).detach();
+					return_code = result.get();
 				}
 				catch (std::exception except)
 				{
