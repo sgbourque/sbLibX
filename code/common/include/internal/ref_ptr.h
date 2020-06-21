@@ -12,6 +12,8 @@ struct ref_ptr
 	type_t** GetAddressOf() { return &raw; }
 	type_t* const* GetAddressOf() const { return &raw; }
 
+	operator bool() const { return Get() != nullptr; }
+
 	auto Release() { auto refCount = raw ? raw->Release() : 0; raw = nullptr; return refCount; }
 	void** ReleaseAndGetAddressOf() { Release(); return reinterpret_cast<void**>( GetAddressOf() ); }
 
@@ -27,7 +29,8 @@ struct ref_ptr
 	ref_ptr& operator =(const ref_ptr& refPtr) { if (raw) raw->Release(); raw = refPtr.Get(); if (raw) raw->AddRef(); return *this; }
 
 	~ref_ptr() { if (raw) raw->Release(); raw = nullptr; }
-private:
+
+protected:
 	type_t* raw = nullptr;
 };
 }}

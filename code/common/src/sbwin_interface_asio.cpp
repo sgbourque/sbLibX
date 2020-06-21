@@ -289,20 +289,40 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 }
 bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* config)
 {
-	auto refCount = device.Release();
+	ULONG refCount = ~0u;
+	if( device )
+	{
+		// Make sure to stop the ASIO device before it is destroyed
+		// Any open (weak) device handle will still be valid (until refCount reach 0) but audio processing will have been stopped.
+		device->stop();
+		refCount = device.Release();
+	}
 	return refCount == 0;
 }
 
-
-
 }}}
+
 
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	auto asioInstance = sbLibX::asio_instance{};
 	auto deviceInfoArray = EnumerateAdapters(asioInstance);
+	std::vector<sbLibX::asio_device> deviceArray;
+	deviceArray.reserve(deviceInfoArray.size());
 	for ( auto adapter : deviceInfoArray )
+	{
 		sbLibX::asio_device device(adapter);
+		if( device )
+		{
+			// starts processing, this is the last steps for validating 
+			if( !succeeded( device->start() ) )
+				device.Release();
+
+			// Please do not call controlPanel unless current process is managing its message queue.
+		}
+		deviceArray.emplace_back( std::move(device) );
+	}
+	std::cin.get();
 	return 0;
 }

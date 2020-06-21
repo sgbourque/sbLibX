@@ -46,7 +46,13 @@ struct device
 	explicit device(device&& other) { handle = other.handle; other.handle = DeviceHandle{}; }
 	~device() { DestroyDevice(handle); }
 
+	void Release() { handle = DeviceHandle{}; }
+
+	DeviceHandle operator ->() { return handle; }
+	DeviceHandle operator ->() const { return handle; }
+
 	operator DeviceHandle() const { return handle; }
+	operator bool() const { return handle; }
 public:
 	// TODO : should validate that it is ref counted
 	DeviceHandle handle;

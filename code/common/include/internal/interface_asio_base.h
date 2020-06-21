@@ -86,7 +86,7 @@ enum class SampleType : long
 
 	// these are used for 32 bit data buffer, with different alignment of the data inside
 	// 32 bit PCI bus systems can more easily used with these
-	Int32_LSB16 = 24,		// 32 bit data with 18 bit alignment
+	Int32_LSB16 = 24,		// 32 bit data with 16 bit alignment
 	Int32_LSB18 = 25,		// 32 bit data with 18 bit alignment
 	Int32_LSB20 = 26,		// 32 bit data with 20 bit alignment
 	Int32_LSB24 = 27,		// 32 bit data with 24 bit alignment
