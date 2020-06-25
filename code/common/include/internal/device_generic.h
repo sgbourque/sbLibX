@@ -52,9 +52,10 @@ struct device
 	explicit device(device&& other) { handle = other.handle; other.Detach(); }
 	explicit device(const device& other) = delete;
 
-	~device() { if( handle ) DestroyDevice(handle); }
+	~device() { Release(); }
 
 	void Detach() { handle = DeviceHandle{}; }
+	void Release() { if( handle ) DestroyDevice( std::move(handle) ); }
 
 	DeviceHandle& operator ->() { return handle; }
 	const DeviceHandle& operator ->() const { return handle; }

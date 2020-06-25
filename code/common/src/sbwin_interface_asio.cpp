@@ -108,7 +108,9 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 		HRESULT result = RefClassImpl::QueryInterface(riid, ppvObject);
 		if (result < 0)
 		{
-			// pass to children
+			if ( memcmp(riid.data, &deviceInfo.uid, sizeof(riid)) == 0 )
+				*ppvObject = handle.Get();
+			
 		}
 		return result;
 	}
@@ -119,6 +121,7 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 	}
 	void shutdown()
 	{
+		handle = nullptr;
 	}
 
 	AdapterImpl1( CLSID deviceId, std::wstring_view desc )
@@ -144,6 +147,7 @@ public:
 	static constexpr size_t kIIDSize = 16;
 	DeviceInfo deviceInfo{};
 	wchar_t  driverPath[MAX_PATH]{};
+	DeviceHandle handle;
 };
 
 struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
@@ -154,6 +158,14 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 		if( result < 0 )
 		{
 			// pass to children
+			for( auto adapter : asioAdapters )
+			{
+				if (memcmp(riid.data, &adapter.second.deviceInfo.uid, sizeof(riid)) == 0)
+				{
+					*ppvObject = adapter.second.handle.Get();
+					break;
+				}
+			}
 		}
 		return result;
 	}
@@ -246,7 +258,7 @@ adapter_array_t EnumerateAdapters(InstanceHandle instance, size_t maxCount)
 static std::wstring GetAsioDllPath( CLSID deviceId )
 {
 	wchar_t idName[64] = {};
-	StringFromGUID2( deviceId, idName, sizeof(idName) );
+	StringFromGUID2( deviceId, idName, sizeof(idName)/sizeof(*idName) );
 
 	static constexpr wchar_t COM_CLSID[] = L"clsid";
 	static constexpr wchar_t INPROC_SERVER[] = L"InprocServer32";
@@ -277,8 +289,7 @@ static std::wstring GetAsioDllPath( CLSID deviceId )
 
 DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)
 {
-	DeviceHandle handle;
-	//DeviceHandle handle{};
+	DeviceHandle handle{};
 	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
 	{
 		const CLSID& clsid = *reinterpret_cast<CLSID*>(ptr->deviceInfo.uid);
@@ -286,6 +297,10 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
 			handle = nullptr;
+		}
+		else
+		{
+			ptr->handle = handle;
 		}
 	}
 	return handle;
@@ -309,7 +324,7 @@ bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* co
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
-	auto asioInstance = sbLibX::asio_instance{};
+	sbLibX::asio_instance asioInstance{};
 	auto adapterArray = EnumerateAdapters(asioInstance);
 	std::vector<sbLibX::asio_device> deviceArray;
 	deviceArray.reserve(adapterArray.size());
@@ -325,7 +340,7 @@ SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] co
 			auto result = device->start();
 			if( !succeeded( result ) )
 			{
-				device.Detach();
+				device.Release();
 				std::cout << "ASIO driver '" << deviceInfo.description << "': " << sbLibX::ASIO::to_cstring(result) << std::endl;
 			}
 			else
@@ -341,5 +356,6 @@ SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] co
 		}
 		deviceArray.emplace_back( std::move(device) );
 	}
+	deviceArray.clear();
 	return 0;
 }
