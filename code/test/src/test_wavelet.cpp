@@ -163,7 +163,7 @@ constexpr sample_type plus_two  =  2.0f;//	static_assert( plus_two  ==  2.0f );
 //}
 
 
-SB_EXPORT_TYPE int __stdcall test_wavelet([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_wavelet([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	if( plus_one.value + minus_one.value != zero.value )
 		__debugbreak();

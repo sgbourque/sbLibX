@@ -1,3 +1,6 @@
+// TODO : Get rid of this test file (should be moved to test project)
+// also TODO: clean up the test project...
+
 #include <common/include/sb_interface.h>
 #include <string>
 #include <variant>
@@ -196,7 +199,7 @@ struct data_chunk
 
 namespace SB { namespace LibX { template<> inline data_chunk* get<data_chunk*>( BaseHandle resource ) { return reinterpret_cast<data_chunk*>( get_pointer( resource ) ); } }}
 
-SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using namespace SB::LibX;
 	//Debug::Console debugConsole;

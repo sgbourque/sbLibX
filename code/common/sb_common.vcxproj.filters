@@ -54,6 +54,15 @@
     <ClInclude Include="include\internal\device_generic.h">
       <Filter>include\internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_interface_vst.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\interface_vst_base.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\temp_delete_me.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

@@ -12,7 +12,7 @@
 	//#pragma warning(default)
 
 	#ifndef WINAPI
-		#define WINAPI __stdcall
+		#define WINAPI SB_STDCALL
 	#endif
 #endif
 

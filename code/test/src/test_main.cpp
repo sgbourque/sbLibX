@@ -42,13 +42,13 @@ extern "C" /*BOOL*/int /*WINAPI*/__cdecl _DllMainCRTStartup(
 	/*DWORD*/int     const reason, // 0: dll_detach;   1: dll_attach
 	/*LPVOID*/void*    const reserved // 0
 );
-SB_EXPORT_TYPE int __stdcall init([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL init([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	// see ParseIAT to be called before _DllMainCRTStartup
 	static volatile void* module = 0;
 	return _DllMainCRTStartup(const_cast<void*>(module), 1, 0);
 }
-SB_EXPORT_TYPE int __stdcall deinit([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL deinit([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	static volatile void* module = 0;
 	return _DllMainCRTStartup(const_cast<void*>(module), 0, 0);
@@ -56,7 +56,7 @@ SB_EXPORT_TYPE int __stdcall deinit([[maybe_unused]] int argc, [[maybe_unused]] 
 #endif
 
 //LibX::Debug::Console debugConsole;
-SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	//LibX::Debug::Console debugConsole;
 	//debugConsole.RedirectStdIO();

@@ -406,7 +406,7 @@ std::basic_ostream<out_char_type>& operator <<(std::basic_ostream<out_char_type>
 #include <iostream>
 #include <fstream>
 //#include <common/include/sb_common.h>
-SB_EXPORT_TYPE int __stdcall test_parser([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator "" _xhash64;
 	using sbLibX::StructuredBuffer::get;

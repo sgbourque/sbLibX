@@ -12,15 +12,15 @@
 
 namespace SB { namespace LibX { namespace ASIO {
 
-using HRESULT = IUnknown::HRESULT;
-using ULONG = IUnknown::ULONG;
+using result_t = IUnknown::result_t;
+using refcount_t = IUnknown::refcount_t;
 using GUID = IUnknown::GUID;
 
 using CLSID = ::CLSID;
 
 static inline bool operator ==(const GUID& idA, const GUID& idB)
 {
-	return memcmp(&idA, &idB, sizeof(GUID)) == 0;
+	return memcmp(idA.uid, idB.uid, sizeof(GUID)) == 0;
 }
 static inline bool operator ==(const CLSID& idA, const CLSID& idB)
 {
@@ -30,7 +30,7 @@ struct GUIDHasher
 {
 	inline size_t operator ()(const GUID& id) const
 	{
-		return id.uid.dataHi;
+		return id.uid64._0;
 	}
 	inline size_t operator ()(const CLSID& id) const
 	{
@@ -38,17 +38,17 @@ struct GUIDHasher
 	}
 };
 
-template<typename base_t, typename derived_t>
-HRESULT QueryInterface(base_t* base, derived_t** derived)
+	template<typename base_t, typename derived_t>
+result_t QueryInterface(base_t* base, derived_t** derived)
 {
 	return base->QueryInterface(derived_t::clsid, (void**)derived);
 }
 
-template<typename _base_t_>
+	template<typename _base_t_>
 struct RefCountedImpl : _base_t_
 {
-	virtual ULONG __stdcall AddRef() override = 0;
-	virtual ULONG __stdcall Release() override = 0;
+	virtual refcount_t SB_STDCALL AddRef() override = 0;
+	virtual refcount_t SB_STDCALL Release() override = 0;
 
 protected:
 	mutable volatile long ref_count = 0;
@@ -57,20 +57,20 @@ protected:
 	template<typename _type_t_, typename _base_t_>
 struct RefClassImpl : RefCountedImpl<_base_t_>
 {
-	virtual HRESULT __stdcall QueryInterface(GUID riid, void** ppvObject) override
+	virtual result_t SB_STDCALL QueryInterface(GUID riid, void** ppvObject) override
 	{
 		if( !ppvObject )
 			return E_INVALIDARG;
 
 		static_assert(sizeof(_type_t_::clsid) == 16);
-		if ( memcmp(riid.data, &_type_t_::clsid, sizeof(_type_t_::clsid)) == 0 )
+		if ( memcmp(riid.uid, &_type_t_::clsid, sizeof(_type_t_::clsid)) == 0 )
 			*ppvObject = static_cast<_type_t_*>( this );
 		return *ppvObject ? S_OK : E_NOINTERFACE;
 	}
 
-	virtual ULONG __stdcall AddRef() override
+	virtual refcount_t SB_STDCALL AddRef() override
 	{
-		ULONG refCount;
+		refcount_t refCount;
 		do 
 		{
 			refCount = _InterlockedExchange(&ref_count, -1);
@@ -82,9 +82,9 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 		_InterlockedExchange(&ref_count, refCount + 1);
 		return refCount + 1;
 	}
-	virtual ULONG __stdcall Release() override
+	virtual refcount_t SB_STDCALL Release() override
 	{
-		ULONG refCount;
+		refcount_t refCount;
 		do
 		{
 			refCount = _InterlockedExchange(&ref_count, -1);
@@ -103,12 +103,12 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 static std::wstring GetAsioDllPath( CLSID deviceId );
 struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 {
-	virtual HRESULT __stdcall QueryInterface(GUID riid, void** ppvObject) override
+	virtual result_t SB_STDCALL QueryInterface(GUID riid, void** ppvObject) override
 	{
-		HRESULT result = RefClassImpl::QueryInterface(riid, ppvObject);
+		result_t result = RefClassImpl::QueryInterface(riid, ppvObject);
 		if (result < 0)
 		{
-			if ( memcmp(riid.data, &deviceInfo.uid, sizeof(riid)) == 0 )
+			if ( memcmp(riid.uid, &deviceInfo.uid, sizeof(riid)) == 0 )
 				*ppvObject = handle.Get();
 			
 		}
@@ -141,7 +141,7 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 	}
 
 public:
-	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
+	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, { 0x9F,0x0E,0xF5,0x41,0x72,0xB0,0x71,0x44, } };
 
 	static constexpr size_t kDescSize = 256;
 	static constexpr size_t kIIDSize = 16;
@@ -152,15 +152,15 @@ public:
 
 struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 {
-	virtual HRESULT __stdcall QueryInterface( GUID riid, void** ppvObject ) override
+	virtual result_t SB_STDCALL QueryInterface( GUID riid, void** ppvObject ) override
 	{
-		HRESULT result = RefClassImpl::QueryInterface(riid, ppvObject);
+		result_t result = RefClassImpl::QueryInterface(riid, ppvObject);
 		if( result < 0 )
 		{
 			// pass to children
 			for( auto adapter : asioAdapters )
 			{
-				if (memcmp(riid.data, &adapter.second.deviceInfo.uid, sizeof(riid)) == 0)
+				if (memcmp(riid.uid, &adapter.second.deviceInfo.uid, sizeof(riid)) == 0)
 				{
 					*ppvObject = adapter.second.handle.Get();
 					break;
@@ -188,7 +188,7 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 	}
 
 public:
-	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, 0x9F, 0x0E, 0xF5, 0x41, 0x72, 0xB0, 0x71, 0x44, };
+	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, { 0x9F,0x0E,0xF5,0x41,0x72,0xB0,0x71,0x44, } };
 
 	friend InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
 	friend bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);
@@ -307,55 +307,16 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 }
 bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* config)
 {
-	ULONG refCount = ~0u;
+	refcount_t refCount = ~0u;
 	if( device )
 	{
 		// Make sure to stop the ASIO device before it is destroyed
 		// Any open (weak) device handle will still be valid (until refCount reach 0) but audio processing will have been stopped.
 		device->stop();
+		device->disposeBuffers();
 		refCount = device.Release();
 	}
 	return refCount == 0;
 }
 
 }}}
-
-
-#include <common/include/sb_common.h>
-SB_EXPORT_TYPE int __stdcall asio([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
-{
-	sbLibX::asio_instance asioInstance{};
-	auto adapterArray = EnumerateAdapters(asioInstance);
-	std::vector<sbLibX::asio_device> deviceArray;
-	deviceArray.reserve(adapterArray.size());
-	for ( auto adapter : adapterArray )
-	{
-		sbLibX::ASIO::DeviceInfo deviceInfo;
-		adapter->GetDeviceInfo( &deviceInfo );
-
-		sbLibX::asio_device device(adapter);
-		if( device )
-		{
-			// starts processing, this is the last steps for validating 
-			auto result = device->start();
-			if( !succeeded( result ) )
-			{
-				device.Release();
-				std::cout << "ASIO driver '" << deviceInfo.description << "': " << sbLibX::ASIO::to_cstring(result) << std::endl;
-			}
-			else
-			{
-				std::cout << "ASIO driver '" << deviceInfo.description << "': Available." << std::endl;
-			}
-
-			// Please do not call controlPanel unless current process is managing its message queue.
-		}
-		else
-		{
-			std::cout << "ASIO driver '" << deviceInfo.description << "': " << sbLibX::ASIO::to_cstring(sbLibX::ASIO::ErrorType::NotPresent) << std::endl;
-		}
-		deviceArray.emplace_back( std::move(device) );
-	}
-	deviceArray.clear();
-	return 0;
-}

@@ -7,7 +7,7 @@
 	#include <windows.h>
 	#pragma warning(default:4668 5039)
 	#ifndef WINAPI
-		#define WINAPI __stdcall
+		#define WINAPI SB_STDCALL
 	#endif
 	#endif
 #endif

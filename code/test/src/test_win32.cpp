@@ -228,9 +228,9 @@ int Test()
 			std::wclog << test << " (debug only)" << std::endl;
 			std::wcerr << test << " (both)" << std::endl;
 			CHECK_STDIO();
-			CHECK_STDIO();
-			std::cin.get();
-			CHECK_STDIO();
+			//CHECK_STDIO();
+			//std::cin.get();
+			//CHECK_STDIO();
 
 #if !RESERVE_ERROR
 			// release memory allocated by FormatMessage()

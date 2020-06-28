@@ -116,7 +116,7 @@ constexpr real_topology_point<_TYPE_> rearranged_slow_series(int64_t termsCount 
 }
 
 ////
-// be aware that code below is not particularly
+// be aware that code below is not particularly... well be advised there's goto's around...
 #include <iostream>
 bool reset_bad_stream( std::istream& is )
 {
@@ -278,8 +278,9 @@ void run_internal( size_t part )
 #if !defined(SB_EXPORT_TYPE)
 	#define SB_EXPORT_TYPE
 	#define test_riemann		main
+	#define SB_STDCALL
 #endif
-SB_EXPORT_TYPE int __stdcall test_riemann([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_riemann([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	std::cout << "-- Not-a-Number & The Riemann Series Theorem --\n";
 	do

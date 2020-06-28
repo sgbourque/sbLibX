@@ -230,7 +230,7 @@ SB_STRUCT_END(compile_stress_t)
 ////
 #include <iostream>
 #include <common/include/sb_common.h>
-SB_EXPORT_TYPE int __stdcall test_hash([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_hash([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator "" _xhash64;
 	using sbLibX::StructuredBuffer::get;

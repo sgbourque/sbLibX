@@ -1,4 +1,5 @@
 ﻿#include <test/include/test_vulkan.h>
+#include <common/include/internal/ref_ptr.h>
 
 #include <vector>
 namespace SB { namespace LibX {
@@ -12,8 +13,8 @@ struct Configuration;
 #endif
 #include <dxgi1_6.h>
 #include <d3d12.h>
-#include <wrl/client.h>
-#include <combaseapi.h>
+//#include <wrl/client.h>
+//#include <combaseapi.h>
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -22,18 +23,16 @@ struct Configuration;
 namespace SB { namespace LibX {
 namespace dx12
 {
-	template<typename Type>
-using com_ptr = Microsoft::WRL::ComPtr<Type>;
-using InstanceHandle = com_ptr<IDXGIFactory>; // IDXGIFactory4
-using AdapterHandle = com_ptr<IDXGIAdapter>; // IDXGIAdapter4
-using DeviceHandle = com_ptr<ID3D12Device>; // ID3D12Device6
+using InstanceHandle = ref_ptr<IDXGIFactory>; // IDXGIFactory4
+using AdapterHandle = ref_ptr<IDXGIAdapter>; // IDXGIAdapter4
+using DeviceHandle = ref_ptr<ID3D12Device>; // ID3D12Device6
 
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 }
-using dx12_instance = dx12::instance;
-using dx12_device = dx12::device;
+using dx12_instance = dx12::unique_instance;
+using dx12_device = dx12::unique_device;
 
 }}
 
@@ -57,8 +56,8 @@ bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] 
 using adapter_array_t = std::vector<AdapterHandle>;
 adapter_array_t EnumerateAdapters([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] size_t maxCount)
 {
-	com_ptr<IDXGIFactory7> factory7;
-	instance.As(&factory7);
+	ref_ptr<IDXGIFactory7> factory7;
+	instance->QueryInterface(__uuidof(IDXGIFactory7), factory7.ReleaseAndGetAddressOf());
 	AdapterHandle adapter;
 	adapter_array_t adapters;
 	for ( uint32_t adapter_index = 0; SUCCEEDED( factory7->EnumAdapterByGpuPreference( adapter_index, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(adapter.GetAddressOf()) ) ); ++adapter_index)
@@ -117,7 +116,7 @@ bool DestroyDevice([[maybe_unused]] DeviceHandle device, [[maybe_unused]] const 
 #include <algorithm>
 #include <iostream>
 
-SB_EXPORT_TYPE int __stdcall test_processing([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	// Trying to create both vulkan & DirectX devices on every adapters available
 	using namespace SB::LibX;
@@ -222,9 +221,9 @@ SB_EXPORT_TYPE int __stdcall test_processing([[maybe_unused]] int argc, [[maybe_
 		DeviceHandle primary_device;
 		DeviceHandle secondary_device;
 		DeviceHandle debug_device;
-		com_ptr<ID3D12CommandQueue> primaryComputeCommandQueue;
-		com_ptr<ID3D12CommandQueue> secondaryComputeCommandQueue;
-		com_ptr<ID3D12CommandQueue> debugComputeCommandQueue;
+		ref_ptr<ID3D12CommandQueue> primaryComputeCommandQueue;
+		ref_ptr<ID3D12CommandQueue> secondaryComputeCommandQueue;
+		ref_ptr<ID3D12CommandQueue> debugComputeCommandQueue;
 		if (dx12ActiveDeviceCount > 0)
 		{
 

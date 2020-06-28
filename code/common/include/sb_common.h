@@ -2,6 +2,13 @@
 
 // TODO
 #if defined(SBWIN64)
+	#define SB_FASTCALL    __fastcall
+	#define SB_STDCALL     __stdcall
+	#define SB_DEFAULTCALL __cdecl
+#else
+#error "unsupported platform"
+#endif
+#if defined(SBWIN64)
 	#define SB_EXPORT_LIB extern "C" __declspec(dllexport)
 	#define SB_IMPORT_LIB extern "C" __declspec(dllimport)
 	#define SB_EXTERN_LIB extern "C"
@@ -13,7 +20,7 @@
 	#endif
 
 	#if 0 // expected main declaration
-		SB_EXPORT_LIB int __stdcall main(int _nArgs = 0, const char* const pArgs[] = nullptr);
+		SB_EXPORT_LIB int SB_STDCALL main(int _nArgs = 0, const char* const pArgs[] = nullptr);
 	#endif
 #else
 #error "unsupported platform"

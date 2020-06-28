@@ -5,6 +5,13 @@
 
 #include "sb_hash.h"
 
+// Please note that this is to be renamed eventually.
+// It is not clear what a generic HandleBase means.
+// Here this is the resource (data) static interface (POD).
+// Eventually, the static and dynamic (com-like) interface
+// will join at some point (co-existing together with a common
+// "interface").
+
 namespace SB { namespace LibX
 {
 
@@ -47,7 +54,7 @@ struct scoped_handle
 	scoped_handle(HandleType handler, ResourceType resource) { AcquireResource(handler, resource); }
 
 	scoped_handle(const scoped_handle&) = delete;
-	scoped_handle(scoped_handle&& temp) noexcept { handle = InvalidHandle; std::swap( handle = InvalidHandle, temp.handle ); }
+	scoped_handle(scoped_handle&& temp) noexcept { handle = std::move(temp.handle); }
 
 	virtual ~scoped_handle() noexcept { ReleaseResource(handle); }
 

@@ -1,4 +1,23 @@
+#pragma once
+#include <cstdint>
+
 namespace SB { namespace LibX {
+// This is binary-compatible with the COM interface, without requiring anything under "windows.h" and compiler's limitations involved
+struct IUnknown
+{
+	using result_t   = int32_t;
+	using refcount_t = int32_t;
+	union GUID {
+		struct CLSID { uint32_t _0; uint16_t _1; uint16_t _2; uint8_t _3[8]; } clsid;
+		struct UID32 { uint32_t _0; uint32_t _1; uint32_t _2; uint32_t _3; } uid32;
+		struct UID64 { uint64_t _0; uint64_t _1; } uid64;
+		uint8_t uid[16];
+	};
+	virtual result_t SB_STDCALL QueryInterface(GUID riid, void** ppvObject) = 0;
+	virtual int32_t  SB_STDCALL AddRef() = 0;
+	virtual int32_t  SB_STDCALL Release() = 0;
+};
+
 // This is kind of half of a ComPtr (without the QueryInterface casting).
 // If needing the interface casting, a new com_ptr template shall be inheriting from ref_ptr, completing the remaining half of ComPtr.
 	template<typename Type>

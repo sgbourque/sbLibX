@@ -226,7 +226,7 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_
 			size_t b_hint = (b.name_hash.hash % kKeyCount); const bool b_valid = b.name_hash.hash != type_t::hash_traits_t::invalid_hash;
 			return (a_hint < b_hint) && (a_valid && b_valid);
 		});
-		// push invalid data to "optimal" spot
+		// place (unique) invalid data to the "optimal" spot
 		for (size_t index = 1; index < result.size(); ++index)
 		{
 			auto& keyinfo = result[index];

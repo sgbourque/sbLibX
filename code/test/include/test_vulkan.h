@@ -25,7 +25,7 @@ using DeviceHandle = VkDevice;
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 }
-using vulkan_instance = vulkan::instance;
-using vulkan_device = vulkan::device;
+using vulkan_instance = vulkan::unique_instance;
+using vulkan_device = vulkan::unique_device;
 
 }}

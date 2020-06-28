@@ -23,7 +23,7 @@ using namespace SB;
 //#pragma warning(default)
 
 #ifndef WINAPI
-	#define WINAPI __stdcall
+	#define WINAPI SB_STDCALL
 #endif
 
 
@@ -147,7 +147,7 @@ int WinMain(
 		kExecute,
 	};
 
-	using main_t = int(__stdcall*)([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[]);
+	using main_t = int(SB_STDCALL*)([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[]);
 	int return_code = kContinue;
 
 	constexpr size_t kMaxCommandline = 8192; // 8191 + 1. c.f., https://support.microsoft.com/en-us/help/830473/command-prompt-cmd-exe-command-line-string-limitation

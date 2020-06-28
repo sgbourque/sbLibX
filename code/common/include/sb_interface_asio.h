@@ -42,7 +42,14 @@ using DeviceHandle = ref_ptr<ASIO::Device>;
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 }
-using asio_instance = ASIO::instance;
-using asio_device = ASIO::device;
+using asio_instance = ASIO::unique_instance;
+using asio_device = ASIO::unique_device;
 
 }}
+
+
+#if defined(SBDEBUG)
+#pragma comment(lib, "sbWindows_x64_debug.lib")
+#elif defined(SBRELEASE)
+#pragma comment(lib, "sbWindows_x64_release.lib")
+#endif

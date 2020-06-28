@@ -8,9 +8,7 @@ bool DestroyInstance( InstanceHandle instance, const Configuration* config = nul
 using adapter_array_t = std::vector<AdapterHandle>;
 adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
 
-#ifdef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
-struct DeviceInfo;
-#else
+#ifndef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 struct DeviceInfo
 {
 	static constexpr size_t kDescSize = 256;
@@ -28,31 +26,55 @@ DeviceInfo GetDeviceInfo(AdapterHandle adapter);
 DeviceHandle CreateDevice(AdapterHandle adapter, const Configuration* config = nullptr);
 bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);
 
-struct instance
+struct unique_instance
 {
-	explicit instance(const Configuration* config = nullptr) { handle = CreateInstance(config); }
-	explicit instance(instance&& other) { handle = other.handle; other.Detach(); }
-	explicit instance(const instance& other) = delete;
-	~instance() { if( handle ) DestroyInstance( std::move(handle) ); }
+	explicit unique_instance(const Configuration* config = nullptr)
+	{
+		handle = CreateInstance(config);
+	}
+	explicit unique_instance(unique_instance&& other)
+	{
+		handle = other.Detach();
+	}
+	explicit unique_instance(const unique_instance& other) = delete;
+	~unique_instance()
+	{
+		Release();
+	}
 
-	void Detach() { handle = InstanceHandle{}; }
+	InstanceHandle Detach()
+	{
+		return std::move(handle);
+	}
+	void Release() { if( handle ) DestroyInstance( std::move( handle ) ); }
 
-	InstanceHandle& operator ->() { return handle; }
-	const InstanceHandle& operator ->() const { return handle; }
+	InstanceHandle& operator ->()
+	{
+		return handle;
+	}
+	const InstanceHandle& operator ->() const
+	{
+		return handle;
+	}
 
-	operator InstanceHandle() const { return handle; }
-	operator bool() const { return handle; }
+	operator InstanceHandle() const
+	{
+		return handle;
+	}
+	operator bool() const
+	{
+		return handle;
+	}
 public:
 	InstanceHandle handle;
 };
 
-struct device
+struct unique_device
 {
-	explicit device(AdapterHandle adapter = {}, const Configuration* config = nullptr) { if( adapter ) handle = CreateDevice(adapter, config); }
-	explicit device(device&& other) { handle = other.handle; other.Detach(); }
-	explicit device(const device& other) = delete;
-
-	~device() { Release(); }
+	explicit unique_device(AdapterHandle adapter = {}, const Configuration* config = nullptr) { if( adapter ) handle = CreateDevice(adapter, config); }
+	explicit unique_device(unique_device&& other) { handle = other.handle; other.Detach(); }
+	explicit unique_device(const unique_device& other) = delete;
+	~unique_device() { Release(); }
 
 	void Detach() { handle = DeviceHandle{}; }
 	void Release() { if( handle ) DestroyDevice( std::move(handle) ); }

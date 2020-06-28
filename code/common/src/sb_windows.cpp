@@ -117,18 +117,18 @@ SB_STRUCT_END(ApplicationConfiguration);
 
 
 	template<typename RETURN_TYPE, typename _IMPLEMENTATION_>
-RETURN_TYPE get([[maybe_unused]] _IMPLEMENTATION_* buffer, std::enable_if_t<!std::is_pointer_v<RETURN_TYPE>, data_info_t> datainfo )
+constexpr RETURN_TYPE get([[maybe_unused]] _IMPLEMENTATION_* buffer, std::enable_if_t<!std::is_pointer_v<RETURN_TYPE>, data_info_t> datainfo )
 {
 	return *reinterpret_cast<RETURN_TYPE*>(reinterpret_cast<uint8_t*>(buffer) + datainfo.offset);
 }
 	template<typename RETURN_TYPE, typename _IMPLEMENTATION_>
-RETURN_TYPE get([[maybe_unused]] _IMPLEMENTATION_* buffer, std::enable_if_t<std::is_pointer_v<RETURN_TYPE>, data_info_t> datainfo )
+constexpr RETURN_TYPE get([[maybe_unused]] _IMPLEMENTATION_* buffer, std::enable_if_t<std::is_pointer_v<RETURN_TYPE>, data_info_t> datainfo )
 {
 	return reinterpret_cast<RETURN_TYPE>(reinterpret_cast<uint8_t*>(buffer) + datainfo.offset);
 }
 
 	template<typename _IMPLEMENTATION_>
-data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unused]] xhash_t hash)
+constexpr data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unused]] xhash_t hash)
 {
 	// Normally here we should use _IMPLEMENTATION_'s traits
 	// to get the key_index from the hash and get the data_info
@@ -143,15 +143,17 @@ data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unused]] xhas
 			auto key_info = buffer->key_info[(hint + offset) % key_info_count];
 			if (key_info.name_hash.hash == hash)
 				return _IMPLEMENTATION_::data_info[key_info.data_index];
+#if defined(SBDEBUG)
 			std::cerr << "^";
+#endif
 		}
 	}
 	return data_info_t{};
 }
-template<typename _IMPLEMENTATION_> data_info_t get([[maybe_unused]] _IMPLEMENTATION_& buffer, [[maybe_unused]] xhash_t hash) { return get<_IMPLEMENTATION_>(&buffer, hash); }
+template<typename _IMPLEMENTATION_> constexpr data_info_t get([[maybe_unused]] _IMPLEMENTATION_& buffer, [[maybe_unused]] xhash_t hash) { return get<_IMPLEMENTATION_>(&buffer, hash); }
 
 	template<typename return_type, typename _implementation_>
-return_type get(_implementation_* buffer, xhash_t hash, return_type value)
+constexpr return_type get(_implementation_* buffer, xhash_t hash, return_type value)
 {
 	const data_info_t datainfo = get(buffer, hash);
 	const auto keyinfo = buffer ? buffer->key_info[datainfo.key_index] : decltype(buffer->key_info[datainfo.key_index]){};
@@ -166,7 +168,7 @@ return_type get(_implementation_* buffer, xhash_t hash, return_type value)
 		return value;
 	}
 }
-template<typename return_type, typename _implementation_> return_type get(_implementation_& buffer, xhash_t hash, return_type value) { return get(&buffer, hash, value); }
+template<typename return_type, typename _implementation_> constexpr return_type get(_implementation_& buffer, xhash_t hash, return_type value) { return get(&buffer, hash, value); }
 
 #if _MSVC_LANG != 201703
 #error "test"
@@ -178,6 +180,7 @@ namespace sbWinX = SB::LibX::Windows;
 
 #include <dev/include/sb_dev_debug.h>
 #include <iostream>
+#include <iomanip>
 #include <cstddef>
 
 std::ostream& operator << (std::ostream& os, const wchar_t* wstr)
@@ -193,7 +196,7 @@ using config_t = sbLibX::Windows::ApplicationConfiguration;
 template<xhash_t HASH> using config_traits = config_t::data_traits<HASH>;
 template<xhash_t HASH> using key_traits = typename config_traits<HASH>::key_traits_t;
 
-SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator ""_xhash64;
 	using sbLibX::StructuredBuffer::get;
@@ -223,7 +226,8 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		auto local_keyinfo  = local_config.key_info[local_datainfo.key_index];
 		std::cout << "\n" << local_keyinfo.type_hash << " " << local_keyinfo.name_hash << ":\n\t";
 		for ( size_t index = 0; index < local_datainfo.size; ++index )
-			std::cout << std::hex << uint32_t(raw_data[index]) << " ";
+			std::cout << std::hex << std::setw(2) << std::setfill('0') << uint32_t(raw_data[index]) << " ";
+		//std::cout << std::hex << uint32_t(raw_data[index]) << " ";
 		std::cout << "\n\t";
 		for (size_t index = 0; index < local_datainfo.size; ++index)
 			std::cout << (char)raw_data[index];
@@ -237,7 +241,7 @@ SB_EXPORT_TYPE int __stdcall main([[maybe_unused]] int argc, [[maybe_unused]] co
 		auto local_datainfo = get(local_config, hash);
 		uint8_t* raw_data = get<uint8_t*>(&local_config, local_datainfo);
 		for (size_t index = 0; index < local_datainfo.size; ++index)
-			std::cout << std::hex << uint32_t(raw_data[index]) << " ";
+			std::cout << std::hex << std::setw(2) << std::setfill('0') << uint32_t(raw_data[index]) << " ";
 		std::cout << "\n\t";
 		for (size_t index = 0; index < local_datainfo.size; ++index)
 			std::cout << (char)raw_data[index];
