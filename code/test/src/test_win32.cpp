@@ -5,7 +5,7 @@
 #include <future>
 
 // generic
-#include <ctype.h>
+#include <cctype>
 
 namespace SB
 {
