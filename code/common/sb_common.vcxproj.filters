@@ -63,6 +63,12 @@
     <ClInclude Include="include\internal\temp_delete_me.h">
       <Filter>include\internal</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_library.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\compiler_specific.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

@@ -1,6 +1,8 @@
 #pragma once
 #include "common/include/sb_hash.h"
 
+#include <typeinfo>
+
 namespace SB { namespace LibX
 {
 ////

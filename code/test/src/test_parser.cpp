@@ -357,7 +357,10 @@ std::basic_string_view<char_type> symbol_lexer_t<char_type>::input(const view_t 
 	auto end = input.data() + input.size();
 	auto next = end;
 	while (current != next)
-		std::tie(current, next) = get_next_token({ { current, end } }).bounds();
+	{
+		auto nextToken = get_next_token({ { current, end } });
+		std::tie( current, next ) = nextToken.bounds();
+	}
 
 	return std::basic_string_view<char_type>(next, static_cast<size_t>(std::distance(next, end)));
 }

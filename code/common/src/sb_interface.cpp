@@ -82,13 +82,6 @@ UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, xhash_t ha
 
 
 
-#define CSTRING_WRAPPER(_X)  #_X
-#define WSTRING_WRAPPER(_X) L#_X
-#define USTRING_WRAPPER(_X) u#_X
-#define CSTR(_X) CSTRING_WRAPPER(_X)
-#define WSTR(_X) WSTRING_WRAPPER(_X)
-#define USTR(_X) USTRING_WRAPPER(_X)
-
 #define SBLIBX_VERSION_MAJOR     0
 #define SBLIBX_VERSION_MINOR     1
 #define SBLIBX_VERSION_REVISION  (-1)

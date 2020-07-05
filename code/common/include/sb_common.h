@@ -1,6 +1,6 @@
 #pragma once
 
-// TODO
+//#include <common/include/internal/compiler_specific.h>
 #if defined(SBWIN64)
 	#define SB_FASTCALL    __fastcall
 	#define SB_STDCALL     __stdcall
@@ -44,25 +44,23 @@
 
 
 ////
-	#define UNEVAL(...) __VA_ARGS__
-	#define CONCAT(A, B) UNEVAL(A) ## UNEVAL(B)
+	#define SB_UNEVAL(...) __VA_ARGS__
+	#define SB_CONCAT(A, B) SB_UNEVAL(A) ## SB_UNEVAL(B)
 ////
-	#define CSTRING_WRAPPER(_X)  #_X
-	#define WSTRING_WRAPPER(_X) L#_X
-	#define USTRING_WRAPPER(_X) u#_X
-	#define CSTR(_X) CSTRING_WRAPPER(_X)
-	#define WSTR(_X) WSTRING_WRAPPER(_X)
-	#define USTR(_X) USTRING_WRAPPER(_X)
+	#define SB_CSTRING_WRAPPER(_X)  #_X
+	#define SB_WSTRING_WRAPPER(_X) L#_X
+	#define SB_U8STRING_WRAPPER(_X) u8#_X
+	#define CSTR(_X) SB_CSTRING_WRAPPER(_X)
+	#define WSTR(_X) SB_WSTRING_WRAPPER(_X)
+	#define U8STR(_X) SB_U8STRING_WRAPPER(_X)
 #if defined(UNICODE)
-	#define STRINGIFY   WSTR
-	#define SYSTEM_STRING(X) L##X
+	#define SB_SYSTEM_STRING   WSTR
 	namespace SB { using system_char_t = wchar_t; }
 #else
-	#define STRINGIFY   CSTR
-	#define SYSTEM_STRING(X) X
+	#define SB_SYSTEM_STRING   CSTR
 	namespace SB { using system_char_t = char; }
 #endif
-	#define STR(X) SYSTEM_STRING(X)
+	#define STR(X) SB_SYSTEM_STRING(X)
 
 // TODO: Wrap clog, cerr & cout into SBLog, SBErr & SBPrint
 #if defined(SBDEBUG) || defined(SBRELEASE)

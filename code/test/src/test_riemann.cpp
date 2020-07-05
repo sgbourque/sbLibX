@@ -88,7 +88,7 @@ constexpr real_topology_point<_TYPE_> rearranged_slow_series(int64_t termsCount 
 	int64_t negativeCount = negatives * loopCount;
 	while (remainingCount != 0)
 	{
-		const auto current_precision = (positives / type_t(2 * positiveCount + 1) - negatives / type_t(2 * (negativeCount + negatives + 1)));
+		const auto current_precision = static_cast<type_t>(positives) / type_t(2 * positiveCount + 1) - static_cast<type_t>(negatives) / type_t(2 * (negativeCount + negatives + 1));
 		auto positiveValue = type_t(0);
 		//auto [&positiveValue, &positiveCount]()->type_t
 		//{

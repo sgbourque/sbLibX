@@ -156,7 +156,7 @@ int WinMain(
 
 	std::string module_name;
 	std::string function_name;
-	LibX::library main_module;
+	LibX::Dev::library main_module;
 	main_t local_main{};
 	if (hInstance != 0) do
 	{
@@ -247,13 +247,13 @@ int WinMain(
 			else if (main_module)
 			{
 				auto name = main_module.name();
-				if (main_module.free())
+				if (main_module.unload())
 					std::cout << "library '" << name << "' unloaded\n";
 			}
 
 			if (main_module && !function_name.empty())
 			{
-				local_main = main_module.get<main_t>(function_name.c_str());
+				local_main = main_module[ function_name ];
 				if (local_main)
 					std::cout << "function '" << function_name << "' found\n";
 				else

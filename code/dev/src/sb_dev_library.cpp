@@ -39,7 +39,7 @@ static constexpr const char* const inverse_ordered_configuration_tokens[] = {
 	#define WINAPI SB_STDCALL
 #endif
 
-namespace SB { namespace LibX
+namespace SB { namespace LibX { namespace Dev
 {
 
 bool iequal(const std::string name1, const std::string name2)
@@ -87,122 +87,127 @@ bool sbDynLib_equivalent(std::string name1, std::string name2)
 
 bool library::load(const char* libName)
 {
-	if (sbDynLib_equivalent(library_alias, libName))
+	if (sbDynLib_equivalent(alias(), libName))
 	{
-		return data;
+		return *this;
 	}
-	else if (data && !free())
+	else if (*this && !unload())
 	{
-		std::cerr << "could not free library '" << library_name << std::endl;
+		std::cerr << "could not free library '" << name() << std::endl;
 	}
 
 	// try exact name first
-	library_name = libName;
-	library_alias = sbDynLib_name_to_alias(libName);
-	data = LoadLibraryA(library_name.c_str());
-	if (!data)
+	std::string library_name = libName;
+	std::string library_alias = sbDynLib_name_to_alias(libName);
+	unique_dll::load( library_name.c_str() );
+	if( !handle )
 	{
 		// try full name
 		library_name = sbDynLib_alias_to_name(library_alias);
-		data = LoadLibraryA(library_name.c_str());
+		unique_dll::load( library_name.c_str() );
 	}
-	if (!data)
+	if( !handle )
 	{
 		// try full name (w/ clang)
 		library_name = sbDynLib_alias_to_clang_name(library_alias);
-		data = LoadLibraryA(library_name.c_str());
+		unique_dll::load( library_name.c_str() );
 	}
 #if SBLIB_SUPPORT_EXE
-	if (!data)
+	if( !handle )
 	{
 		// try exec
 		library_name = sbDynLib_alias_to_name(library_alias) + "-exec.exe";
-		data = LoadLibraryA(library_name.c_str());
+		unique_dll::load( library_name.c_str() );
 	}
-	if (!data)
+	if( !handle )
 	{
 		// try exec (w/ clang)
 		library_name = sbDynLib_alias_to_clang_name(library_alias) + "-exec.exe";
-		data = LoadLibraryA(library_name.c_str());
+		unique_dll::load( library_name.c_str() );
 	}
 #endif
-	if (!data)
+	if( !handle )
 	{
 		// try alias
 		library_name = library_alias;
-		data = LoadLibraryA(library_alias.c_str());
+		unique_dll::load( library_name.c_str() );
 	}
-	if (!data)
+	if( !handle )
 	{
 		library_name = library_alias = {};
 		std::cerr << "Could not load library '" << libName << "'. Last error: " << GetLastError() << std::endl;
 	}
-	return data;
-}
-bool library::free()
-{
-	// TODO : what if FreeLibrary fails?
-	while (data)
-	{
-		uint32_t error = 0;
-		HMODULE module = get_data<HMODULE>();
-		if (0 == FreeLibrary(module))
-		{
-			error = GetLastError();
-			if (error)
-				std::cerr << "could not unload library : Error Code 0x" << std::setw(8) << std::hex << error << ". Retrying..." << std::endl;
-		}
-
-		if (!error)
-		{
-			data = nullptr;
-			library_alias = library_name = {};
-		}
-	}
-	return data == nullptr;
-}
-
-typename library::raw_data_t library::get_internal(const char* fctName)
-{
-	std::string libraryName = library_name;
-	std::string functionName = fctName;
-	raw_data_t fct = nullptr;
-	if (!data)
-		return fct;
-
-	while (!fct && !functionName.empty())
-	{
-		HMODULE module_data = get_data<HMODULE>();
-		FARPROC proc_address = GetProcAddress(module_data, functionName.c_str());
-		fct = proc_address;
-		if (!fct)
-		{
-			if (!libraryName.empty())
-			{
-				functionName = libraryName + "_" + std::string(fctName);
-				auto lastSeparator = libraryName.find_last_of('_');
-				if (lastSeparator != std::string::npos)
-					libraryName = std::string(libraryName.data(), lastSeparator);
-				else
-					libraryName.clear();
-			}
-			else
-			{
-				functionName.clear();
-			}
-		}
-	}
-
-	if (fct == nullptr)
-	{
-		std::cerr << "Could not find entry point '" << library_alias << "/" << fctName << "'. Last error: " << GetLastError() << std::endl;
-	}
 	else
 	{
-		std::clog << "Entry point: '" << library_alias << "/" << fctName << "'" << std::endl;
+		aliases.emplace_back( library_name );
+		aliases.emplace_back( library_alias );
 	}
-	return fct;
+	return *this;
 }
+//bool library::unload()
+//{
+//	// TODO : what if FreeLibrary fails?
+//	while (data)
+//	{
+//		uint32_t error = 0;
+//		HMODULE module = get_data<HMODULE>();
+//		if (0 == FreeLibrary(module))
+//		{
+//			error = GetLastError();
+//			if (error)
+//				std::cerr << "could not unload library : Error Code 0x" << std::setw(8) << std::hex << error << ". Retrying..." << std::endl;
+//		}
+//
+//		if (!error)
+//		{
+//			data = nullptr;
+//			library_alias = library_name = {};
+//		}
+//	}
+//	return data == nullptr;
+//}
+
+//typename library::raw_data_t library::get_internal(const char* fctName)
+//{
+//	std::string libraryName = library_name;
+//	std::string functionName = fctName;
+//	raw_data_t fct = nullptr;
+//	if (!data)
+//		return fct;
+//
+//	while (!fct && !functionName.empty())
+//	{
+//		HMODULE module_data = get_data<HMODULE>();
+//		FARPROC proc_address = GetProcAddress(module_data, functionName.c_str());
+//		fct = proc_address;
+//		if (!fct)
+//		{
+//			if (!libraryName.empty())
+//			{
+//				functionName = libraryName + "_" + std::string(fctName);
+//				auto lastSeparator = libraryName.find_last_of('_');
+//				if (lastSeparator != std::string::npos)
+//					libraryName = std::string(libraryName.data(), lastSeparator);
+//				else
+//					libraryName.clear();
+//			}
+//			else
+//			{
+//				functionName.clear();
+//			}
+//		}
+//	}
+//
+//	if (fct == nullptr)
+//	{
+//		std::cerr << "Could not find entry point '" << library_alias << "/" << fctName << "'. Last error: " << GetLastError() << std::endl;
+//	}
+//	else
+//	{
+//		std::clog << "Entry point: '" << library_alias << "/" << fctName << "'" << std::endl;
+//	}
+//	return fct;
+//}
 
 #if 0
 // To be used if linking to an executable file
@@ -317,7 +322,6 @@ void ParseIAT(HINSTANCE h)
 }
 #endif
 
-}} // namespace SB::LibX
-using namespace SB;
+}}} // namespace SB::LibX::Dev
 
 #endif

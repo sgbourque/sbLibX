@@ -1,42 +1,37 @@
 #pragma once
-#include <dev/include/sb_dev.h>
+#include <common/include/sb_library.h>
+//#include <dev/include/sb_dev.h>
 
-#include <string>
+#include <string_view>
+#include <vector>
 
-namespace SB { namespace LibX
+#if defined(SBDEBUG)
+#pragma comment(lib, "sbWindows_x64_debug.lib")
+#elif defined(SBRELEASE)
+#pragma comment(lib, "sbWindows_x64_release.lib")
+#endif
+
+namespace SB { namespace LibX { namespace Dev
 {
 
-class library
+class library : public unique_dll
 {
 public:
-	library() {}
-	virtual ~library()
-	{
-		free();
-	}
+	explicit library( const char* libName = nullptr ) : unique_dll() { if( libName ) load( libName ); }
+	//explicit library( const wchar_t* libName ) : unique_dll() { if( libName ) load( libName ); }
+	explicit library( library&& other ) : unique_dll( std::move(other) ) {}
+	explicit library( const library& other ) = delete;
+	~library() { unload(); }
 
-	bool load(const char* libName);
-	bool free();
+	bool load( const char* libName );
+	//bool load( const wchar_t* libName );
+	bool unload() { aliases.clear(); auto old = handle; handle = nullptr; return unique_dll::unload( std::move(old) ); }
 
-	std::string name() const { return library_name; }
-	std::string alias() const { return library_alias; }
+	std::string name() const { return aliases.size() ? aliases[0] : std::string{}; }
+	std::string alias( int index = 1 ) const { return aliases.size() > index ? aliases[index] : std::string{}; }
 
-		template<typename data_type>
-	data_type get_data() const { return reinterpret_cast<data_type>(data); };
-
-		template<typename fct_type>
-	fct_type get(const char* fctName) { return reinterpret_cast<fct_type>( get_internal(fctName) ); }
-
-	operator bool () const { return data != 0; }
-
-private:
-	using raw_data_t = void*;
-	raw_data_t get_internal(const char* fctName);
-
-private:
-	std::string library_name{};
-	std::string library_alias{};
-	raw_data_t data = nullptr;
+protected:
+	std::vector<std::string> aliases;
 };
 
-}} // namespace SB::LibX
+}}} // namespace SB::LibX::Dev

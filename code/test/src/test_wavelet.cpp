@@ -53,6 +53,9 @@ template<> struct float_binary_traits<float_representation_type::binary_256>    
 template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_10> { using representation_traits = float_raw_representation_traits<0,  5,  10 -  5 - 0>; };
 template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_11> { using representation_traits = float_raw_representation_traits<0,  5,  11 -  5 - 0>; };
 
+template <typename _type>
+struct float_representation_traits;
+
 template <typename _type, typename _float_representation_traits = float_representation_traits<_type> >
 struct float_traits
 {
@@ -102,10 +105,10 @@ union float_type
 	unsigned_integer_type raw_value;
 	T                     value;
 
-	float_type() {};
+	explicit constexpr float_type() : value{} {}
 	template<typename U> constexpr float_type( U _value) : value(_value) {}
 
-	explicit constexpr float_type( int32_t _raw ) : raw_value(_raw) {}; // mostly for sample_type{0};
+	explicit constexpr float_type( int32_t _raw ) : raw_value(_raw) {} // mostly for sample_type{0};
 	explicit constexpr float_type( raw_type&& _value ) : raw(std::forward<raw_type>(_value)) {}
 	explicit constexpr float_type( int32_t&& _sign, uint32_t&& _exponent, uint32_t&& _mantissa ) : raw{std::forward<uint32_t>(_mantissa), std::forward<uint32_t>(_exponent), std::forward<int32_t>(_sign)} {}
 
@@ -124,7 +127,7 @@ struct half
 	raw_type raw_value;
 	constexpr half(float _value)
 	{
-		float_type<float> value = _value;
+		[[maybe_unused]] float_type<float> value = _value;
 		//raw_value = float_type<half>::raw_type{
 		//	static_cast<uint16_t>(value.raw.mantissa & 0x1),
 		//	static_cast<uint16_t>(value.raw.normalised_exponent & 0x1),
@@ -133,7 +136,7 @@ struct half
 	}
 	constexpr operator float() const
 	{
-		float_type<float> float_value{
+		constexpr float_type<float> float_value{
 		//	raw_float_type{ raw_value.mantissa, raw_value.normalised_exponent, raw_value.sign }
 		};
 		//raw_value = float_type<half>::raw_type{
@@ -165,11 +168,11 @@ constexpr sample_type plus_two  =  2.0f;//	static_assert( plus_two  ==  2.0f );
 
 SB_EXPORT_TYPE int SB_STDCALL test_wavelet([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
-	if( plus_one.value + minus_one.value != zero.value )
+	if( (plus_one.value + minus_one.value) != zero.value )
 		__debugbreak();
-	if( plus_one.value - minus_one.value == zero.value )
+	if( (plus_one.value - minus_one.value) != zero.value )
 		__debugbreak();
-	if (plus_one.value - minus_one.value != plus_two.value)
+	if( (plus_one.value - minus_one.value) != plus_two.value )
 		__debugbreak();
 
 	constexpr size_t packet_size = 32; // assuming at least 44.1kHz, this gives less than 0.75 processing latency
@@ -178,8 +181,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_wavelet([[maybe_unused]] int argc, [[maybe_un
 	constexpr size_t packet_count = 300; // assuming at most 192kHz, this allows down to 20Hz signal analysis
 	using buffer = std::array<packet, packet_count>;
 
-	constexpr size_t sample_count = packet_size * packet_count; // assuming at most 192kHz, this allows down to 20Hz signal analysis
-
+	[[maybe_unused]] constexpr size_t sample_count = packet_size * packet_count; // assuming at most 192kHz, this allows down to 20Hz signal analysis
 
 	return 0;
 }

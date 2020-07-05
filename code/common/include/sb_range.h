@@ -75,7 +75,7 @@ using std::get;
 	template< size_t index_type, typename char_type, typename char_traits_t, typename = std::enable_if_t< ( index_type < 2 ) > >
 constexpr const char_type* get( const std::basic_string_view<char_type, char_traits_t>& view ) { return view.data() + index_type * view.size(); }
 
-using std::distance;
+//using std::distance;
 	template< typename value_type1, typename value_type2, typename = std::enable_if_t< std::is_arithmetic_v<decltype( value_type1() - value_type2() )> > >
 constexpr auto distance( value_type1 begin, value_type2 end ) { return ( end - begin ); }
 }
@@ -166,7 +166,9 @@ struct basic_index_range_t : basic_range_t< typename std::conditional_t<std::is_
 	static constexpr size_t size( const range_t& range )
 	{
 		const basic_index_range_t& index_range = RangeAccessors::get<basic_index_range_t>( range );
-		return static_cast<size_t>(RangeAccessors::distance( std::begin( index_range ), std::end( index_range ) ) );
+		const auto begin = std::begin( index_range );
+		const auto end = std::end( index_range );
+		return static_cast<size_t>( RangeAccessors::distance( begin, end ) );
 	}
 };
 	template< typename index_type, typename data_type >

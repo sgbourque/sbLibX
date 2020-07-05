@@ -6,11 +6,7 @@
 #include <wrl/client.h>
 #include <combaseapi.h>
 
-namespace SB
-{
-namespace LibX
-{
-namespace Windows
+namespace SB { namespace LibX { namespace Windows
 {
 
 class RegistryKey
@@ -128,10 +124,7 @@ static inline RegistryKeyIterator end(const HKEY hkey)
 	return RegistryKeyIterator::end(hkey);
 }
 
-
 }
-}
-
-}
+}}
 namespace SBWindows = SB::LibX::Windows;
 namespace SBWin32 = SBWindows;
