@@ -39,7 +39,10 @@
     <ClInclude Include="include\test_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\test_asio.cpp" />
+    <ClCompile Include="src\test_asio.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\test_processing.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -59,13 +62,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='final|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\test_vst.cpp" />
+    <ClCompile Include="src\test_vst.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\test_vulkan.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\test_wavelet.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
+      </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\test_win32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>

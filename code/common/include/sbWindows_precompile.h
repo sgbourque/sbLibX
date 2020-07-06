@@ -15,3 +15,6 @@
 namespace SB { namespace LibX
 {
 }} // namespace SB::LibX
+
+#define SB_LIBWIN_INTERNAL
+#define SB_LIBPLATFORM_INTERNAL "Windows"

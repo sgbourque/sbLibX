@@ -5,7 +5,9 @@
 InstanceHandle CreateInstance( const Configuration* config = nullptr );
 bool DestroyInstance( InstanceHandle instance, const Configuration* config = nullptr);
 
+#ifndef SBLIB_CUSTOM_ADAPTER_ARRAY
 using adapter_array_t = std::vector<AdapterHandle>;
+#endif
 adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
 
 #ifndef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL

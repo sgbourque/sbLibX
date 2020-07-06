@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <tuple>
 
-#include "sb_hash.h"
+#include <common/include/sb_hash.h>
 
 // Please note that this is to be renamed eventually.
 // It is not clear what a generic HandleBase means.

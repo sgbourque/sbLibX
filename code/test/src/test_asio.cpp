@@ -3,6 +3,8 @@
 #include <iostream>
 
 //TODO: fix that shit!
+#pragma comment(lib, "sbWindows_x64_debug.lib")
+#pragma comment(lib, "sbLibX_x64_debug.lib")
 
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )

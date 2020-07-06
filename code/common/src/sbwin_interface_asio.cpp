@@ -293,7 +293,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
 	{
 		const CLSID& clsid = *reinterpret_cast<CLSID*>(ptr->deviceInfo.uid);
-		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf() );
+		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf<void>() );
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
 			handle = nullptr;

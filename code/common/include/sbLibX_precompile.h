@@ -15,3 +15,5 @@
 namespace SB { namespace LibX
 {
 }} // namespace SB::LibX
+
+#define SB_LIBX_INTERNAL

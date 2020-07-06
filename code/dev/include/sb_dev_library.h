@@ -5,12 +5,6 @@
 #include <string_view>
 #include <vector>
 
-#if defined(SBDEBUG)
-#pragma comment(lib, "sbWindows_x64_debug.lib")
-#elif defined(SBRELEASE)
-#pragma comment(lib, "sbWindows_x64_release.lib")
-#endif
-
 namespace SB { namespace LibX { namespace Dev
 {
 

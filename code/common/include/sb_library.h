@@ -1,4 +1,5 @@
 #pragma once
+#include <common/include/sb_common.h>
 
 #include <cstdint>
 #include <string_view>
@@ -98,3 +99,17 @@ protected:
 using unique_dll = unique_library<DLL::handle_t>;
 
 }}
+
+SB_PLATFORM_DEPENDS
+
+//#if !defined(SB_LIBPLATFORM_INTERNAL)
+//SB_PLATFORM_DEPENDS()
+//#endif
+
+//#if !defined(SB_LIBPLATFORM_INTERNAL)
+//#if defined(SBDEBUG)
+//	#pragma comment(lib, "sbWindows_static_x64_debug.lib")
+//#elif defined(SBRELEASE)
+//	#pragma comment(lib, "sbWindows_static_x64_release.lib")
+//#endif
+//#endif

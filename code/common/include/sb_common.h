@@ -9,22 +9,50 @@
 #error "unsupported platform"
 #endif
 #if defined(SBWIN64)
-	#define SB_EXPORT_LIB extern "C" __declspec(dllexport)
-	#define SB_IMPORT_LIB extern "C" __declspec(dllimport)
+	#define SB_EXPORT_LIB __declspec(dllexport)
+	#define SB_IMPORT_LIB __declspec(dllimport)
 	#define SB_EXTERN_LIB extern "C"
 	#define SB_LOCAL      
 	#if defined(SBLOCAL)
 		#define SB_EXPORT_TYPE SB_LOCAL
 	#else
-		#define SB_EXPORT_TYPE SB_EXPORT_LIB
+		#define SB_EXPORT_TYPE SB_EXTERN_LIB SB_EXPORT_LIB
+		#define SB_IMPORT_TYPE SB_EXTERN_LIB SB_IMPORT_LIB
 	#endif
 
 	#if 0 // expected main declaration
-		SB_EXPORT_LIB int SB_STDCALL main(int _nArgs = 0, const char* const pArgs[] = nullptr);
+		SB_EXTERN_LIB int SB_STDCALL main(int _nArgs = 0, const char* const pArgs[] = nullptr);
 	#endif
 #else
 #error "unsupported platform"
 #endif
+
+#if !defined(SB_LIBPLATFORM_INTERNAL)
+#if defined( SBWIN32 ) || defined( SBWIN64 )
+	#define SB_PLATFORM_PROJECT	"sbWindows_static"
+	#define SB_LIB_EXTENSION	".lib"
+#else
+	#error "Undefined platform"
+#endif
+#if defined( _M_X64 )
+	#define SB_ARCH_SUFFIX	"_x64"
+#else
+	#error "Undefined platform"
+#endif
+#if defined(SBDEBUG)
+	#define SB_TARGET_SUFFIX "_debug"
+#elif defined(SBRELEASE)
+	#define SB_TARGET_SUFFIX "_release"
+#else
+	#define SB_TARGET_SUFFIX "_final"
+#endif
+
+#define SB_PLATFORM_DEPEND_NAME	SB_PLATFORM_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
+#define SB_PLATFORM_DEPENDS	__pragma( comment( lib, SB_PLATFORM_DEPEND_NAME ) )
+#else
+#define SB_PLATFORM_DEPENDS
+#endif
+
 
 #if defined(SBDEBUG)
 	#define SBCONSOLE 1 // TODO : Fix SBCONSOLE !! It works really badly with unicode input, especially mixing cout and wcout

@@ -34,7 +34,8 @@ struct ref_ptr
 	operator bool() const { return Get() != nullptr; }
 
 	auto Release() { auto refCount = raw ? raw->Release() : 0; raw = nullptr; return refCount; }
-	void** ReleaseAndGetAddressOf() { Release(); return reinterpret_cast<void**>( GetAddressOf() ); }
+		template< typename interface_t = type_t >
+	interface_t** ReleaseAndGetAddressOf() { Release(); return reinterpret_cast<interface_t**>( GetAddressOf() ); }
 
 	type_t* operator ->() { return Get(); }
 	type_t* operator ->() const { return Get(); }

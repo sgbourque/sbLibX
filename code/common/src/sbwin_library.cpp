@@ -1,12 +1,12 @@
-﻿#include "common/include/sb_library.h"
+﻿#include <common/include/sb_library.h>
 
 #include <common/include/sb_common.h>
 namespace SB { namespace LibX {
 struct SystemBinaryHeader;
 }}
-SB_IMPORT_LIB sbLibX::DLL::handle_t __stdcall LoadLibraryA( const char* moduleName );
-SB_IMPORT_LIB int32_t  SB_STDCALL GetLastError();
-SB_IMPORT_LIB uint32_t SB_STDCALL FreeLibrary( sbLibX::DLL::handle_t moduleHandle );
+SB_IMPORT_TYPE sbLibX::DLL::handle_t __stdcall LoadLibraryA( const char* moduleName );
+SB_IMPORT_TYPE int32_t  SB_STDCALL GetLastError();
+SB_IMPORT_TYPE uint32_t SB_STDCALL FreeLibrary( sbLibX::DLL::handle_t moduleHandle );
 
 
 #include <cstdint>

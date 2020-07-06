@@ -4,7 +4,7 @@ namespace SB { namespace LibX {
 struct Configuration;
 }}
 
-#include "common/include/internal/interface_vst_base.h"
+#include <common/include/internal/interface_vst_base.h>
 #include <common/include/internal/ref_ptr.h>
 
 #include <vector>

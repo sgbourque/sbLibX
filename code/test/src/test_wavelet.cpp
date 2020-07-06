@@ -165,6 +165,11 @@ constexpr sample_type plus_two  =  2.0f;//	static_assert( plus_two  ==  2.0f );
 //	return std::make_tuple(value.value / max_value, max_value);
 //}
 
+#ifdef __clang__
+// It is the intended behavior for this sample at this stage
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wunreachable-code"
+#endif
 
 SB_EXPORT_TYPE int SB_STDCALL test_wavelet([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
@@ -181,6 +186,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_wavelet([[maybe_unused]] int argc, [[maybe_un
 	constexpr size_t packet_count = 300; // assuming at most 192kHz, this allows down to 20Hz signal analysis
 	using buffer = std::array<packet, packet_count>;
 
+	static_assert( sizeof( buffer ) / sizeof(sample_type) == packet_size * packet_count );
 	[[maybe_unused]] constexpr size_t sample_count = packet_size * packet_count; // assuming at most 192kHz, this allows down to 20Hz signal analysis
 
 	return 0;

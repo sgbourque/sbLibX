@@ -196,7 +196,7 @@ using config_t = sbLibX::Windows::ApplicationConfiguration;
 template<xhash_t HASH> using config_traits = config_t::data_traits<HASH>;
 template<xhash_t HASH> using key_traits = typename config_traits<HASH>::key_traits_t;
 
-SB_EXPORT_TYPE int SB_STDCALL win32_main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	using sbLibX::operator ""_xhash64;
 	using sbLibX::StructuredBuffer::get;

@@ -4,7 +4,7 @@ namespace SB { namespace LibX {
 struct Configuration;
 }}
 
-#include "common/include/internal/interface_asio_base.h"
+#include <common/include/internal/interface_asio_base.h>
 #include <common/include/internal/ref_ptr.h>
 
 #include <vector>
@@ -47,9 +47,4 @@ using asio_device = ASIO::unique_device;
 
 }}
 
-
-#if defined(SBDEBUG)
-#pragma comment(lib, "sbWindows_x64_debug.lib")
-#elif defined(SBRELEASE)
-#pragma comment(lib, "sbWindows_x64_release.lib")
-#endif
+SB_PLATFORM_DEPENDS
