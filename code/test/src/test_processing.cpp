@@ -25,6 +25,10 @@ using InstanceHandle = ref_ptr<IDXGIFactory>; // IDXGIFactory4
 using AdapterHandle = ref_ptr<IDXGIAdapter>; // IDXGIAdapter4
 using DeviceHandle = ref_ptr<ID3D12Device>; // ID3D12Device6
 
+#ifndef SB_LIB_EXPORT
+#define SB_LIB_EXPORT 
+#endif
+
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL

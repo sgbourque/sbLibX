@@ -43,41 +43,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\test_processing.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
-    <ClCompile Include="src\test_main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\test_parser.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='final-exec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='final|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\test_vst.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-      </ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\test_vulkan.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\test_wavelet.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
-      </ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\test_win32.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\test_main.cpp" />
+    <ClCompile Include="src\test_parser.cpp" />
+    <ClCompile Include="src\test_vst.cpp" />
+    <ClCompile Include="src\test_vulkan.cpp" />
+    <ClCompile Include="src\test_wavelet.cpp" />
+    <ClCompile Include="src\test_win32.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

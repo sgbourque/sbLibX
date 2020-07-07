@@ -18,7 +18,7 @@
     <ClInclude Include="include\sbWindows_precompile.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\sb_windows_registry.h">
+    <ClInclude Include="include\sbwin_registry.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -26,16 +26,16 @@
     <ClCompile Include="src\sb_windows.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\sb_windows_registry.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\sbwin_interface_asio.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\sbwin_interface_vst.cpp">
+    <ClCompile Include="src\sbwin_registry.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\sbwin_library.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sbwin_interface_vst.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,4 +1,4 @@
-#include <common/include/sb_windows_registry.h>
+#include <common/include/sbwin_registry.h>
 #include <common/include/sb_common.h>
 
 #include <unordered_map>

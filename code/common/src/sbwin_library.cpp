@@ -217,7 +217,7 @@ struct SystemFileHeader
 	};
 };
 
-export_function_iterator::export_function_iterator( const handle_t module, uint32_t hint )
+SB_WIN_EXPORT export_function_iterator::export_function_iterator( const handle_t module, uint32_t hint )
 {
 	if( module )
 	{
@@ -246,7 +246,7 @@ export_function_iterator::export_function_iterator( const handle_t module, uint3
 }
 
 template<>
-unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::load( const char* moduleName )
+SB_WIN_EXPORT unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::load( const char* moduleName )
 {
 	result_t result = handle ? unload( std::move( handle ) ) : 0;
 	if( result < 0 )
@@ -261,7 +261,7 @@ unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::load( con
 }
 
 	template<>
-unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::unload( handle_t module )
+SB_WIN_EXPORT unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::unload( handle_t module )
 {
 	result_t result = 0;
 	if( module )
@@ -272,14 +272,14 @@ unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::unload( h
 	return result;
 }
 
-#pragma optimize("", off)
 	template<>
-function_helper unique_library<DLL::handle_t>::operator[]( std::string_view functionName ) const
+SB_WIN_EXPORT function_helper unique_library<DLL::handle_t>::operator[]( std::string_view functionName ) const
 {
+	//Ideally, we should build a name -> function hashmap
+	//function_helper helper{ GetProcAddress( handle, functionName.data() ) };
 	for( auto it : *this )
 		if( functionName.compare( it.first ) == 0 )
 			return function_helper{ it.second };
-	////function_helper helper{ GetProcAddress( handle, functionName.data() ) };
 	return function_helper{nullptr};
 }
 

@@ -21,6 +21,10 @@ using InstanceHandle = VkInstance;
 using AdapterHandle = VkPhysicalDevice;
 using DeviceHandle = VkDevice;
 
+#ifndef SB_LIB_EXPORT
+#define SB_LIB_EXPORT 
+#endif
+
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL

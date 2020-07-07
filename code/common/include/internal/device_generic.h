@@ -2,13 +2,17 @@
 #error "If you see this, you probably messed up something..."
 #endif
 
-InstanceHandle CreateInstance( const Configuration* config = nullptr );
-bool DestroyInstance( InstanceHandle instance, const Configuration* config = nullptr);
+#ifndef SB_LIB_EXPORT
+#define SB_LIB_EXPORT SB_IMPORT_LIB
+#endif
+
+SB_LIB_EXPORT InstanceHandle CreateInstance( const Configuration* config = nullptr );
+SB_LIB_EXPORT bool DestroyInstance( InstanceHandle instance, const Configuration* config = nullptr);
 
 #ifndef SBLIB_CUSTOM_ADAPTER_ARRAY
 using adapter_array_t = std::vector<AdapterHandle>;
 #endif
-adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
+SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
 
 #ifndef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 struct DeviceInfo
@@ -23,10 +27,10 @@ struct DeviceInfo
 	uint8_t  uid[16];
 };
 #endif
-DeviceInfo GetDeviceInfo(AdapterHandle adapter);
+SB_LIB_EXPORT DeviceInfo GetDeviceInfo(AdapterHandle adapter);
 
-DeviceHandle CreateDevice(AdapterHandle adapter, const Configuration* config = nullptr);
-bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);
+SB_LIB_EXPORT DeviceHandle CreateDevice(AdapterHandle adapter, const Configuration* config = nullptr);
+SB_LIB_EXPORT bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);
 
 struct unique_instance
 {
@@ -89,3 +93,5 @@ struct unique_device
 public:
 	DeviceHandle handle;
 };
+
+#undef SB_LIB_EXPORT

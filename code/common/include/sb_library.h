@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <string_view>
 
+#ifndef SB_WIN_EXPORT
+#define SB_WIN_EXPORT SB_IMPORT_LIB
+#endif
+
 namespace SB { namespace LibX {
 
 	template< typename __handle_type >
@@ -17,7 +21,7 @@ using handle_t = SystemBinaryHeader*;
 class export_function_iterator
 {
 public:
-	export_function_iterator( const handle_t module, uint32_t hint = 0 );
+	SB_WIN_EXPORT export_function_iterator( const handle_t module, uint32_t hint = 0 );
 
 	export_function_iterator operator ++() { if( nameTable < nameTableEnd ) ++nameTable; if( functionTable < functionTableEnd ) ++functionTable; return *this; }
 
@@ -81,16 +85,16 @@ struct unique_library
 	handle_t Detach() { return std::move( handle ); }
 	void Release() { if( handle ) unload( std::move( handle ) ); handle = nullptr; }
 
-	result_t load( const char* moduleName );
-	result_t load( const wchar_t* moduleName );
-	result_t unload( handle_t module );
+	SB_WIN_EXPORT result_t load( const char* moduleName );
+	SB_WIN_EXPORT result_t load( const wchar_t* moduleName );
+	SB_WIN_EXPORT result_t unload( handle_t module );
 	iterator_t begin() const { return iterator_t{ handle }; }
 	iterator_t end() const { return iterator_t{ handle, ~0u }; }
 
 	operator handle_t() const { return handle; }
 	operator bool() const { return handle; }
 
-	function_helper operator[]( std::string_view functionName ) const;
+	SB_WIN_EXPORT function_helper operator[]( std::string_view functionName ) const;
 
 protected:
 	handle_t handle = nullptr;

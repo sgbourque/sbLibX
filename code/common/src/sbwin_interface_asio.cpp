@@ -1,5 +1,5 @@
 #include <common/include/sb_interface_asio.h>
-#include <common/include/sb_windows_registry.h>
+#include <common/include/sbwin_registry.h>
 
 #include <unordered_map>
 #include <iostream>
@@ -190,8 +190,8 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 public:
 	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, { 0x9F,0x0E,0xF5,0x41,0x72,0xB0,0x71,0x44, } };
 
-	friend InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
-	friend bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);
+	friend SB_WIN_EXPORT InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
+	friend SB_WIN_EXPORT bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);
 	static InstanceImpl1 sInstance;
 
 public:
@@ -200,11 +200,11 @@ public:
 InstanceImpl1 InstanceImpl1::sInstance{};
 
 //////////////////////////////////////////////////////////////////////////
-InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config)
+SB_WIN_EXPORT InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config)
 {
 	return &InstanceImpl1::sInstance;
 }
-bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config)
+SB_WIN_EXPORT bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config)
 {
 	instance = nullptr;
 	return ( InstanceImpl1::sInstance.ref_count == 0 );
@@ -229,7 +229,7 @@ auto FindDeviceCLSID( HKEY hkey, std::wstring_view keyName )
 
 
 using adapter_array_t = std::vector<AdapterHandle>;
-adapter_array_t EnumerateAdapters(InstanceHandle instance, size_t maxCount)
+SB_WIN_EXPORT adapter_array_t EnumerateAdapters(InstanceHandle instance, size_t maxCount)
 {
 	static constexpr wchar_t ASIO_PATH[] = L"software\\asio";
 	using instance_t = InstanceImpl1;
@@ -287,7 +287,7 @@ static std::wstring GetAsioDllPath( CLSID deviceId )
 	return path;
 }
 
-DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)
+SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)
 {
 	DeviceHandle handle{};
 	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
@@ -305,7 +305,7 @@ DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused
 	}
 	return handle;
 }
-bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* config)
+SB_WIN_EXPORT bool DestroyDevice(DeviceHandle device, [[maybe_unused]] const Configuration* config)
 {
 	refcount_t refCount = ~0u;
 	if( device )

@@ -23,6 +23,12 @@ using InstanceHandle = ref_ptr<VST::Instance>;
 using AdapterHandle = ref_ptr<VST::Adapter>;
 using DeviceHandle = ref_ptr<VST::Device>;
 
+#ifdef SB_WIN_EXPORT
+#define SB_LIB_EXPORT SB_WIN_EXPORT
+#else
+#define SB_LIB_EXPORT SB_IMPORT_LIB
+#endif
+
 #define SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>

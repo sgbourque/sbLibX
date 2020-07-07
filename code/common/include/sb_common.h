@@ -1,6 +1,19 @@
 #pragma once
 
 //#include <common/include/internal/compiler_specific.h>
+#if defined( _M_X64 )
+	#define SB_ARCH_SUFFIX	"_x64"
+#else
+	#error "Undefined platform"
+#endif
+#if defined(SBDEBUG)
+	#define SB_TARGET_SUFFIX "_debug"
+#elif defined(SBRELEASE)
+	#define SB_TARGET_SUFFIX "_release"
+#else
+	#define SB_TARGET_SUFFIX "_final"
+#endif
+
 #if defined(SBWIN64)
 	#define SB_FASTCALL    __fastcall
 	#define SB_STDCALL     __stdcall
@@ -27,30 +40,33 @@
 #error "unsupported platform"
 #endif
 
-#if !defined(SB_LIBPLATFORM_INTERNAL)
+
+
 #if defined( SBWIN32 ) || defined( SBWIN64 )
-	#define SB_PLATFORM_PROJECT	"sbWindows_static"
 	#define SB_LIB_EXTENSION	".lib"
 #else
 	#error "Undefined platform"
 #endif
-#if defined( _M_X64 )
-	#define SB_ARCH_SUFFIX	"_x64"
+#if !defined(SB_LIBX_INTERNAL)
+	#define SB_LIB_PROJECT	"sbLibX"
+	#define SB_LIB_DEPEND_NAME	SB_LIB_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
+	#define SB_LIB_DEPENDS	__pragma( comment( lib, SB_LIB_DEPEND_NAME ) )
+#else
+	#define SB_LIB_DEPENDS
+	#define SB_LIBPLATFORM_INTERNAL
+#endif
+
+#if !defined(SB_LIBPLATFORM_INTERNAL)
+#if defined( SBWIN32 ) || defined( SBWIN64 )
+	#define SB_PLATFORM_PROJECT	"sbWindows"
 #else
 	#error "Undefined platform"
 #endif
-#if defined(SBDEBUG)
-	#define SB_TARGET_SUFFIX "_debug"
-#elif defined(SBRELEASE)
-	#define SB_TARGET_SUFFIX "_release"
-#else
-	#define SB_TARGET_SUFFIX "_final"
-#endif
 
-#define SB_PLATFORM_DEPEND_NAME	SB_PLATFORM_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
-#define SB_PLATFORM_DEPENDS	__pragma( comment( lib, SB_PLATFORM_DEPEND_NAME ) )
+	#define SB_PLATFORM_DEPEND_NAME	SB_PLATFORM_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
+	#define SB_PLATFORM_DEPENDS	__pragma( comment( lib, SB_PLATFORM_DEPEND_NAME ) )
 #else
-#define SB_PLATFORM_DEPENDS
+	#define SB_PLATFORM_DEPENDS
 #endif
 
 
