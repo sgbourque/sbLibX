@@ -5,8 +5,12 @@
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
-	auto instanceHandle = sbLibX::ASIO::CreateInstance();
-	auto adapterArray = EnumerateAdapters( instanceHandle );
+	sbLibX::ASIO::adapter_array_t adapterArray{};
+	{
+		// make sure adapterArray is alright passed instanceHandle being released
+		auto instanceHandle = sbLibX::ASIO::CreateInstance();
+		adapterArray = EnumerateAdapters( instanceHandle );
+	}
 	std::vector<sbLibX::asio_device> deviceArray;
 	deviceArray.reserve( adapterArray.size() );
 	for( auto adapter : adapterArray )

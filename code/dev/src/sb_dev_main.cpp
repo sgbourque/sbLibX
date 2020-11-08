@@ -254,6 +254,8 @@ int WinMain(
 			if (main_module && !function_name.empty())
 			{
 				local_main = main_module[ function_name ];
+				if( !local_main )
+					local_main = main_module[ main_module.alias() + "_" + function_name ];
 				if (local_main)
 					std::cout << "function '" << function_name << "' found\n";
 				else
@@ -275,6 +277,7 @@ int WinMain(
 			else if (!function_name.empty() && !local_main)
 			{
 				// unable to find entry point
+				std::cerr << "cannot find entry '" << function_name << "'" << std::endl;
 				return_code = kError;
 			}
 			else if (!local_main && return_code == kExecute)

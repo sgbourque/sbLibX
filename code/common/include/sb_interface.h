@@ -17,7 +17,7 @@ namespace SB { namespace LibX
 
 // Each lib should make sure any resource handle it references is safe.
 	template< typename traits = xhash_traits_t >
-struct HandleBase { using hash_t = typename traits::value_t; using pointer_t = typename traits::pointer_t; union { hash_t value; pointer_t pointer; } key; };
+struct HandleBase { using hash_t = typename traits::hash_t; using char_ptr_t = typename traits::char_ptr_t; union { hash_t hash; char_ptr_t ptr; } key; };
 
 	template< typename _HANDLE_TYPE_ >
 inline constexpr _HANDLE_TYPE_ get_value(_HANDLE_TYPE_ handle);
@@ -25,9 +25,9 @@ inline constexpr _HANDLE_TYPE_ get_value(_HANDLE_TYPE_ handle);
 inline constexpr _HANDLE_TYPE_ get_pointer(_HANDLE_TYPE_ handle);
 
 	template< typename _TRAITS_ >
-inline constexpr auto get_value(HandleBase<_TRAITS_> handle)	{ return handle.key.value; }
+inline constexpr auto get_value(HandleBase<_TRAITS_> handle)	{ return handle.key.hash; }
 	template< typename _TRAITS_ >
-inline constexpr auto get_pointer(HandleBase<_TRAITS_> handle) { return handle.key.pointer; }
+inline constexpr auto get_pointer(HandleBase<_TRAITS_> handle) { return handle.key.ptr; }
 
 using BaseHandle   = HandleBase<>;
 constexpr BaseHandle InvalidHandle = BaseHandle{};

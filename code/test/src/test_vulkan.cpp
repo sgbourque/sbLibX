@@ -539,7 +539,8 @@ int TestVulkan()
 		vulkan_devices.emplace_back(std::make_tuple(vulkan_device(adapter), device_info));
 	}
 
+	// check see what happens with more than one vulan instance
 	[[maybe_unused]]
-	auto vulkan_instance = vulkan::CreateInstance();
+	auto another_vulkan_instance = vulkan::CreateInstance();
 	return 0;
 }

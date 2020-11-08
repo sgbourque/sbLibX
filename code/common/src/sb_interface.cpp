@@ -88,7 +88,7 @@ UniqueChunk<uint8_t> StructuredBuffer<my_type>::GetData(my_type& obj, xhash_t ha
 #define SBLIBX_VERSION_STRING CSTR(SBLIBX_VERSION_MAJOR) "." CSTR(SBLIBX_VERSION_MINOR) "." CSTR(SBLIBX_VERSION_REVISION) 
 
 constexpr auto SBLibX_MainInstance_ref = "SBLibX " SBLIBX_VERSION_STRING ""_xhash64;
-constexpr BaseHandle SBLibX_MainInstance_handle{ SBLibX_MainInstance_ref.hash, };
+constexpr BaseHandle SBLibX_MainInstance_handle{ SBLibX_MainInstance_ref.get_key(), };
 
 auto GetNameString(BaseHandle resource)
 {

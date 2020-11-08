@@ -105,7 +105,17 @@ SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")
 	SB_STRUCT_MEMBER(module_config_t, config) = {.name = "\0\0\0"};
 	SB_STRUCT_MEMBER(uint8_t[64 * 1024], buffer) = {};
 	SB_STRUCT_MEMBER(uint8_t, a_buffer_with_byte_type_instead_of_carray_type)[0x78] = {};
-	virtual ~custom_class_t() { /*std::cout << "bye from " << (config.className.name[0] ? std::string(config.className) + "/" : "") << config.name << "/" << name; "\n";*/ }
+	virtual ~custom_class_t()
+	{
+		say( "bye!" );
+	}
+	virtual void say( std::string_view msg )
+	{
+		std::cerr
+			<< "'" << ( config.className.get_value()[0] ? std::string( config.className ) + "/" : "" ) << config.name << "/" << name << "'"
+			<< ": " << msg << "\n";
+	}
+
 
 	// TODO: This will not work as I can't (yet) detect static data to process differently.
 	// Also, I will have to deal with (virtual/non-virtual) functions (functions should be easier via enable_if).
@@ -154,7 +164,7 @@ SB_STRUCT_END(compile_stress_t)
 		using type_t = struct_buf;
 		using hash_traits_t = /*_TRAITS_;*//**/sbLibX::xhash_traits_t;/**/
 		using hash_string_view_t = sbLibX::xhash_string_view<hash_traits_t>;
-		using hash_t = typename hash_traits_t::value_t;
+		using hash_t = typename hash_traits_t::hash_t;
 		//static constexpr auto options = std::make_tuple({});
 		inline static constexpr hash_string_view_t struct_hash = "struct_buf" " " "" "";
 		
@@ -270,11 +280,11 @@ SB_EXPORT_TYPE int SB_STDCALL test_hash([[maybe_unused]] int argc, [[maybe_unuse
 	//std::cin.getline(name.data(), name.size());
 	get<".name"_xhash64>(config) = std::string_view(name.data());
 
-	std::cout << ".name"_xhash64 << ": " << get<".name"_xhash64>(config) << "\n";
-	std::cout << ".className"_xhash64 << ": " << get<".className"_xhash64>(config) << "\n";
-	//std::cout << ".anonymous_vec4f"_xhash64 << ": " << get<".anonymous_vec4f"_xhash64>(config) << "\n";
-	//std::cout << ".anonymous_vec4f"_xhash64 << ": " << get(config, ".anonymous_vec4f"_xhash64) << "\n";
-	std::cout << ".moduleFlags"_xhash64 << ": " << get<".moduleFlags"_xhash64>(config) << "\n";
+	std::cout << "\t" << ".name"_xhash64 << ": " << get<".name"_xhash64>(config) << "\n";
+	std::cout << "\t" << ".className"_xhash64 << ": " << get<".className"_xhash64>(config) << "\n";
+	//std::cout << "\t" << ".anonymous_vec4f"_xhash64 << ": " << get<".anonymous_vec4f"_xhash64>(config) << "\n"; // won't compile
+	//std::cout << "\t" << ".anonymous_vec4f"_xhash64 << ": " << get(config, ".anonymous_vec4f"_xhash64) << "\n"; // won't compile
+	std::cout << "\t" << ".moduleFlags"_xhash64 << ": " << get<".moduleFlags"_xhash64>(config) << "\n";
 
 	//std::cout << "Also, please " << std::string_view(custom.try_not_to_hash)
 	//	<< "(do_weird_impl(custom).buffer) : "

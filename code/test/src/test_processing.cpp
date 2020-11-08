@@ -11,6 +11,7 @@ struct Configuration;
 //	#define NOMINMAX
 //	#endif
 //#endif
+#define COM_NO_WINDOWS_H
 #include <dxgi1_6.h>
 #include <d3d12.h>
 
@@ -204,21 +205,22 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 
 	auto vendor_order = [](uint32_t vendor) -> uint32_t
 	{
-		switch (vendor)
+		enum vendor_t
 		{
-		case 0x10DE: // NVIDIA
-			return 0x00000000;
-		case 0x1002: // AMD
-			return 0x00000001;
-		case 0x8086: // Intel
-			return 0x00000400;
-		case 0x1414: // Microsoft
-			return 0x80000000;
-		default:
-			__debugbreak(); // unknown vendor
-			break;
+			NVIDIA    = 0x10DE,
+			AMD       = 0x1002,
+			Intel     = 0x8086,
+			Microsoft = 0x1414,
+		};
+		switch( static_cast<vendor_t>(vendor) )
+		{
+		case vendor_t::NVIDIA:    return 0x00000100;
+		case vendor_t::AMD:       return 0x00000200;
+		case vendor_t::Intel:     return 0x00000400;
+		// Microsoft is usually a software (possibly hardware accelerated) device, so considered as debug-only
+		case vendor_t::Microsoft: return 0x80000000;
 		}
-		return 0xFFFFFFFF;
+		return vendor;
 	};
 	constexpr uint32_t kDebugDeviceStart = 0x00010000;
 
@@ -234,22 +236,29 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 			return vendor_order(device1_info.vendorID) < vendor_order(device2_info.vendorID);
 		};
 
-		std::cerr << "Creating vulkan Device(s)" << std::endl;
-		auto vulkan_adapters = EnumerateAdapters(test_vulkan);
-		std::sort(vulkan_adapters.begin(), vulkan_adapters.end(), vulkan_adapter_sort_predicate);
-
-		vulkan_devices.reserve(vulkan_adapters.size());
-		for (const auto& adapter : vulkan_adapters)
 		{
-			vulkan::DeviceInfo device_info = vulkan::GetDeviceInfo(adapter);
-			std::cerr << "\t" << device_info.description << std::endl;
-			// TODO : filter by requirements from config
-			vulkan_devices.emplace_back(std::make_tuple(vulkan_device(adapter), device_info));
+			std::cerr << "Creating vulkan Device(s)" << std::endl;
+			auto vulkan_adapters = EnumerateAdapters( test_vulkan );
+			std::sort( vulkan_adapters.begin(), vulkan_adapters.end(), vulkan_adapter_sort_predicate );
+
+			vulkan_devices.reserve( vulkan_adapters.size() );
+			for( const auto& adapter : vulkan_adapters )
+			{
+				vulkan::DeviceInfo device_info = vulkan::GetDeviceInfo( adapter );
+				// TODO : filter by requirements from config
+				vulkan_devices.emplace_back( std::make_tuple( vulkan_device( adapter ), device_info ) );
+			}
 		}
 
 		for (const auto& device : vulkan_devices)
 			if (std::get<0>(device) && vendor_order(std::get<1>(device).vendorID) < kDebugDeviceStart)
 				++vulkanActiveDeviceCount;
+
+		for( const auto& device : vulkan_devices )
+		{
+			auto device_info = std::get<1>( device );
+			std::cerr << "\t" << device_info.description << std::endl;
+		}
 	}
 
 	dx12_instance test_dx12{};
@@ -264,25 +273,25 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 			return vendor_order(device1_info.vendorID) < vendor_order(device2_info.vendorID);
 		};
 
-		std::cerr << "Creating DirectX12 Device(s)" << std::endl;
-		auto dx12_adapters = EnumerateAdapters(test_dx12);
-		std::sort(dx12_adapters.begin(), dx12_adapters.end(), dx12_adapter_sort_predicate);
-
-		dx12_devices.reserve(dx12_adapters.size());
 		{
-			for (const auto& adapter : dx12_adapters)
+			std::cerr << "Creating DirectX12 Device(s)" << std::endl;
+			auto dx12_adapters = EnumerateAdapters( test_dx12 );
+			std::sort(dx12_adapters.begin(), dx12_adapters.end(), dx12_adapter_sort_predicate);
+
+			dx12_devices.reserve(dx12_adapters.size());
 			{
-				dx12::DeviceInfo device_info = dx12::GetDeviceInfo(adapter);
-				// TODO : filter by requirements from config
-				if ( vendor_order(device_info.vendorID) <= kDebugDeviceStart)
+				for (const auto& adapter : dx12_adapters)
 				{
-					std::cerr << "\t" << device_info.description << std::endl;
-					dx12_devices.emplace_back(std::make_tuple(dx12_device(adapter), device_info));
-				}
-				else
-				{
-					std::cerr << "\t" << device_info.description << " (skipped)" << std::endl;
-					dx12_devices.emplace_back(std::make_tuple(nullptr, device_info));
+					dx12::DeviceInfo device_info = dx12::GetDeviceInfo(adapter);
+					// TODO : filter by requirements from config
+					if ( vendor_order(device_info.vendorID) <= kDebugDeviceStart)
+					{
+						dx12_devices.emplace_back(std::make_tuple(dx12_device(adapter), device_info));
+					}
+					else
+					{
+						dx12_devices.emplace_back(std::make_tuple(nullptr, device_info));
+					}
 				}
 			}
 		}
@@ -290,12 +299,21 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 		for (const auto& device : dx12_devices)
 			if(std::get<0>(device) && vendor_order(std::get<1>(device).vendorID) < kDebugDeviceStart)
 				++dx12ActiveDeviceCount;
+
+		for( const auto& device : dx12_devices )
+		{
+			auto device_info = std::get<1>( device );
+			std::cerr << "\t" << device_info.description;
+			if( !std::get<0>(device) )
+				std::cerr << " (" << (vendor_order( device_info.vendorID ) <= kDebugDeviceStart ? "" : "debug: ") << "skipped)";
+			std::cerr << std::endl;
+		}
 	}
 
 	{
 		using namespace vulkan;
 		//vulkan::DeviceHandle primary_device;
-		//
+		// TODO
 	}
 	{
 		using namespace dx12;
@@ -307,8 +325,6 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 		ref_ptr<ID3D12CommandQueue> debugComputeCommandQueue;
 		if (dx12ActiveDeviceCount > 0)
 		{
-
-
 			HRESULT hr = S_OK;
 			primary_device = std::get<0>(dx12_devices[0]);
 			D3D12_COMMAND_QUEUE_DESC primaryComputeQueueDesc{

@@ -277,10 +277,16 @@ SB_WIN_EXPORT function_helper unique_library<DLL::handle_t>::operator[]( std::st
 {
 	//Ideally, we should build a name -> function hashmap
 	//function_helper helper{ GetProcAddress( handle, functionName.data() ) };
+	function_helper value{ nullptr };
 	for( auto it : *this )
+	{
 		if( functionName.compare( it.first ) == 0 )
-			return function_helper{ it.second };
-	return function_helper{nullptr};
+		{
+			value = function_helper{ it.second };
+			break;
+		}
+	}
+	return value;
 }
 
 

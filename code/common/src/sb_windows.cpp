@@ -1,5 +1,5 @@
 #include <common/include/sb_hash.h>
-#include <common/include/sb_interface.h>
+//#include <common/include/sb_interface.h>
 #include <common/include/sb_structured_buffer.h>
 #include <common/include/sb_common.h>
 
@@ -141,7 +141,7 @@ constexpr data_info_t get([[maybe_unused]] _IMPLEMENTATION_* buffer, [[maybe_unu
 		for (size_t offset = 0; offset < key_info_count; ++offset)
 		{
 			auto key_info = buffer->key_info[(hint + offset) % key_info_count];
-			if (key_info.name_hash.hash == hash)
+			if (key_info.name_hash.get_key() == hash)
 				return _IMPLEMENTATION_::data_info[key_info.data_index];
 #if defined(SBDEBUG)
 			std::cerr << "^";
@@ -157,10 +157,10 @@ constexpr return_type get(_implementation_* buffer, xhash_t hash, return_type va
 {
 	const data_info_t datainfo = get(buffer, hash);
 	const auto keyinfo = buffer ? buffer->key_info[datainfo.key_index] : decltype(buffer->key_info[datainfo.key_index]){};
-	if (keyinfo.name_hash.hash == hash)
+	if (keyinfo.name_hash.get_key() == hash)
 	{
-		if (keyinfo.type_hash.hash != get_type_hash<return_type>().hash)
-			std::cerr << std::endl << "type conversion warning : " << keyinfo.type_hash.name << " -> " << get_type_hash<return_type>().name << std::endl;
+		if (keyinfo.type_hash.get_key() != get_type_hash<return_type>().get_key())
+			std::cerr << std::endl << "type conversion warning : " << keyinfo.type_hash.get_value() << " -> " << get_type_hash<return_type>().get_value() << std::endl;
 		return get<return_type>(buffer, datainfo);
 	}
 	else

@@ -22,10 +22,17 @@ public:
 	bool unload() { aliases.clear(); auto old = handle; handle = nullptr; return unique_dll::unload( std::move(old) ); }
 
 	std::string name() const { return aliases.size() ? aliases[0] : std::string{}; }
-	std::string alias( int index = 1 ) const { return aliases.size() > index ? aliases[index] : std::string{}; }
+	std::string alias( int index = 0 ) const { return aliases.size() > index ? aliases[index] : std::string{}; }
 
 protected:
 	std::vector<std::string> aliases;
 };
+
+// TODO
+//class library_pool
+//{
+//protected:
+//	std::vector<library>
+//};
 
 }}} // namespace SB::LibX::Dev

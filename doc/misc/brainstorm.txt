@@ -1,0 +1,250 @@
+------
+sbLibX
+------
+C'est la catégorie des modules et de leurs relations.
+Le namespace SB est le conteneur permettant d'isoler les modules des autres APIs.
+
+-------
+Modules
+-------
+Un module correspond à une librarie isolée qui regroupe certaines fonctionnalités.
+La structure actuelle est généralement en mouvement et donc aucune règle quand à la disposition
+n'est strictement en place. Toutefois, certaines classifications tentent de regrouper les structures
+de façon à pouvoir être isolée (transféré de manière transparente d'une module à un autre) facilement,
+tant que les paramètres de compilation sont compatibles entre ces modules.
+
+Ces fonctionalités isolables forment des sous-modules chacune placée dans son namespace afin d'offrir une interface
+unie permettant d'accéder à chaque fonctionalitées.
+
+---------------
+Les interfaces 
+(data & objets)
+---------------
+Présentement, le fichier "sb_interface.h" est de la vidange, soyons franc. Il s'agissait ici de mon premier proof-of-concept
+d'accès générique à du data, qui devrait éventuellement mener à la classe SB::LibX::Configuration
+présente partout mais toujours ignorée. Le reste des sous-modules en progrès montre un tout autre type d'interface,
+s'apparentant beaucoup plus à la philosophie COM (et binairement compatible lorsque l'objet est un objet COM).
+On doit donc séparer deux type d'interfaces.
+
+1. L'interface des resources (data)
+Le premier type d'interface est une interface bas-niveau offrant
+les accès statiques et dynamiques optimisés, offrant des vue sur des structures de données bas niveau (PlainOldData).
+Il s'agit ici d'offrir l'accès aux propriétés d'une resource structurée et non pas de manipuler cette resource.
+
+Ainsi, éventuellement, "Configuration config" peut être utilisée comme une base de donnée (hash map, statique ou dynamique
+selon le type de configuration utilisé). Par exemple, on pourrait avoir :
+void InitializeModule( Configuration* config )
+{
+	using sbLibX::xhash_t;
+	using sbLibX::operator ""_xhash64;
+	if( config )
+	{
+		// In release, if config is a structured buffer, this should be optimized as
+		// auto mySetting = config->settingName;
+		auto mySetting = sbLibX::get<".settingName"_xhash64>( config );
+
+		// This one acceses the value dynamically. The return type cannot be inferred
+		// so a "datachunk" helper return class will accept the convertion to any
+		// data type, assuming the user knows the type.
+		float myDynamicFloatSetting = sbLibX::get( config, ".settingName"_xhash64 );
+
+		// If the data type is not known, structured member's type information can be accessed.
+		// In the future, this will not would not depends on C++ typeinfo at all but the current
+		// proof-in-concept state uses C++ typeinfo to get a working example (voir sb_windows.cpp).
+		auto hash = ".settingName"_xhash64;
+		const Configuration::data_info_t datainfo = sbLibX::get(config, hash);
+		const auto Configuration::keyinfo = config->key_info[datainfo.key_index];
+		if (keyinfo.name_hash.hash == hash)
+		{
+			if (keyinfo.type_hash.hash != get_type_hash<float>().hash)
+				std::cerr << std::endl << "type conversion warning : " << keyinfo.type_hash.name << " -> " << get_type_hash<return_type>().name << std::endl;
+
+			float myDynamicFloatSetting = sbLibX::get<float>( config, datainfo );
+		}
+	}
+}
+voir sb_windows.cpp pour la source de ce proof-of-concept (qui a beaucoup évolué dans ce fichier, depuis).
+Ainsi, depuis "sb_interface.h", "sb_windows.cpp" a mené à "sb_structured_buffer.h" par l'intermédiaie de "test_hash.cpp".
+À noter que la structure de donnée de Configuration n'a pas à être connue directement puisque la version de get utilisée
+peut avoir être placée à l'intérieur d'une librairie (cet accès pourrait être aussi optimal que l'accès direct via POD
+tout comme il pourrait s'agir d'un accès réseau ou autre).
+
+L'implémentation n'est pas encore finalisée, d'où pourquoi la Configuration est toujours inutilisée.
+En particulier, la hiérarchisation des données doit être implémentée de par des regroupements en sous-structures de données.
+Par exemple, on devraut pouvoir avoir une forme similaire à :
+void InitializeModule( Configuration* config )
+{
+	using sbLibX::xhash_t;
+	using sbLibX::operator ""_xhash64;
+	using sbLibX::operator ""_xpath64;
+	using sbLibX::get;
+
+	if( config )
+	{
+		my_custom_config_t* userConfig = sbLibX::get( config, "/user/my_custom_config"_xpath64 );
+		my_custom_config_t* systemConfig = sbLibX::get( config, "/system/my_custom_config"_xpath64 );
+		auto get_param = [userConfig, systemConfig]( xhash_t param ) -> float
+		{
+			my_custom_config_t::data_info_t userParamInfo = sbLibX::get( userConfig, param );
+			if( userParamInfo ) // (if key table is a dynamic hash table, this parameter might be in systemConfig but not in userConfig)
+				return sbLibX::get<float>( userConfig, userValue );
+			else
+				return sbLibX::get<float>( systemConfig, param ); // if not found, returns a predefined values (e.g., some NaN) or throws, depending on implementation
+		}
+
+		auto myParam0 = get_param( ".firstParam" );
+		// ...
+	}
+}
+
+2. L'interface des objets
+Similaire au modèle COM (et compatible au niveau binaire lorsque les objets sont préciséments issue de COM),
+les objets peuvent être créés suivant des fonctions statiques.
+
+Le modèle COM dispose de CoCreateInstance qui permet d'instancier un objet (une classe mumie d'une interface,
+tous deux pouvant être identiques). Le principal avantage de cette approche est d'avoir une interface unifiée
+pour regrouper la création des interfaces. Les désavantages sont que les classes doivent avoir été
+enregistrées en tant qu'objet COM par le système, se limitant ainsi qu'aux objets COM. De plus, aucune
+structure logique ne s'applique, impliquant que l'initialisation des objets d'un même module doivent être
+initialisés en suivant la documentation.
+
+Dans le cas présent, les interfaces de base permettent d'accéder aux l'objets fondamentaux (appelés devices)
+en trois étapes : instance (pourrait éventuellement être renommé en factory) -> adapter -> device. La raison
+du nom "instance" plutôt que "factory" est que la première interface que j'ai implémenté suivant ce schémas
+est vulkan, et ceci correspond à VkInstance. Dans le cas de directX l'équivalent est DXGIFactory et pour un composant
+COM générique, l'instance doit au moins faire un appel à CoInitializeEx.
+
+Pour le moment, les implémentations de bases sont disponible pour vulkan, DX12 et ASIO, offrant exactement la même interface.
+Soit namespace_t étant soit vulan, DX12 ou ASIO, alors la création respectivement de tous les
+VkDevice, ID3D12Device ou interface ASIO::Device (binairement compatible à l'interface ASIO de Steinberg) revient à
+
+{
+	auto instance = namespace::unique_instance{}; // ceci appelle CreateInstance automatiquement en assurant l'unicité de instance pour ce processus.
+	auto adapters = EnumerateAdapters(instance);
+
+	std::vector< std::tuple<namespace::unique_device, vulkan::DeviceInfo> > devices{};
+	vulkan_devices.reserve( vulkan_adapters.size() );
+	for (const auto& adapter : adapters)
+		devices.emplace_back( std::make_tuple(vulkan_device(adapter), vulkan::GetDeviceInfo(adapter)) );
+
+	// à partir d'ici, en supposant au moins 1 device disponible le premier device pourrait être accédé via
+	int device_index = 0;
+	namespace::DeviceHandle deviceHandle{};
+	if( devices.size() > device_index )
+		deviceHandle = devices[device_index];
+
+	// attention : le comportement est indéterminé si instance est détruit avant la fin de vie du dernier deviceHandle.
+	// il est donc recommendé (mais pas systématiquement nécessaire pour toute les libraries) de conserver l'instance
+	// valide tant et aussi longtemps qu'un device lui étant associé est valide.
+	// [Idéalement, cette limitaion devra être éventuellement soit enforcée ou encore éliminée par des garanties compile-time]
+}
+
+Au final, 6 fonctions sont garantir pour ce système :
+1/2.
+	SB_LIB_EXPORT InstanceHandle CreateInstance( const Configuration* config = nullptr );
+	SB_LIB_EXPORT bool DestroyInstance( InstanceHandle instance, const Configuration* config = nullptr);
+
+3/4.
+	SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
+	SB_LIB_EXPORT DeviceInfo GetDeviceInfo(AdapterHandle adapter);
+
+5/6.
+	SB_LIB_EXPORT DeviceHandle CreateDevice(AdapterHandle adapter, const Configuration* config = nullptr);
+	SB_LIB_EXPORT bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);
+
+Seules la définitions des types d'objets est dépendante de l'implémentations.
+
+
+----------------------
+      Le système      
+(modules & connexions)
+----------------------
+Chaque module offre l'un ou plusieurs de ces éléments :
+1. Des fonctions exportées de signature type main, soit
+
+SB_EXPORT_TYPE int SB_STDCALL function_name([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[]);
+
+qui peut être appelé soit à l'interne ou d'un module externe. On peut assumer que cette fonction sera appelé sur son propre
+thread. Plusieurs appels ne sont pas garantis d'être appelés du même thread à moins de le faire explicitement (responsabilité
+de l'appelant). Par conséquent, la préservation du contenu de la TLS n'est pas garanti entre deux appels.
+
+Pour le moment, l'export en DLL requiert une définition extern "C" pour l'appel. Éventuellement, l'idée sera
+de crypter les noms et d'offrir une forme de communication (compatible inter-processus) d'encryption publique/privée
+entre toute paire de modules. Seules les paires qui offrent une relation (uni ou bi directionnelle) aura une paire
+clé publique/privée lui étant associée, pouvant être respectivement reliés à l'IID de l'interface
+et au CLSID de la resource.
+
+Une fois les éléments mis en place, la communication inter-module (qui peut être intra ou inter processus)
+sera le prochain objectif.
+
+2. Des interfaces exportées via les fonctions de l'interface objet;
+
+Idéalement, tous les objets d'un module peut être obtenu à travers soit Instance ou Device, via un
+appel à un membre virtuel. Éventuellement, de nombreuses fonctions requise pourraient être converties
+en appel virtuel d'une interface template. Ceci permettrait de limiter le nombre de fonction exportée à 1 seule,
+CreateInstance, DestroyInstance étant le destructeur de l'interface, généralement contenu soit via un unique_instance
+(équivalent d'un unique_ptr) ou via un ref_ptr, équivalent d'un weak_ptr, basé sur un ref_count d'un tel unique_instance.
+
+
+3. Certains bindings statiques indépendants pourraient éventuellement être admissibles (ceci exigerait alors
+un mode de compilation hybride .lib/.dll ou .lib/.exe de la librairie). Aucun symbole ne peut être dupliqué dans
+les deux sous-modes hybridés. (à suivre)
+
+------------------------
+La structure haut niveau
+------------------------
+
+MainThread:
+Un module en mode standalone peut être considéré indépendant. Au besoin, il se connecte aux resources partagées
+par d'autres modules via la dll ou une .lib associée de tels modules. Si plusieurs modules sont en mode standalone,
+les connections passent nécessairement par un mode de compilation hybride, où le .lib offre l'accès à l'ouverture d'une
+communication interprocessus afin d'interagir avec des resources partagées.
+
+Les main thread étant en charge de l'évolution du module, chaque module autonome doit avoir au moins son propre thread.
+
+ModuleThread:
+Ce serait un main thread en mode standalone mais sous forme d'une dll, il s'agit plutôt d'un thread paralèlle au MainThread.
+Il y a autant de ModuleThread que de modules autonomes en cours d'utilisation.
+
+WorkerThread:
+Suivant un graphe orienté, un système de tâches utilise un certains nombre de threads réservés,
+dont les dépendences entre tâches forment le flow relationnel du graphe par les laisons entre entrées et sorties.
+Sauf en cas de conflit de priorité (lorsqu'une tâche de priorité plus élevée prend la place d'une tâche de priorité inférieure),
+une tâche co-dépendente est priorisée à la fin d'une tâche.
+
+E.g., supposons 2 threads et le graphe suivant
+
+ base0       base1      base2
+ /   \       /    \     /    \
+e00  e01    e10  e11   e20   e21
+ \   / \   /  \  /  \ /  \   /
+   a     b     c     d     e
+
+En supposant chaque tâche de complexité similaire, on pourrait avoir par exemple l'ordre d'éexcution suivante
+
+thread0    thread1
+base0      base1
+e00        e10
+e01        e11
+a          c
+b          base2
+<e21>      e20
+<e>        d
+
+où <e21> et <e> requièrent un point de synchronisation : <e21> dépend de base2 et <e> dépend de e20,
+exécutés sur un autre thread.
+
+Dans cet exemple, si le thread0 atteind l'étape où il devrait exécuter <e21>
+mais que base2 n'est toujours pas en voie d'exécution, il entreprendrait alors cette tâche plutôt que de l'attendre.
+On obtiendrait alors la séquence suivante.
+
+thread0    thread1
+base0      base1
+e00        e10
+e01        e11
+a          c
+b          
+base2
+e21        <e20>
+e          <d>
+

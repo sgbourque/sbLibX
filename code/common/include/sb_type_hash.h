@@ -10,9 +10,9 @@ namespace SB { namespace LibX
 struct type_info_hash_traits_t
 {
 	using char_t = char;
-	using value_t = size_t;
-	using pointer_t = char_t*;
-	using const_pointer_t = const char_t*;
+	using hash_t = size_t;
+	using char_ptr_t = char_t*;
+	using const_char_ptr_t = const char_t*;
 	enum { invalid_hash = 0, };
 };
 	template<typename _IMPLEMENTATION_>

@@ -89,12 +89,16 @@ bool library::load(const char* libName)
 {
 	if (sbDynLib_equivalent(alias(), libName))
 	{
+		std::cerr << "(library '" << name() << "' already loaded)" << std::endl;
+		// should addref here
 		return *this;
 	}
 	else if (*this && !unload())
 	{
-		std::cerr << "could not free library '" << name() << std::endl;
+		std::cerr << "could not free library '" << name() << "'" << std::endl;
 	}
+
+	// critsec here
 
 	// try exact name first
 	std::string library_name = libName;
@@ -139,8 +143,8 @@ bool library::load(const char* libName)
 	}
 	else
 	{
-		aliases.emplace_back( library_name );
 		aliases.emplace_back( library_alias );
+		aliases.emplace_back( library_name );
 	}
 	return *this;
 }

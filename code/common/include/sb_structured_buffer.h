@@ -68,7 +68,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		using type_t = STRUCTURED_BUFFER_NAME;\
 		using hash_traits_t = _TRAITS_;/*sbLibX::xhash_traits_t;*/\
 		using hash_string_view_t = sbLibX::xhash_string_view<hash_traits_t>;\
-		using hash_t = typename hash_traits_t::value_t;\
+		using hash_t = typename hash_traits_t::hash_t;\
 		static constexpr auto options = std::make_tuple(__VA_ARGS__);\
 		inline static constexpr hash_string_view_t struct_hash = #STRUCTURED_BUFFER_NAME " " #__VA_ARGS__ "";\
 		\
@@ -222,15 +222,15 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_
 		// sort all valid indices
 		std::sort(result.begin() + 1, result.end(), [&result](const key_info_t& a, const key_info_t& b) -> bool
 		{
-			size_t a_hint = (a.name_hash.hash % kKeyCount); const bool a_valid = a.name_hash.hash != type_t::hash_traits_t::invalid_hash;
-			size_t b_hint = (b.name_hash.hash % kKeyCount); const bool b_valid = b.name_hash.hash != type_t::hash_traits_t::invalid_hash;
+			size_t a_hint = (a.name_hash.get_key() % kKeyCount); const bool a_valid = a.name_hash.get_key() != type_t::hash_traits_t::invalid_hash;
+			size_t b_hint = (b.name_hash.get_key() % kKeyCount); const bool b_valid = b.name_hash.get_key() != type_t::hash_traits_t::invalid_hash;
 			return (a_hint < b_hint) && (a_valid && b_valid);
 		});
 		// place (unique) invalid data to the "optimal" spot
 		for (size_t index = 1; index < result.size(); ++index)
 		{
 			auto& keyinfo = result[index];
-			size_t keyinfo_hint = (keyinfo.name_hash.hash % kKeyCount);
+			size_t keyinfo_hint = (keyinfo.name_hash.get_key() % kKeyCount);
 			if (keyinfo_hint < index)
 				std::swap(keyinfo, result[index - 1]);
 			else

@@ -1,5 +1,9 @@
 #include <dev/include/sb_dev.h>
 
+#if (SB_TARGET_TYPE & (SB_TARGET_TYPE_STATIC|SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) != SB_TARGET_TYPE_STATIC
+	#error "sbDev is not meant to be used as a DLL/exe"
+#endif
+static_assert( SB_TARGET_TYPE != 0 && (SB_TARGET_TYPE&(SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) == 0 );
 
 ////
 #if defined(SBWIN64) || defined(SBWIN32)
@@ -17,6 +21,8 @@
 #endif
 
 // TODO : Add other iostream support, wrap console outputs here, color synthaxing, etc.
+// Since sbDev is a layer to be used within sbLibX, it cannot depends on anything from sbLibX.
+// This library might thus only manipulates streams or similar communication protocols.
 
 #include <dev/include/sb_dev_debug.h>
 
@@ -38,6 +44,8 @@ namespace SB { namespace LibX { namespace Debug
 		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG | _CRTDBG_MODE_WNDW);
 	#endif
+
+		IsDebuggerPresent();
 	}
 	Settings::~Settings()
 	{

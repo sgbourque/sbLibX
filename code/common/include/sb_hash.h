@@ -9,15 +9,15 @@
 namespace SB { namespace LibX
 {
 ////
-	template<typename _CHAR_TYPE_, typename _HASH_VALUE_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_VALUE_T_ _QUASI_PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_VALUE_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
+	template<typename _CHAR_TYPE_, typename _HASH_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_T_ _QUASI_PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
 struct xhash_traits
 {
-	using char_t    = _CHAR_TYPE_;
-	using value_t   = _HASH_VALUE_T_;
-	using pointer_t = char_t*;
-	using const_pointer_t = const char_t*;
+	using hash_t           = _HASH_T_;
+	using char_t           = _CHAR_TYPE_;
+	using char_ptr_t       = char_t*;
+	using const_char_ptr_t = const char_t*;
 
-	enum : value_t
+	enum : hash_t
 	{
 		invalid_hash = 0,
 		quasi_prime = _QUASI_PRIME_,
@@ -32,8 +32,8 @@ struct xhash_traits
 		prime_count    = 2,
 	};
 
-	static inline constexpr typename value_t
-	hash(const_pointer_t string, size_t length = default_length)
+	static inline constexpr typename hash_t
+	hash(const_char_ptr_t string, size_t length = default_length)
 	{
 		// TODO:get next unicode char from string instead of byte per byte
 		// so that different encodings of the same string will give the same result.
@@ -47,22 +47,26 @@ struct xhash_traits
 struct xhash_string_view
 {
 	using traits_t = _TRAITS_TYPE_;
-	using hash_t = typename traits_t::value_t;
+	using key_t = typename traits_t::hash_t;
 	using char_t = typename traits_t::char_t;
-	using key_t  = std::basic_string_view<char_t>;
+	using const_char_ptr_t = typename traits_t::const_char_ptr_t;
+	using value_t  = std::basic_string_view<char_t>;
 
-	hash_t hash;
-	key_t  name;
+	key_t    key;
+	value_t  value;
 
 	constexpr xhash_string_view() noexcept = default;
 	constexpr xhash_string_view( const xhash_string_view& ) noexcept = default;
 
-	constexpr xhash_string_view(key_t _name) noexcept : hash( traits_t::hash(_name.data(), _name.size()) ), name(_name) {}
-	constexpr xhash_string_view(hash_t _hash, key_t _name) noexcept : hash(_hash), name(_name) {}
-	constexpr xhash_string_view(const char_t* _name) noexcept : hash(traits_t::hash(_name)), name(_name) {}
+	constexpr xhash_string_view(value_t _value) noexcept : key( traits_t::hash(_value.data(), _value.size()) ), value(_value) {}
+	constexpr xhash_string_view(key_t _key, value_t _value) noexcept : key(_key), value(_value) {}
+	constexpr xhash_string_view(const_char_ptr_t _value) noexcept : key(traits_t::hash(_value)), value(_value) {}
 
-	constexpr operator hash_t() const { return hash; }
-	constexpr operator key_t() const { return name; }
+	constexpr operator key_t() const { return key; }
+	constexpr operator value_t() const { return value; }
+
+	constexpr key_t get_key() const { return key; }
+	constexpr value_t get_value() const { return value; }
 };
 
 
@@ -70,7 +74,7 @@ struct xhash_string_view
 	template<typename _TRAITS_TYPE_>
 inline std::ostream& operator << (std::ostream& os, xhash_string_view< _TRAITS_TYPE_> hash_string_view)
 {
-	return os << "{0x" << std::hex << hash_string_view.hash << ", \"" << hash_string_view.name << "\"}";
+	return os << "{0x" << std::hex << hash_string_view.get_key() << ":'" << hash_string_view.get_value() << "'}";
 }
 
 
@@ -84,7 +88,7 @@ using xhash_t = uint64_t;
 using xhash_traits_t = xhash_traits<char_t, xhash_t>;
 using xhash_string_view_t = xhash_string_view<xhash_traits_t>;
 
-constexpr xhash_string_view_t operator "" _xhash64(xhash_traits_t::const_pointer_t string, size_t length)
+constexpr xhash_string_view_t operator "" _xhash64([[maybe_unused]] xhash_traits_t::const_char_ptr_t string, [[maybe_unused]] size_t length)
 {
 	return xhash_string_view_t{ std::basic_string_view<xhash_traits_t::char_t>(string, length) };
 }
