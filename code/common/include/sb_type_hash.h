@@ -29,6 +29,9 @@ template<typename _IMPL_> using type_hash_string = xhash_string_view<type_info_h
 	template<typename _IMPLEMENTATION_>
 static inline constexpr type_hash_string_t get_type_hash()
 {
+	// TODO : remove typeid from here!!
+	// it would be possible to statically analyze the type (c.f., for instance https://github.com/apolukhin/magic_get)
+	// and create a hash/name/attributes from its components and signature.
 	using type_t = std::decay_t<_IMPLEMENTATION_ >;
 	return type_hash_string_t(typeid(type_t).hash_code(), typeid(type_t).name());
 }

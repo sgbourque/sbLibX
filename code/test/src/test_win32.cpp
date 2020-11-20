@@ -53,9 +53,13 @@ void CHECK_STDIO(); // test_main.cpp
 
 #if 1
 #include <Windows.h>
+//#include <uxtheme.h>
+#include <dwmapi.h>
 #pragma comment(lib, "user32.lib")
 //#pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "Gdi32.lib")
+#pragma comment(lib, "UxTheme.lib")
+#pragma comment(lib, "Dwmapi.lib")
 #endif
 
 #include <map>
@@ -135,7 +139,7 @@ LRESULT CALLBACK MainWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam 
 #include <io.h>
 #include <codecvt>
 
-int TestVulkan();
+int TestVulkan( void* hwnd );
 
 int Test()
 {
@@ -164,7 +168,7 @@ int Test()
 	wcx.hCursor = LoadCursor( nullptr,
 		IDC_CROSS );                     // predefined arrow 
 	wcx.hbrBackground = (HBRUSH)GetStockObject(
-		DKGRAY_BRUSH );                   // white background brush 
+		DKGRAY_BRUSH );                   // dark grey background brush 
 	wcx.lpszMenuName = nullptr;       // name of menu resource 
 	wcx.lpszClassName = className;    // name of window class 
 	wcx.hIconSm = (HICON)LoadImage( hinstance,  // small class icon 
@@ -175,16 +179,39 @@ int Test()
 		LR_DEFAULTCOLOR );
 
 	if (!RegisterClassExW( &wcx ))
-		return -1;
+	{
+		if( GetLastError() != ERROR_CLASS_ALREADY_EXISTS )
+			return -1;
+	}
 
+	static volatile bool forComposition = true;
+	uint32_t creationFlagsEx = forComposition ? WS_EX_NOREDIRECTIONBITMAP : WS_EX_OVERLAPPEDWINDOW;
+
+	static volatile bool visible = true;
+	uint32_t creationFlags   = visible ? WS_VISIBLE : 0;
 
 	[[maybe_unused]] HWND hwnd = CreateWindowExW(
-		WS_EX_NOREDIRECTIONBITMAP,
+		creationFlagsEx,
 		className, L"SBLibX Test Win32",
-		WS_OVERLAPPEDWINDOW /*WS_POPUP*/ | WS_VISIBLE,
+		creationFlags /*WS_POPUP*/ | WS_VISIBLE,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		nullptr, nullptr, hinstance, nullptr);
+
+#if 0
+	//using TYPE_AllowDarkModeForWindow = bool ( WINAPI * )( HWND a_HWND, bool a_Allow );
+	//static const TYPE_AllowDarkModeForWindow AllowDarkModeForWindow = (TYPE_AllowDarkModeForWindow)GetProcAddress( hUxtheme, MAKEINTRESOURCEA( 133 ) );
+	//auto darkMode = AllowDarkModeForWindow( hwnd, true );
+	//[[maybe_unused]] auto theme = SetWindowTheme( hwnd, L"DarkMode_Explorer", NULL );
+	//SetWindowTheme( hwnd, L"DarkMode_Explorer", NULL );
+#endif
+
+#if 0
+	constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+	DWORD enableDark = 2;
+	DwmSetWindowAttribute( hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE - 1, &enableDark, sizeof( enableDark ) );
+	DwmSetWindowAttribute( hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enableDark, sizeof( enableDark ) );
+#endif
 
 #if 1//SB_SUPPORTS( SBCONSOLE_UNICODE )
 	if (!hwnd || true)
@@ -248,12 +275,15 @@ int Test()
 	{
 		sbPrintAllMessages = true;
 		InitCallback( hwnd );
-		ShowWindow( hwnd, SW_SHOW );
-		UpdateWindow( hwnd );
+		//ShowWindow( hwnd, SW_SHOW );
+		//UpdateWindow( hwnd );
 
 		CHECK_STDIO();
-		TestVulkan();
+		TestVulkan( hwnd );
 		CHECK_STDIO();
+
+		ShowWindow( hwnd, SW_SHOW );
+		UpdateWindow( hwnd );
 
 		MSG msg;
 		BOOL fGotMessage;

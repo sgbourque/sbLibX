@@ -82,6 +82,159 @@ namespace StructuredBuffer
 //
 }} // namespace sbLibX
 
+//template<typename char_t, size_t _LENGHT_>
+//constexpr size_t string_length( [[maybe_unused]] const char_t( &str )[_LENGHT_] ) {
+//	return _LENGHT_;
+//}
+//template<typename Char, typename Arg, typename ... Args>
+//constexpr auto concat( Arg&& arg, Args&& ... args ) {
+//	return concat2( make( std::forward<Arg>( arg ) ), concat<Char>( std::forward<Args>( args ) ... ) );
+//}
+//
+//
+
+#if 1
+////
+	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, size_t _LENGHT_>
+struct static_encrypted_string_info
+{
+	using char_t = _CHAR_TYPE_;
+	using hash_trats_t = _HASH_TRAITS_;
+	using const_pointer = const char_t*;
+	using encrypt_type = typename hash_trats_t::hash_t;
+	
+	static inline constexpr size_t encrypted_size = (_LENGHT_ + sizeof(encrypt_type) - 1);
+	using array_t = std::array<encrypt_type, encrypted_size / sizeof(encrypt_type)>;
+};
+	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, size_t _LENGHT_>
+struct static_encrypted_string
+{
+	using info_t = static_encrypted_string_info<_CHAR_TYPE_, _HASH_TRAITS_, _LENGHT_>;
+	using hash_trats_t = typename info_t::hash_trats_t;
+	using char_t = typename info_t::char_t;
+	using encrypt_type = typename info_t::encrypt_type;
+
+	using encrypted_array_t = typename info_t::array_t;
+	using decrypted_array_t = std::array<char_t, _LENGHT_>;
+
+		template<typename ...CHAR_TYPE>
+	inline constexpr static_encrypted_string( CHAR_TYPE... unencrypted )
+		: encrypted_data( encrypt( std::forward<CHAR_TYPE>(unencrypted)... ) )
+	{
+	}
+
+	inline constexpr const encrypt_type* data() const { return encrypted_data.data(); }
+	inline constexpr size_t size() const { return encrypted_data.size(); }
+
+		template<typename ...CHAR_TYPE>
+	static inline constexpr encrypted_array_t encrypt( [[maybe_unused]] CHAR_TYPE... unencrypted )
+	{
+		decrypted_array_t unencrypted_array{ std::forward<CHAR_TYPE>( unencrypted )... };
+		encrypted_array_t encrypted{};
+		for( size_t index = 0; index < encrypted.size(); ++index )
+		{
+			constexpr size_t encrypt_size = sizeof(encrypt_type)/sizeof(char_t);
+			encrypt_type next{};
+
+			const int64_t remainder_lenght = static_cast<int64_t>(_LENGHT_) - static_cast<int64_t>( index * encrypt_size );
+			const int64_t next_encrypt_size = std::min<int64_t>( encrypt_size, std::max<int64_t>( remainder_lenght, 0 ) );
+
+			for( int64_t subindex = 0; subindex < next_encrypt_size; ++subindex )
+			{
+				constexpr int64_t char_t_bit = CHAR_BIT * sizeof( char_t );
+				const size_t unencrypted_index = index * encrypt_size + static_cast<size_t>( subindex );
+				const auto next_encrypted = static_cast<encrypt_type>( unencrypted_array[unencrypted_index] );
+				const auto next_encrypted_pos = ( subindex * char_t_bit );
+				next |= ( next_encrypted << next_encrypted_pos );
+			}
+			encrypted[index] = ( next * hash_trats_t::prime ) ^ hash_trats_t::coprime;
+		}
+		return encrypted;
+	}
+
+	inline constexpr decrypted_array_t decript() const
+	{
+		decrypted_array_t decrypted_array{};
+		for( size_t index = 0; index < encrypted_data.size(); ++index )
+		{
+			constexpr size_t encrypt_size = sizeof(encrypt_type)/sizeof(char_t);
+			const int64_t remainder_lenght = static_cast<int64_t>( _LENGHT_ ) - static_cast<int64_t>( index * encrypt_size );
+			const int64_t next_encrypt_size = std::min<int64_t>( encrypt_size, std::max<int64_t>( remainder_lenght, 0 ) );
+			encrypt_type next = ( encrypted_data[index] ^ hash_trats_t::coprime ) * hash_trats_t::inverse_prime;
+			for( int64_t subindex = 0; subindex < next_encrypt_size; ++subindex )
+			{
+				using mask_t = std::conditional_t<std::is_signed_v<encrypt_type>,
+					std::make_signed_t<char_t>,
+					std::make_unsigned_t<char_t>
+				>;
+				constexpr mask_t char_mask = static_cast<mask_t>( ~0 );
+				constexpr int64_t char_t_bit = CHAR_BIT * sizeof( char_t );
+				const size_t unencrypted_index = index * encrypt_size + static_cast<size_t>( subindex );
+				const auto next_encrypted_pos = ( subindex * char_t_bit );
+				decrypted_array[unencrypted_index] = static_cast<char_t>( ( next >> next_encrypted_pos ) & char_mask );
+			}
+		}
+		return decrypted_array;
+	}
+private:
+	encrypted_array_t encrypted_data;
+};
+
+	template<typename _CHAR_TYPE_, typename _HASH_TRAITS_, size_t _LENGHT_>
+struct encrypted_string_helper
+{
+	using type_t = static_encrypted_string_info<_CHAR_TYPE_, _HASH_TRAITS_, _LENGHT_>;
+	using hash_trats_t = _HASH_TRAITS_;
+	using char_t = typename type_t::char_t;
+	using array_t = static_encrypted_string<char_t, hash_trats_t, _LENGHT_>;
+
+		template<size_t BEGIN, size_t END>
+	struct range_t {
+			template<typename ...CHAR_TYPE>
+		static constexpr array_t encrypt( [[maybe_unused]] const char_t* unencrypted_arrray, [[maybe_unused]] CHAR_TYPE... unencrypted )
+		{
+			if constexpr ( sizeof...(unencrypted) + 1 < END )
+				return range_t<BEGIN + 1, END>::encrypt( unencrypted_arrray + 1, std::forward<CHAR_TYPE>( unencrypted )..., *unencrypted_arrray );
+			else
+				return range_t<END, END>::encrypt( std::forward<CHAR_TYPE>( unencrypted )..., *unencrypted_arrray );
+		}
+
+		static constexpr array_t encrypt( const char_t( &unencrypted_arrray )[_LENGHT_ - BEGIN] )
+		{
+			static_assert( BEGIN == 0 );
+			if constexpr ( BEGIN + 1 < END )
+				return range_t<BEGIN + 1, END>::encrypt( unencrypted_arrray + 1, *unencrypted_arrray );
+			else
+				return range_t<END, END>::encrypt( *unencrypted_arrray );
+		}
+	};
+		template<size_t END>
+	struct range_t<END, END> {
+			template<typename ...CHAR_TYPE>
+		static constexpr array_t encrypt( [[maybe_unused]] CHAR_TYPE... unencrypted )
+		{
+			return array_t{ std::forward<CHAR_TYPE>( unencrypted )... };
+		}
+	};
+
+	static inline constexpr array_t encrypt( const char_t( &unencrypted )[_LENGHT_] )
+	{
+		return range_t<0, _LENGHT_>::encrypt( unencrypted );
+	}
+};
+#endif
+
+	template<typename char_t, size_t _LENGHT_>
+static inline constexpr auto encrypted_string_impl( const char_t( &unencrypted )[_LENGHT_] )
+{
+	return encrypted_string_helper<char_t, sbLibX::xhash_traits_t, _LENGHT_>::encrypt( unencrypted );
+}
+
+// While possibly wasting space with duplicates, at least this garantees that 'unencrypted' will never
+// be in the final binary data since it forces encrypted value evaluated as a constexpr.
+// TODO: Find a way to prevent data duplication while still enforcing constexpr evaluation
+// (and completely stripping out unencrypted data).
+#define encrypted_string( unencrypted ) []() { constexpr auto encrypted = encrypted_string_impl( unencrypted ); return encrypted; }()
 
 #include <xmmintrin.h>
 
@@ -109,10 +262,25 @@ SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")
 	{
 		say( "bye!" );
 	}
+
 	virtual void say( std::string_view msg )
 	{
+		using namespace sbLibX;
+		const bool hasClassName = config.className.get_value()[0];
+		auto className = ( hasClassName ? config.className.get_value() : "" );
+
+		[[maybe_unused]]
+		constexpr auto test_encrypted1 = encrypted_string( "This text should be nowhere to be found in the optimized (constexpr) binary!" );
+		constexpr auto test_encrypted2 = encrypted_string( "Hopefully, that works..." );
 		std::cerr
-			<< "'" << ( config.className.get_value()[0] ? std::string( config.className ) + "/" : "" ) << config.name << "/" << name << "'"
+			<< test_encrypted1.decript().data() << " "
+			<< test_encrypted2.decript().data()
+			<< std::endl;
+
+
+		std::cerr
+			<< "'" << className.decrypt() << ( hasClassName ? "/" : "" )
+			<< config.name << "/" << name << "'"
 			<< ": " << msg << "\n";
 	}
 
@@ -278,7 +446,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_hash([[maybe_unused]] int argc, [[maybe_unuse
 	//std::cout << "Enter config name: ";
 	std::array<char, 256> name = { "(...)" };
 	//std::cin.getline(name.data(), name.size());
-	get<".name"_xhash64>(config) = std::string_view(name.data());
+	get<".name"_xhash64>(config) = sbLibX::xhash_string_view_t{name.data()};
 
 	std::cout << "\t" << ".name"_xhash64 << ": " << get<".name"_xhash64>(config) << "\n";
 	std::cout << "\t" << ".className"_xhash64 << ": " << get<".className"_xhash64>(config) << "\n";

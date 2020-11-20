@@ -160,7 +160,7 @@ constexpr return_type get(_implementation_* buffer, xhash_t hash, return_type va
 	if (keyinfo.name_hash.get_key() == hash)
 	{
 		if (keyinfo.type_hash.get_key() != get_type_hash<return_type>().get_key())
-			std::cerr << std::endl << "type conversion warning : " << keyinfo.type_hash.get_value() << " -> " << get_type_hash<return_type>().get_value() << std::endl;
+			std::cerr << std::endl << "type conversion warning : " << keyinfo.type_hash.get_value().decrypt() << " -> " << get_type_hash<return_type>().get_value().decrypt() << std::endl;
 		return get<return_type>(buffer, datainfo);
 	}
 	else

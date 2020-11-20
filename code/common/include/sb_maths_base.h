@@ -46,8 +46,8 @@ struct hashed_string
 	using key_t  = std::basic_string_view<char_t>;
 	static constexpr size_t max_length = _TRAITS_TYPE_::max_length;
 
-	hash_t hash;
-	key_t  name; // name is truncated to hash_traits_t::max_length characters, any less it will be null-terminated.
+	hash_t hash = 0;
+	key_t  name = {}; // name is truncated to hash_traits_t::max_length characters, any less it will be null-terminated.
 	constexpr operator hash_t() { return hash; }
 	constexpr operator key_t() { return key_t(name, max_length); }
 };
