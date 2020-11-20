@@ -119,7 +119,7 @@ struct static_encrypted_string
 
 		template<typename ...CHAR_TYPE>
 	inline constexpr static_encrypted_string( CHAR_TYPE... unencrypted )
-		: encrypted_data( encrypt( std::forward<CHAR_TYPE>(unencrypted)... ) )
+		: encrypted_data( encrypt( std::forward<CHAR_TYPE>( unencrypted )... ) )
 	{
 	}
 
@@ -270,8 +270,8 @@ SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")
 		auto className = ( hasClassName ? config.className.get_value() : "" );
 
 		[[maybe_unused]]
-		constexpr auto test_encrypted1 = encrypted_string( "This text should be nowhere to be found in the optimized (constexpr) binary!" );
-		constexpr auto test_encrypted2 = encrypted_string( "Hopefully, that works..." );
+		auto test_encrypted1 = encrypted_string( "This text should be nowhere to be found in the optimized (constexpr) binary!" );
+		auto test_encrypted2 = encrypted_string_impl( "This string is not encrypted properly (still present in bin)..." );
 		std::cerr
 			<< test_encrypted1.decript().data() << " "
 			<< test_encrypted2.decript().data()

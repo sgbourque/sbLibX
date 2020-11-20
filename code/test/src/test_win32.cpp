@@ -54,7 +54,7 @@ void CHECK_STDIO(); // test_main.cpp
 #if 1
 #include <Windows.h>
 //#include <uxtheme.h>
-#include <dwmapi.h>
+//#include <dwmapi.h>
 #pragma comment(lib, "user32.lib")
 //#pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "Gdi32.lib")
