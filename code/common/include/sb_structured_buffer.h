@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <common/include/sb_type_hash.h>
+#include <common/include/sb_utilities.h>
 
 #include <array>
 
@@ -11,9 +12,6 @@ namespace SB { namespace LibX
 #else
 	#define SB_STRUCT_SET( X_eq ) X_eq
 #endif
-
-static inline constexpr size_t align_down(size_t size, size_t align) { return (size / align) * align; }
-static inline constexpr size_t align_up(size_t size, size_t align) { return align_down(size + align-1, align); }
 
 //	So the idea here is to have a key mapping to a hash;
 //	That hash will be used through the key_info_array which maps it to its data_info.
@@ -77,7 +75,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		static inline constexpr size_t kElementIdOffset = __COUNTER__;
 #define SB_STRUCT_MEMBER( TYPE, NAME, ... ) /* note that TYPE can't be hashed by name */\
 		static inline constexpr size_t NAME##_id = __COUNTER__ - kElementIdOffset - 1;\
-		static_assert(NAME##_id < 64, "Too many unique data members. Try using sub-buffers or split the buffer.");\
+		static_assert(NAME##_id < 512, "Too many unique data members. Try using sub-buffers or split the buffer.");\
 		static inline constexpr hash_string_view_t NAME##_hash = SB_MEMBER_ENTRY #NAME "";\
 		template<typename IMPL> struct data_traits<hash_traits_t::hash(SB_MEMBER_ENTRY #NAME ""), IMPL>\
 		{\
@@ -98,8 +96,8 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 		static inline constexpr size_t size() { return kElementCount; }\
 		using data_info_array_t = sbLibX::data_info_array<kElementCount>;\
 		static const data_info_array_t data_info;\
-		static inline constexpr auto begin() { return data_info.begin(); }\
-		static inline constexpr auto end() { return data_info.end(); }\
+		static inline constexpr auto info_begin() { return data_info.begin(); }\
+		static inline constexpr auto info_end() { return data_info.end(); }\
 		\
 		static inline constexpr size_t kKeyCount = (kElementCount + 1);/*sbLibX::StructuredBuffer::compute_optimal_key_count<type_t>();*/\
 		static inline constexpr size_t key_size() { return kKeyCount; }\

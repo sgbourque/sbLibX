@@ -215,7 +215,7 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 		<< std::endl;
 
 	std::cout << "\nTesting dynamic bindings...\n";
-	for (auto datainfo : local_config)
+	std::for_each(local_config.info_begin(), local_config.info_end(), [&local_config]( const auto& datainfo )
 	{
 		auto hash = local_config.key_info[datainfo.key_index].name_hash;
 
@@ -231,7 +231,7 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 		std::cout << "\n\t";
 		for (size_t index = 0; index < local_datainfo.size; ++index)
 			std::cout << (char)raw_data[index];
-	}
+	});
 
 	std::string input;
 	std::cout << std::endl << "Enter a member name (e.g., 'name'): ";

@@ -1,5 +1,7 @@
 #pragma once
 #include <common/include/sb_common.h>
+#include <common/include/sb_encrypted_string.h> // sb_hash and sb_encrypted_string are to be used together
+#include <common/include/sb_utilities.h>
 
 #include <cstdint>
 #include <algorithm>
@@ -9,7 +11,40 @@
 namespace SB { namespace LibX
 {
 ////
-	template<typename _CHAR_TYPE_, typename _HASH_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_T_ _PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_T_ _INVERSE_PRIME_ = 0xDC649D343B77FAD1ull, _HASH_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
+// Some N-bits modular arithmetic used for encryption
+	template< int a_r_offset = 0, typename type_t >
+static inline constexpr auto extended_gcd_modular_step( type_t a_r, type_t a_t, type_t b_r, type_t b_t )
+{
+	const type_t quotient = a_r / b_r;
+	type_t next_r = a_r + a_r_offset - quotient * b_r;
+	type_t next_t = a_t - quotient * b_t;
+	return std::make_tuple( b_r, b_t, next_r, next_t );
+};
+	template< typename type_t >
+static inline constexpr auto modular_inverse( type_t prime64 )
+{
+	using modular_type_t = std::make_unsigned_t<type_t>;
+	constexpr modular_type_t max_value = std::numeric_limits<modular_type_t>::max();
+	constexpr modular_type_t offset_value = modular_type_t{} - max_value;
+
+	struct type_pair { modular_type_t remainder; modular_type_t bezout; };
+	type_pair first  = { max_value, 0 };
+	type_pair second = { static_cast<modular_type_t>(prime64),   1 };
+	{
+		const auto iteration = extended_gcd_modular_step<offset_value>( first.remainder, first.bezout, second.remainder, second.bezout );
+		first  ={ std::get<0>( iteration ), std::get<1>( iteration ) };
+		second ={ std::get<2>( iteration ), std::get<3>( iteration ) };
+	}
+	while( second.remainder != 0 )
+	{
+		const auto iteration = extended_gcd_modular_step<0>( first.remainder, first.bezout, second.remainder, second.bezout );
+		first  ={ std::get<0>( iteration ), std::get<1>( iteration ) };
+		second ={ std::get<2>( iteration ), std::get<3>( iteration ) };
+	}
+	return static_cast<type_t>( first.bezout );
+}
+////
+	template<typename _CHAR_TYPE_, typename _HASH_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_T_ _PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
 struct xhash_traits
 {
 	using hash_t           = _HASH_T_;
@@ -21,8 +56,10 @@ struct xhash_traits
 	{
 		invalid_hash = 0,
 		prime = _PRIME_,
-		inverse_prime = _INVERSE_PRIME_,
 		coprime = _COPRIME_,
+
+		inverse_prime = modular_inverse( prime ),
+		inverse_coprime = modular_inverse( coprime ),
 	};
 	static_assert( prime * inverse_prime == 1, "TODO: Calculate modular inverse instead of forcing people to precompute it..." );
 	enum : size_t
@@ -43,111 +80,6 @@ struct xhash_traits
 	}
 };
 
-
-// TODO: constexpr encryption here
-//	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, _CHAR_TYPE_... _UNENCRYPTED_STRING_>
-//struct encrypted_string
-//{
-//	using char_t = _CHAR_TYPE_;
-//	using hash_traits_t = _HASH_TRAITS_;
-//	using const_pointer = const char_t*;
-//	using encrypt_type = uint64_t;
-//
-//	using container_t = std::array<encrypt_type, (sizeof...(_UNENCRYPTED_STRING_) + sizeof(encrypt_type) - 1)/sizeof(encrypt_type)>;
-//	container_t encrypted;
-//
-//	constexpr encrypted_string( char_t value... )
-//		: encrypted( container_t{} ) {}
-//
-//	//constexpr auto encrypt( char_t value3, char_t value2, char_t value1, char_t value0, char_t extra... )
-//	//{
-//	//	return container_t{};
-//	//	//return std::array<encrypt_type, 1 + ( (sizeof...(extra) + sizeof(encrypt_type)) / sizeof(encrypt_type) ) >{
-//	//	//	encrypt( value3, value2, value1, value0 ),
-//	//	//	encrypt( extra... ),
-//	//	//};
-//	//}
-//
-//	constexpr auto encrypt( char_t value3, char_t value2, char_t value1, char_t value0 )
-//	{
-//		const uint32_t swizzled = ( value0 << 24 ) | ( value2<< 16 ) | ( value3 << 8 ) | ( value1 << 0 );
-//		
-//	}
-//	constexpr auto encrypt( char_t value2, char_t value1, char_t value0 )
-//	{
-//		return encrypt( value2, value1, value0, 0 );
-//	}
-//	constexpr auto encrypt( char_t value1, char_t value0 )
-//	{
-//		return encrypt( value1, value0, 0, 0 );
-//	}
-//	constexpr auto encrypt( char_t value )
-//	{
-//		return encrypt( value0, 0, 0, 0 );
-//	}
-//};
-//
-//static inline constexpr auto encrypt( const const_pointer _nextChar, const uint32_t* _encrypted, size_t _encrypted_size ) noexcept
-//{
-//}
-//
-//static inline constexpr auto encrypt( const const_pointer _Cts, const size_type _Count ) noexcept
-//{
-//	if ( _Count > 0 )
-//		return encrypt( _Cts, encrypt( _Cts + 1, _Count - 1 ) );
-//	else
-//		return encrypt( "" );
-//}
-
-	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, typename _CHAR_TRAITS_ = std::char_traits<_CHAR_TYPE_>>
-struct encrypted_string_view
-{
-	using char_t = _CHAR_TYPE_;
-	using hash_traits_t = _HASH_TRAITS_;
-	using char_traits_t = _CHAR_TRAITS_;
-	using string_view_t = std::basic_string_view<char_t, char_traits_t>;
-	using const_pointer = typename string_view_t::const_pointer;
-	using size_type = typename string_view_t::size_type;
-
-	constexpr encrypted_string_view() noexcept : string_view_t_value() {}
-	constexpr encrypted_string_view( const encrypted_string_view& ) noexcept = default;
-	constexpr encrypted_string_view& operator=( const encrypted_string_view& ) noexcept = default;
-
-	constexpr encrypted_string_view( const const_pointer _Ntcts ) noexcept
-		: string_view_t_value( _Ntcts ) {}
-
-	// TODO: encrypt here!
-	constexpr encrypted_string_view( const const_pointer _Cts, const size_type _Count ) noexcept
-		: string_view_t_value( /*encrypt(*/ _Cts, _Count /*)*/ ) {}
-
-	constexpr auto data() const { return string_view_t_value.data(); }
-	constexpr auto size() const { return string_view_t_value.size(); }
-	constexpr auto operator []( size_type index ) const { return string_view_t_value[index]; }
-
-	using string_t = std::basic_string<char_t, char_traits_t>;
-	constexpr auto encrypted() const { return "!encrypted! " + string_t(string_view_t_value) + " !encrypted!"; }
-	//constexpr string_view_t encrypted() const { return string_t(string_view_t_value) + "(TODO: should have been encrypted)"; }
-
-	// TODO: encrypt/decrypt here
-	//constexpr auto encrypt( ..._Types ) const { return encrypt( encode(first), ...rest ); }
-	constexpr auto decrypt() const { return "?decrypted? " + string_t{ string_view_t_value } + " ?decrypted?"; }
-
-	//static inline constexpr excrypt( const const_pointer _Cts, const size_type _Count ) noexcept
-	//{
-	//	return string_view_t( _Cts, _Count );
-	//}
-
-private:
-	string_view_t string_view_t_value;
-};
-
-//	template <class _CHAR_TYPE_, class _TRAITS_TYPE_ = std::char_traits<_CHAR_TYPE_>>
-//inline std::ostream& operator << ( std::ostream& os, encrypted_string_view< _CHAR_TYPE_, _TRAITS_TYPE_> encripted_string_view )
-//{
-//	return os << encripted_string_view;
-//}
-
-
 ////
 	template<typename _TRAITS_TYPE_>
 struct xhash_string_view
@@ -164,9 +96,16 @@ struct xhash_string_view
 	constexpr xhash_string_view() noexcept = default;
 	constexpr xhash_string_view( const xhash_string_view& ) noexcept = default;
 
-	constexpr xhash_string_view(value_t _value) noexcept : key( traits_t::hash(_value.data(), _value.size()) ), value(_value) {}
-	constexpr xhash_string_view(key_t _key, value_t _value) noexcept : key(_key), value(_value) {}
-	constexpr xhash_string_view(const_char_ptr_t _value) noexcept : key(traits_t::hash(_value)), value(_value) {}
+	constexpr xhash_string_view( value_t _value ) noexcept : key( traits_t::hash(_value.data(), _value.size()) ), value(_value) {}
+	constexpr xhash_string_view( key_t _key, value_t _value ) noexcept : key(_key), value(_value) {}
+	constexpr xhash_string_view( const_char_ptr_t _value ) noexcept : key(traits_t::hash(_value)), value(_value) {}
+
+	//constexpr xhash_string_view( value_t _value ) noexcept : key(), value( _value )
+	//{
+	//	const auto decrypted = _value.decrypt();
+	//	key = traits_t::hash( decrypted.data(), decrypted.size() );
+	//}
+	//constexpr xhash_string_view( const_char_ptr_t _value, size_t lenght ) noexcept : key( traits_t::hash( _value, lenght ) ), value( _value ) {}
 
 	constexpr operator key_t() const { return key; }
 	constexpr operator value_t() const { return value; }

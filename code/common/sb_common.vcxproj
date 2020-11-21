@@ -198,6 +198,7 @@
     <ClInclude Include="include\internal\ref_ptr.h" />
     <ClInclude Include="include\internal\temp_delete_me.h" />
     <ClInclude Include="include\sb_common.h" />
+    <ClInclude Include="include\sb_encrypted_string.h" />
     <ClInclude Include="include\sb_hash.h" />
     <ClInclude Include="include\sb_interface.h" />
     <ClInclude Include="include\sbLibX_precompile.h" />
@@ -207,6 +208,7 @@
     <ClInclude Include="include\sb_range.h" />
     <ClInclude Include="include\sb_structured_buffer.h" />
     <ClInclude Include="include\sb_type_hash.h" />
+    <ClInclude Include="include\sb_utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
