@@ -6,6 +6,7 @@
 
 #include "Windows.h"
 
+#include <system_error>
 #include <cassert>
 
 #pragma comment( lib, "Ole32.lib" )
@@ -77,6 +78,11 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 			if (refCount == 0)
 			{
 				static_cast<_type_t_*>(this)->init();
+				break;
+			}
+			else if( refCount < 0 )
+			{
+				_mm_pause();
 			}
 		} while ( refCount < 0 );
 		_InterlockedExchange(&ref_count, refCount + 1);
@@ -91,6 +97,11 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 			if (refCount == 1)
 			{
 				static_cast<_type_t_*>(this)->shutdown();
+				break;
+			}
+			else if( refCount < 0 )
+			{
+				_mm_pause();
 			}
 		}
 		while (refCount < 0);
@@ -170,15 +181,21 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 		return result;
 	}
 
-	bool init()
+	__declspec(noinline) bool init()
 	{
 		// initialize COM : ASIO requires appartment model
-		auto result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-		return SUCCEEDED( result );
+#if SB_TARGET_TYPE == SB_TARGET_TYPE_STATIC
+		auto appartmentThreadedResult = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
+#else
+		constexpr HRESULT appartmentThreadedResult = S_FALSE;
+#endif
+		return SUCCEEDED( appartmentThreadedResult );
 	}
 	void shutdown()
 	{
+#if SB_TARGET_TYPE == SB_TARGET_TYPE_STATIC
 		CoUninitialize();
+#endif
 	}
 
 	AdapterHandle AllocateAdapter( CLSID deviceId, std::wstring_view keyname )
@@ -296,6 +313,7 @@ SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, 
 		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf<void>() );
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{
+			std::clog << "Error initializing device: code " << std::hex << result << " (error = " << GetLastError() << ")" << std::endl;
 			handle = nullptr;
 		}
 		else

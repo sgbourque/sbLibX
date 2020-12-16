@@ -1,6 +1,18 @@
 #pragma once
 
-//#include <common/include/internal/compiler_specific.h>
+#define SB_TARGET_TYPE_STATIC		(1 << 0)
+#define SB_TARGET_TYPE_DYNAMIC		(1 << 1)
+#define SB_TARGET_TYPE_STANDALONE	(1 << 2)
+#if defined(SBWIN64)
+#define SB_TARGET_PLATFORM			"x64"
+#define SB_TARGET_NAME_STATIC		"lib"
+#define SB_TARGET_NAME_DYNAMIC		"dll"
+#define SB_TARGET_NAME_STANDALONE	"exe"
+#else
+#error "Unknown platform"
+#endif
+
+
 #if defined( _M_X64 )
 	#define SB_ARCH_SUFFIX	"_x64"
 #else
@@ -94,15 +106,21 @@
 	#define SB_CSTRING_WRAPPER(_X)  #_X
 	#define SB_WSTRING_WRAPPER(_X) L#_X
 	#define SB_U8STRING_WRAPPER(_X) u8#_X
+	#define SB_U16STRING_WRAPPER(_X) u#_X
 	#define CSTR(_X) SB_CSTRING_WRAPPER(_X)
 	#define WSTR(_X) SB_WSTRING_WRAPPER(_X)
 	#define U8STR(_X) SB_U8STRING_WRAPPER(_X)
+	#define U16STR(_X) SB_U16STRING_WRAPPER(_X)
 #if defined(UNICODE)
-	#define SB_SYSTEM_STRING   WSTR
-	namespace SB { using system_char_t = wchar_t; }
+	#define SB_SYSTEM_STRING   U16STR
+	namespace SB { using system_char_t = char16_t; }
 #else
 	#define SB_SYSTEM_STRING   CSTR
-	namespace SB { using system_char_t = char; }
+	#if _MSVC_LANG >= 201705
+		namespace SB { using system_char_t = char8_t; }
+	#else
+		namespace SB { using system_char_t = char; }
+	#endif
 #endif
 	#define STR(X) SB_SYSTEM_STRING(X)
 
@@ -115,7 +133,11 @@
 	#define SBPrint(...)
 #endif
 
+#include "common/include/internal/compiler_specific.h"
+
+#include <cstdint>
 #include <type_traits>
+
 // remove_cvref_t not part of std before 201705
 #if defined(_MSVC_LANG) && _MSVC_LANG < 201705
 	namespace SB { namespace LibX {

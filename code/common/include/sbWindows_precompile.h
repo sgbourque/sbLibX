@@ -19,3 +19,6 @@ namespace SB { namespace LibX
 #define SB_LIBWIN_INTERNAL
 #define SB_LIBPLATFORM_INTERNAL "Windows"
 #define SB_WIN_EXPORT SB_EXPORT_LIB
+
+#include <cstdint>
+

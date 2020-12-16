@@ -1,0 +1,14 @@
+{
+  "FileVersion": 2,
+  "Id": "35a665b5-55f4-4ac5-b258-5574abbdc53c",
+  "Items": [
+    {
+      "Id": "5f264324-3188-402d-88a2-89d4d4061b0a",
+      "Command": "run $(ProjectName)/parser"
+    },
+    {
+      "Id": "85b6ed68-d51b-42f9-9867-8d8de00c830c",
+      "Command": "\"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
+    }
+  ]
+}

@@ -16,4 +16,8 @@ namespace SB { namespace LibX
 {
 }} // namespace SB::LibX
 
+// Looks like it might create link errors in final target if cstdint is not included right into the precompile file
+// I'm not sure why it's behaving badly with the vst/asio pattern but linker does not like it
+#include <cstdint>
+
 #define SB_LIBX_INTERNAL

@@ -1,7 +1,7 @@
 #include <dev/include/sb_dev.h>
 
 #if (SB_TARGET_TYPE & (SB_TARGET_TYPE_STATIC|SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) != SB_TARGET_TYPE_STATIC
-	#error "sbDev is not meant to be used as a DLL/exe"
+	#error "sbDebug is not meant to be used as a DLL/exe. It should be a static lib"
 #endif
 static_assert( SB_TARGET_TYPE != 0 && (SB_TARGET_TYPE&(SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) == 0 );
 

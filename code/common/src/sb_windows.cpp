@@ -204,7 +204,7 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 	//sbLibX::Debug::Console debugConsole; debugConsole.RedirectStdIO();
 
 	std::cout << "\nTesting static & dynamic bindings...\n";
-	config_t local_config{ L"my application name", L"my class name", 0xFull };
+	config_t local_config{ u"my application name", u"my class name", 0xFull };
 	std::cout << std::endl
 		<< "\n" << ".name"_xhash64 << ": " << get<".name"_xhash64>(local_config)
 		<< "\n" << ".className"_xhash64 << ": " << get(local_config, ".className"_xhash64, L"")

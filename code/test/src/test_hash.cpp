@@ -129,9 +129,9 @@ SB_STRUCT_BEGIN(custom_class_t, "my super hyper custom class!!", -1, "booo")
 		const bool hasClassName = config.className.get_value()[0];
 		auto className = ( hasClassName ? config.className.get_value() : "" );
 
-		[[maybe_unused]] constexpr auto test_encrypted1 = constexpr_encrypt( L"This string is safely encrypted!" );
-		[[maybe_unused]] auto           test_encrypted2 = constexpr_encrypt( "This string is safely encrypted as well!" );
-		[[maybe_unused]] constexpr auto test_encrypted_unsecured1 = encrypted_string_unsecured( "This string should be safely encrypted..." );
+		[[maybe_unused]] constexpr auto test_encrypted1 = constexpr_encrypt( L"Is this string safely encrypted? It should!!" );
+		[[maybe_unused]] auto           test_encrypted2 = constexpr_encrypt( "This string is safely encrypted as well! Right?!" );
+		[[maybe_unused]] constexpr auto test_encrypted_unsecured1 = encrypted_string_unsecured( "This string should be safely encrypted... I hope..." );
 		[[maybe_unused]] auto           test_encrypted_unsecured2 = encrypted_string_unsecured( "This string is not encrypted at all in the binary..." );
 
 		[[maybe_unused]] /*constexpr*/ auto decrypted1 = decrypt( test_encrypted1 ); // compiles (looks like it's still secure but I'm not sure it's safe...)

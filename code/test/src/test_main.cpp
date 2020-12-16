@@ -55,8 +55,9 @@ SB_EXPORT_TYPE int SB_STDCALL deinit([[maybe_unused]] int argc, [[maybe_unused]]
 }
 #endif
 
+//#define test_main main
 //LibX::Debug::Console debugConsole;
-SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
+SB_EXPORT_TYPE int SB_STDCALL test_main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
 	//LibX::Debug::Console debugConsole;
 	//debugConsole.RedirectStdIO();
@@ -115,7 +116,7 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 	//	Detach libraries and closes communication pipes;
 	//std::cin.get();
 	// No need for a return here if this function is int main(...) but the function can return a int.
-	//return 0;
+	return 0;
 }
 
 

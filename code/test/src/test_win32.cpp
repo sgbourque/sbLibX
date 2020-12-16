@@ -104,9 +104,9 @@ void InitCallback( HWND hwnd )
 		(void)wParam;
 		(void)lParam;
 		printAllMessages = false;
-		wchar_t text[] = L"<\u2205|\xd835\xdfd9|\u2205> ~ 1\n" // <∅|𝟙|∅> ~ 1
-			L"1/\u221e ~ 0\n" // 1/∞ ~ 0
-			L"|(\u2124\u2295\u2124)\u2215\u2124| < |\u211D\u2216(\u2124\u2295\u2124)|"; // |(ℤ⊕ℤ)∕ℤ| < |ℝ∖(ℤ⊕ℤ)| 
+		wchar_t text[] = L"<\u2205|\xd835\xdfd9|\u2205> \u2243 1\n" // <∅|𝟙|∅> ≃ 1
+			L"1/\u221e \u2243 0\n" // 1/∞ ≃ 0
+			L"|(\u2124\u2295\u2124)\u2215\u2124| \u227a |\u211D\u2216(\u2124\u2295\u2124)|"; // |(ℤ⊕ℤ)∕ℤ| ≺ |ℝ∖(ℤ⊕ℤ)| 
 		if ( MessageBoxW( hwnd,
 			text,
 			L"Stéphane Bourque", MB_OKCANCEL ) == IDOK )

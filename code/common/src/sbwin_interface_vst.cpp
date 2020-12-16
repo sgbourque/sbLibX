@@ -1,4 +1,6 @@
+#include <common/include/sb_common.h>
 #include <common/include/sb_interface_vst.h>
+
 //#include <common/include/sb_windows_registry.h>
 //
 //#include <unordered_map>

@@ -190,6 +190,9 @@
     <ClCompile Include="src\sb_interface_asio.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\internal\arch\VisualC_specific.h" />
+    <ClInclude Include="include\internal\arch\x64_specific.h" />
+    <ClInclude Include="include\internal\arch\x86_specific.h" />
     <ClInclude Include="include\internal\compiler_specific.h" />
     <ClInclude Include="include\internal\device_generic.h" />
     <ClInclude Include="include\internal\interface_asio_base.h" />
@@ -197,6 +200,9 @@
     <ClInclude Include="include\internal\interface_vst_base.h" />
     <ClInclude Include="include\internal\ref_ptr.h" />
     <ClInclude Include="include\internal\temp_delete_me.h" />
+    <ClInclude Include="include\internal\unicode\property_value_aliases.h" />
+    <ClInclude Include="include\internal\unicode\unicode_data_basic_latin.h" />
+    <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h" />
     <ClInclude Include="include\sb_common.h" />
     <ClInclude Include="include\sb_encrypted_string.h" />
     <ClInclude Include="include\sb_hash.h" />

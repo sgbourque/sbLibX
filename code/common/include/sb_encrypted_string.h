@@ -1,5 +1,6 @@
 #pragma once
-#include <common/include/sb_hash.h> // sb_hash and sb_encrypted_string are to be used together
+#include <common/include/sb_hash.h> // sb_hash and sb_encrypted_string are to be used together but won't use each other directly (only through traits)
+#include <common/include/sb_utilities.h>
 
 #include <cstdint>
 #include <array>
@@ -16,6 +17,14 @@ struct encrypted_string_base
 	using hash_traits_t = _HASH_TRAITS_;
 	using const_pointer = const char_t*;
 	using encrypt_type = typename hash_traits_t::hash_t;
+	enum : encrypt_type
+	{
+		prime = hash_traits_t::prime,
+		inverse_prime = modular_inverse( hash_traits_t::prime ),
+
+		coprime = hash_traits_t::coprime,
+	};
+	static_assert( prime * inverse_prime == 1, "TODO: Calculate modular inverse instead of forcing people to precompute it..." );
 
 	static inline constexpr size_t encrypted_size = sbLibX::align_up( _LENGHT_ * sizeof( char_t ), sizeof( encrypt_type ) ) / sizeof( encrypt_type );
 	using encrypted_array_t = std::array<encrypt_type, encrypted_size>;
@@ -31,7 +40,7 @@ struct encrypted_string_base
 
 	static inline constexpr encrypted_array_t encrypt( decrypted_array_t&& unencrypted_array )
 	{
-		encrypt_type next_scrambled{ hash_traits_t::coprime };
+		encrypt_type next_scrambled{ coprime };
 		encrypted_array_t encrypted{};
 		for( size_t index = 0; index < encrypted.size(); ++index )
 		{
@@ -48,7 +57,7 @@ struct encrypted_string_base
 				const auto next_unencrypted_char_pos = ( subindex * char_t_bit );
 				next_scrambled ^= ( next_unencrypted_char << next_unencrypted_char_pos );
 			}
-			encrypted[index] = ( next_scrambled * hash_traits_t::prime ) ^ hash_traits_t::coprime;
+			encrypted[index] = ( next_scrambled * prime ) ^ coprime;
 		}
 		return encrypted;
 	}
@@ -74,7 +83,7 @@ static inline constexpr auto encrypted_string_unsecured( const char_t* unencrypt
 	template<typename char_t, size_t _LENGHT_>
 static inline constexpr auto encrypted_string_unsecured( const char_t( &unencrypted )[_LENGHT_] )
 {
-	return encrypted_string_unsecured<sbLibX::xhash_traits_t, char_t, _LENGHT_>( unencrypted, std::make_index_sequence<_LENGHT_>{} );
+	return encrypted_string_unsecured<sbLibX::xhash_traits_t, char_t, align_up(_LENGHT_, /*sbLibX::xhash_traits_t::max_data_size*/32)>( unencrypted, std::make_index_sequence<_LENGHT_>{} );
 }
 
 //	template<typename char_t, typename _HASH_TRAITS_, size_t _LENGHT_>
@@ -87,7 +96,7 @@ static inline constexpr auto encrypted_string_unsecured( const char_t( &unencryp
 // be in the final binary data since it forces encrypted value evaluated as a constexpr.
 // TODO: Find a way to prevent data duplication while still enforcing constexpr evaluation
 // (and completely stripping out unencrypted data).
-#define constexpr_encrypt( unencrypted ) []() { constexpr auto encrypted = encrypted_string_unsecured( unencrypted ); return encrypted; }()
+#define constexpr_encrypt( unencrypted ) []() { constexpr auto encrypted = sbLibX::encrypted_string_unsecured( unencrypted ); return encrypted; }()
 
 
 	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, size_t _LENGHT_>
@@ -97,6 +106,13 @@ struct decrypted_string_base
 	using hash_traits_t = _HASH_TRAITS_;
 	using const_pointer = const char_t*;
 	using encrypt_type = typename hash_traits_t::hash_t;
+	enum : encrypt_type
+	{
+		prime = hash_traits_t::prime,
+		inverse_prime = modular_inverse( hash_traits_t::prime ),
+
+		coprime = hash_traits_t::coprime,
+	};
 
 	static inline constexpr size_t encrypted_size = sbLibX::align_up( _LENGHT_ * sizeof( char_t ), sizeof( encrypt_type ) ) / sizeof( encrypt_type );
 	using encrypted_array_t = std::array<encrypt_type, encrypted_size>;
@@ -110,13 +126,13 @@ struct decrypted_string_base
 	{
 	}
 
-	static inline constexpr decrypted_array_t decrypt( const encrypted_array_t& encrypted_data )
+	static inline /*constexpr*/ decrypted_array_t decrypt( const encrypted_array_t& encrypted_data )
 	{
 		return decrypt( encrypted_data.data(), encrypted_data.data() + encrypted_data.size() );
 	}
-	static inline constexpr decrypted_array_t decrypt( const encrypt_type* encrypted_data, const encrypt_type* encrypted_data_end )
+	static inline /*constexpr*/ decrypted_array_t decrypt( const encrypt_type* encrypted_data, const encrypt_type* encrypted_data_end )
 	{
-		encrypt_type prev_scrambled{ hash_traits_t::coprime };
+		encrypt_type prev_scrambled{ coprime };
 		decrypted_array_t decrypted_array{};
 		const size_t encrypted_data_size = static_cast<size_t>( encrypted_data_end - encrypted_data );
 		for( size_t index = 0; index < encrypted_data_size; ++index )
@@ -126,7 +142,7 @@ struct decrypted_string_base
 			const int64_t remainder_lenght = static_cast<int64_t>( max_decrypted_lenght ) - static_cast<int64_t>( index * encrypt_size );
 			const int64_t next_encrypt_size = std::min<int64_t>( encrypt_size, std::max<int64_t>( remainder_lenght, 0 ) );
 
-			encrypt_type next_scrambled = ( encrypted_data[index] ^ hash_traits_t::coprime ) * hash_traits_t::inverse_prime;
+			encrypt_type next_scrambled = ( encrypted_data[index] ^ coprime ) * inverse_prime;
 			encrypt_type next_decrypted = ( next_scrambled ^ prev_scrambled );
 			prev_scrambled = next_scrambled;
 			for( int64_t subindex = 0; subindex < next_encrypt_size; ++subindex )
@@ -258,13 +274,104 @@ private:
 	string_view_t string_view_t_value;
 };
 
-//	template <class _CHAR_TYPE_, class _TRAITS_TYPE_ = std::char_traits<_CHAR_TYPE_>>
-//inline std::ostream& operator << ( std::ostream& os, encrypted_string_view< _CHAR_TYPE_, _TRAITS_TYPE_> encripted_string_view )
+//	template <class _CHAR_TYPE_, class _HASH_TRAITS_ = std::char_traits<_CHAR_TYPE_>>
+//inline std::ostream& operator << ( std::ostream& os, encrypted_string_view< _CHAR_TYPE_, _HASH_TRAITS_> encripted_string_view )
 //{
 //	return os << encripted_string_view;
 //}
 #endif
 
+////
+	template<typename _HASH_TRAITS_>
+struct xhash_string_view
+{
+	using traits_t = _HASH_TRAITS_;
+	using key_t = typename traits_t::hash_t;
+	using char_t = typename traits_t::char_t;
+	using const_char_ptr_t = typename traits_t::const_char_ptr_t;
+	using value_t  = encrypted_string_view<char_t, traits_t>;
+	static_assert( !std::is_same_v<key_t, value_t > );
+
+	constexpr xhash_string_view() noexcept = default;
+	constexpr xhash_string_view( const xhash_string_view& ) noexcept = default;
+
+	//constexpr xhash_string_view( value_t _value ) noexcept : data( traits_t::hash(_value.data(), _value.size()), _value ) {}
+	//constexpr xhash_string_view( key_t _key, value_t _value ) noexcept : data( _key, _value ) {}
+	//constexpr xhash_string_view( const_char_ptr_t _value ) noexcept : data( traits_t::hash(_value), _value ) {}
+	constexpr xhash_string_view( value_t _value ) noexcept : key( traits_t::hash(_value.data(), _value.size()) ), value( _value ) {}
+	constexpr xhash_string_view( key_t _key, value_t _value ) noexcept : key( _key ), value( _value ) {}
+	constexpr xhash_string_view( const_char_ptr_t _value ) noexcept : key( traits_t::hash(_value) ), value( _value ) {}
+
+	//constexpr xhash_string_view( value_t _value ) noexcept : key(), value( _value )
+	//{
+	//	const auto decrypted = _value.decrypt();
+	//	key = traits_t::hash( decrypted.data(), decrypted.size() );
+	//}
+	//constexpr xhash_string_view( const_char_ptr_t _value, size_t lenght ) noexcept : key( traits_t::hash( _value, lenght ) ), value( _value ) {}
+
+	constexpr operator key_t() const { return get_key(); }
+	constexpr operator value_t() const { return get_value(); }
+
+	constexpr key_t get_key() const { return key; }
+	constexpr value_t get_value() const { return value; }
+
+	//key_value_pair<key_t, value_t> data;
+	key_t    key;
+	value_t  value;
+};
+
+
+////
+//	template<typename _HASH_TRAITS_>
+//struct xhash_string
+//{
+//	using traits_t = _HASH_TRAITS_;
+//	using key_t = typename traits_t::hash_t;
+//	using char_t = typename traits_t::char_t;
+//	using const_char_ptr_t = typename traits_t::const_char_ptr_t;
+//	using value_t  = encrypted_string_base<char_t, traits_t, traits_t::max_data_size>;
+//
+//	constexpr xhash_string() noexcept = default;
+//	constexpr xhash_string( const xhash_string& ) noexcept = default;
+//	constexpr xhash_string( xhash_string&& ) noexcept = default;
+//
+//	//constexpr xhash_string( value_t _value ) noexcept : key( traits_t::hash( _value.data(), _value.size() ) ), value( _value ) {}
+//	constexpr xhash_string( key_t _key, const value_t& _encrypted ) noexcept : data( _key, _encrypted ) {}
+//	constexpr xhash_string( const_char_ptr_t _unencrypted ) noexcept : key( traits_t::hash( _value ) ), value( _value ) {}
+//
+//	//constexpr xhash_string_view( value_t _value ) noexcept : key(), value( _value )
+//	//{
+//	//	const auto decrypted = _value.decrypt();
+//	//	key = traits_t::hash( decrypted.data(), decrypted.size() );
+//	//}
+//	//constexpr xhash_string_view( const_char_ptr_t _value, size_t lenght ) noexcept : key( traits_t::hash( _value, lenght ) ), value( _value ) {}
+//
+//	constexpr key_t get_key() const { return data.get_key(); }
+//	constexpr value_t get_value() const { return data.get_value(); }
+//
+//	key_value_pair<key_t, value_t> data;
+//};
+
+
+////
+	template<typename _HASH_TRAITS_>
+inline std::ostream& operator << (std::ostream& os, xhash_string_view< _HASH_TRAITS_> hash_string_view)
+{
+	return os << "{0x" << std::hex << hash_string_view.get_key() << ":'" << hash_string_view.get_value().decrypt() << "(" << hash_string_view.get_value().encrypted() << ")" << "'}";
+}
+
+
+////
+// Eventually, support for UTF-8/16/32
+// with system-specific implementation for native <-> international (unicode) conversion.
+// ... eventually... well, that's the plan...
+using xhash_string_view_t = xhash_string_view<xhash_traits_t>;
+
+
+constexpr xhash_string_view_t operator "" _xhash64([[maybe_unused]] xhash_traits_t::const_char_ptr_t string, [[maybe_unused]] size_t length)
+{
+	return xhash_string_view_t{ typename xhash_string_view_t::value_t(string, length) };
+}
 
 
 }} // namespace SB::LibX

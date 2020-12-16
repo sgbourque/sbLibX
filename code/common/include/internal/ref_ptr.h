@@ -1,5 +1,8 @@
 #pragma once
 #include <cstdint>
+#if !defined(SBDEBUG) && _ITERATOR_DEBUG_LEVEL > 0
+#error "Compiling with incompatible settings (linker error) : Iterator debug level shoud only be enabled with debug type targets."
+#endif
 
 namespace SB { namespace LibX {
 // This is binary-compatible with the COM interface, without requiring anything under "windows.h" and compiler's limitations involved

@@ -26,6 +26,8 @@ using namespace SB;
 	#define WINAPI SB_STDCALL
 #endif
 
+#define SB_DEV_THREADED	SB_SUPPORTED
+
 
 ////
 	template<size_t kMaxArgc>
@@ -97,6 +99,9 @@ function_exception_helper<fct_type> unsafe_entry([[maybe_unused]] fct_type _func
 
 #include <future>
 #include <thread>
+#include <cassert>
+
+#pragma comment( lib, "Ole32.lib" )
 
 //#pragma warning(disable:4711) // main can be inlined
 #pragma comment(linker, "/subsystem:windows")
@@ -106,6 +111,7 @@ int WinMain(
 	[[maybe_unused]] _In_ int nShowCmd
 )
 {
+	[[maybe_unused]] auto multithreadedAppartmentResult = CoInitializeEx( NULL, COINIT_MULTITHREADED );
 	LibX::Debug::Settings debugSettings;
 	// TODO: Parse base system configuration parameters / file(s)
 
@@ -158,6 +164,11 @@ int WinMain(
 	std::string function_name;
 	LibX::Dev::library main_module;
 	main_t local_main{};
+	enum flags_t : size_t
+	{
+		SB_COINIT_APARTMENTTHREADED = ( 1 << 0 ),
+	};
+	size_t flags{};
 	if (hInstance != 0) do
 	{
 		constexpr size_t kMaxArgC = kMaxCommandline / 2; // with every argument got 1 char we can reach the the max argument count possible
@@ -287,6 +298,12 @@ int WinMain(
 			}
 			else if (return_code == kExecute)
 			{
+				for( const auto& fct : main_module )
+				{
+					if( strstr( fct.first, "COINIT_APARTMENTTHREADED" ) != nullptr )
+						flags |= SB_COINIT_APARTMENTTHREADED;
+				}
+
 				// TODO : use config file to get input parameters back into dll
 				std::cerr << "-- '" << module_name << "/" << function_name << "' --" << std::endl;
 				int local_argc = std::max(0, argc - entryArgOffset);
@@ -294,23 +311,35 @@ int WinMain(
 				{
 					// run on a separate thread (still sync'ed for now)
 					// Note : running on a separate thread is needed for any DLL that requires a particular thread appartment models (as ASIO).
-					std::packaged_task<int()> run_task(
-						[&local_main, &module_name, &function_name, local_argc, local_argv]()
+					using task_t = std::packaged_task<int()>;
+					task_t run_task(
+						[&local_main, &module_name, &function_name, local_argc, local_argv, flags]() -> auto
 						{
 							decltype(local_main(local_argc, local_argv)) return_code = kError;
 							try
 							{
+								if ( ( flags & SB_COINIT_APARTMENTTHREADED ) != 0 )
+								{
+									[[maybe_unused]] auto appartmentThreadedResult = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
+									assert( SUCCEEDED( appartmentThreadedResult ) );
+								}
 								return_code = unsafe_entry(local_main)(local_argc, local_argv);
 							}
 							catch (std::exception except)
 							{
 								std::cerr << except.what() << " in '" << module_name << "/" << function_name << "'" << std::endl;
 							}
+							if( ( flags & SB_COINIT_APARTMENTTHREADED ) != 0 )
+								CoUninitialize();
 							return return_code;
 						}
 					);
 					std::future<int> result = run_task.get_future();
+#if SB_SUPPORTS( SB_DEV_THREADED )
 					std::thread(std::move(run_task)).detach();
+#else
+					run_task();
+#endif
 					return_code = result.get();
 				}
 				//debugConsole.RedirectStdIO();

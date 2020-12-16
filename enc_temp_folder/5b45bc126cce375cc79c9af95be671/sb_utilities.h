@@ -112,8 +112,8 @@ static inline constexpr auto extended_gcd_modular_step( type_t a_rem, type_t a_b
 	template< typename type_t >
 static inline constexpr type_t modular_inverse( type_t value, type_t characteristic = type_t{} )
 {
-	// if value is a zero divisor (so not a unit), returns an integer != 1 such that
-	//  	value * modular_inverse( value ) = value mod characteristic
+	// if value is a zero divisor (so not a unit), returns the smallest number such that
+	//  	value * modular_inverse( value ) = 0 mod characteristic
 	using modular_type_t = std::make_unsigned_t<std::remove_const_t<type_t>>;
 	const modular_type_t max_value = characteristic != 0 ? static_cast<modular_type_t>(characteristic) : std::numeric_limits<modular_type_t>::max();
 	const modular_type_t offset = characteristic - max_value;

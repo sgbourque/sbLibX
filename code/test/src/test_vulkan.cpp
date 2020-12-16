@@ -8,7 +8,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include <common/include/sb_hash.h>
+#include <common/include/sb_encrypted_string.h>
 
 namespace SB {
 namespace LibX {

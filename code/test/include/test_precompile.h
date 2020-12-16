@@ -13,9 +13,9 @@
 #endif
 
 #if !defined(SBDEBUG)
-	#pragma warning(disable:4081 4365 4472 4514 4571 4625 4626 4710 4774 4820 5026 5027)
+	//#pragma warning(disable:4081 4365 4472 4514 4571 4625 4626 4710 4774 4820 5026 5027)
 	#include <iostream>
-	#pragma warning(default)
+	//#pragma warning(default)
 #endif
 
 //extern int main(int _nArgs = 0,  const char* const pArgs[] = nullptr);

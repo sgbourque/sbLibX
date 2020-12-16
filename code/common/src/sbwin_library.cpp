@@ -230,6 +230,7 @@ SB_WIN_EXPORT export_function_iterator::export_function_iterator( const handle_t
 		auto exports = reinterpret_cast<const SystemFileHeader::data_entry_t*>(
 			rawModule + header->optionalHeader.dataEntry[SystemFileHeader::optionalHeader_t::Export].virtualAddressOffset
 			);
+		assert( exports->nameOrdinalTable - exports->nameTable == exports->nameCount * sizeof(uint32_t) );
 		nameTable = reinterpret_cast<const uint32_t*>( rawModule + exports->nameTable );
 		functionTable = reinterpret_cast<const uint32_t*>( rawModule + exports->functionTable );
 		if( *functionTable == 0 )
@@ -243,7 +244,7 @@ SB_WIN_EXPORT export_function_iterator::export_function_iterator( const handle_t
 		functionTable += hint;
 	}
 }
-}
+} // namespace DLL
 
 template<>
 SB_WIN_EXPORT unique_library<DLL::handle_t>::result_t unique_library<DLL::handle_t>::load( const char* moduleName )
@@ -290,4 +291,4 @@ SB_WIN_EXPORT function_helper unique_library<DLL::handle_t>::operator[]( std::st
 }
 
 
-}}
+}} // namespace sbLibX

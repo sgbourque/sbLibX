@@ -43,6 +43,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\test_encrypt.cpp" />
     <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />

@@ -53,4 +53,5 @@ using asio_device = ASIO::unique_device;
 
 }}
 
+SB_EXPORT_TYPE void SB_STDCALL SB_ASIO_COINIT_APARTMENTTHREADED() {}
 SB_PLATFORM_DEPENDS

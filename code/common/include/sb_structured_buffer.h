@@ -62,6 +62,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 #endif
 #define SB_STRUCT_BEGIN( STRUCTURED_BUFFER_NAME, ... ) SB_STRUCT_BEGIN_TRAITS( STRUCTURED_BUFFER_NAME, sbLibX::xhash_traits_t, __VA_ARGS__ )
 #define SB_STRUCT_BEGIN_TRAITS( STRUCTURED_BUFFER_NAME, _TRAITS_, ... )\
+	using sbLibX::operator "" _xhash64; /* TODO: Remove this when encoded strings are done*/\
 	struct STRUCTURED_BUFFER_NAME {\
 		using type_t = STRUCTURED_BUFFER_NAME;\
 		using hash_traits_t = _TRAITS_;/*sbLibX::xhash_traits_t;*/\
@@ -76,7 +77,7 @@ static inline constexpr auto build_key_info(void) -> sbLibX::key_info_array<type
 #define SB_STRUCT_MEMBER( TYPE, NAME, ... ) /* note that TYPE can't be hashed by name */\
 		static inline constexpr size_t NAME##_id = __COUNTER__ - kElementIdOffset - 1;\
 		static_assert(NAME##_id < 512, "Too many unique data members. Try using sub-buffers or split the buffer.");\
-		static inline constexpr hash_string_view_t NAME##_hash = SB_MEMBER_ENTRY #NAME "";\
+		static inline constexpr auto NAME##_hash = SB_MEMBER_ENTRY #NAME ""_xhash64;/*constexpr_encrypt( SB_MEMBER_ENTRY #NAME );*/\
 		template<typename IMPL> struct data_traits<hash_traits_t::hash(SB_MEMBER_ENTRY #NAME ""), IMPL>\
 		{\
 			using type_t = decltype(IMPL::NAME);\

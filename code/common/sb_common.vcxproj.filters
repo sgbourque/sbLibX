@@ -16,6 +16,12 @@
     <Filter Include="include\internal">
       <UniqueIdentifier>{c08fc95c-ebe7-41cf-8d68-f89667a797c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\internal\arch">
+      <UniqueIdentifier>{bd30eb52-985e-47a0-8860-2c4de71f8a5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\internal\unicode">
+      <UniqueIdentifier>{3b6b4b05-92ce-4a3f-99b7-8387ee83f016}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sb_interface.h">
@@ -74,6 +80,24 @@
     </ClInclude>
     <ClInclude Include="include\sb_encrypted_string.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\arch\VisualC_specific.h">
+      <Filter>include\internal\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\arch\x64_specific.h">
+      <Filter>include\internal\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\arch\x86_specific.h">
+      <Filter>include\internal\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\property_value_aliases.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\unicode_data_basic_latin.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h">
+      <Filter>include\internal\unicode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
