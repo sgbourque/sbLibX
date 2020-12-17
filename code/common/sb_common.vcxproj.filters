@@ -99,6 +99,9 @@
     <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\unicode\name_aliases_basic_latin.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

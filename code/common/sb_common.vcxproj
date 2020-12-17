@@ -200,6 +200,7 @@
     <ClInclude Include="include\internal\interface_vst_base.h" />
     <ClInclude Include="include\internal\ref_ptr.h" />
     <ClInclude Include="include\internal\temp_delete_me.h" />
+    <ClInclude Include="include\internal\unicode\name_aliases_basic_latin.h" />
     <ClInclude Include="include\internal\unicode\property_value_aliases.h" />
     <ClInclude Include="include\internal\unicode\unicode_data_basic_latin.h" />
     <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h" />

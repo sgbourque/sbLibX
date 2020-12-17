@@ -102,17 +102,17 @@ struct encryption_traits
 
 	enum : encode_t
 	{
-		prime           = _PSEUDO_PRIME_, // should be prime modulo 2^64, meaning sbLibX::modular_inverse won't panic
-		coprime         = _COPRIME_, // should be prime modulo 2^64, meaning sbLibX::modular_inverse won't panic
+		prime           = _PSEUDO_PRIME_, // doesn't need to be prime per-se
+		coprime         = _COPRIME_, // should be co-prime to prime
 
 		inverse_prime   = sbLibX::modular_inverse( prime ),
 		inverse_coprime = sbLibX::modular_inverse( coprime ),
-		jitter_constant = inverse_coprime * ( prime + 1 ) / 2,
+		//jitter_constant = inverse_coprime * ( prime + 1 ) / 2,
 
 		invalid_block   = 0,
-		initial_block   = jitter_constant,
+		//initial_block   = jitter_constant,
 	};
-	static_assert( sbLibX::gcd<encode_t>( prime, coprime ) == 1 && sbLibX::gcd<encode_t>( prime, inverse_coprime ), "Please use coprime numbers" );
+	static_assert( sbLibX::gcd<encode_t>( prime, coprime ) == 1 && sbLibX::gcd<encode_t>( prime, inverse_coprime ), "Please use relatively prime numbers" );
 
 	struct encryption_state
 	{
@@ -271,6 +271,18 @@ struct decoding_helper
 #endif
 //using char_t = char8_t; // default to UTF-8
 using default_encode_t = uint64_t;
+	template< typename encode_t, encode_t prime, encode_t coprime, typename char_t >
+static inline constexpr typename encode_t hash( const char_t* string, size_t length )
+{
+	return string && *string && length > 0 ? ( hash<encode_t, prime, coprime>( ++string, --length ) + *string * prime ) ^ coprime : 0;
+}
+
+	template< typename encode_t, encode_t prime, encode_t coprime, typename char_t, size_t length >
+static inline constexpr typename encode_t hash( const char_t( &string )[length] )
+{
+	return hash<encode_t, prime, coprime>( string, length );
+}
+//using sbLibX::operator "" _xhash64;
 
 #ifndef SB_ENCODE_TYPE
 using SB_ENCODE_TYPE = default_encode_t;
@@ -279,19 +291,24 @@ using SB_ENCODE_TYPE = default_encode_t;
 static inline constexpr size_t SB_ENCRYPT_BLOCK_COUNT = sbLibX::align_up( 32 * sizeof( uint8_t ), sizeof( SB_ENCODE_TYPE ) ) / sizeof( SB_ENCODE_TYPE );
 #endif
 #ifndef SB_PRIME_0
-const SB_ENCODE_TYPE SB_PRIME_0 = SB_ENCODE_TYPE{ 0x9EF3455AD47C9E31ull };
+static inline constexpr SB_ENCODE_TYPE sb_prime_0_factor = hash<SB_ENCODE_TYPE, 0x9EF3455AD47C9E31ull, 0x03519CFFA7F0F405ull>( ""  __DATE__ __TIME__ );
+const SB_ENCODE_TYPE SB_PRIME_0 = SB_ENCODE_TYPE{ 0x9EF3455AD47C9E31ull * ( 2 * sb_prime_0_factor + 1 ) };
 #endif
 #ifndef SB_PRIME_1
-const SB_ENCODE_TYPE SB_PRIME_1 = SB_ENCODE_TYPE{ 0x03519CFFA7F0F405ull };
+static inline constexpr SB_ENCODE_TYPE sb_prime_1_factor = hash<SB_ENCODE_TYPE, 0x03519CFFA7F0F405ull, 281474976710677ull>( ""  __DATE__ __TIME__ );
+const SB_ENCODE_TYPE SB_PRIME_1 = SB_ENCODE_TYPE{ 0x03519CFFA7F0F405ull * ( 2 * sb_prime_1_factor + 1 ) };
 #endif
 #ifndef SB_PRIME_2
-const SB_ENCODE_TYPE SB_PRIME_2 = SB_ENCODE_TYPE{ 281474976710677ull };
+static inline constexpr SB_ENCODE_TYPE sb_prime_2_factor = hash<SB_ENCODE_TYPE, 281474976710677ull, 17592186044423ull>( ""  __DATE__ __TIME__ );
+const SB_ENCODE_TYPE SB_PRIME_2 = SB_ENCODE_TYPE{ 281474976710677ull * ( 2 * sb_prime_2_factor + 1 ) };
 #endif
 #ifndef SB_PRIME_3
-const SB_ENCODE_TYPE SB_PRIME_3 = SB_ENCODE_TYPE{ 17592186044423ull };
+static inline constexpr SB_ENCODE_TYPE sb_prime_3_factor = hash<SB_ENCODE_TYPE, 17592186044423ull, 17179869209ull>( ""  __DATE__ __TIME__ );
+const SB_ENCODE_TYPE SB_PRIME_3 = SB_ENCODE_TYPE{ 17592186044423ull * ( 2 * sb_prime_3_factor + 1 ) };
 #endif
 #ifndef SB_PRIME_4
-const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull };
+static inline constexpr SB_ENCODE_TYPE sb_prime_4_factor = hash<SB_ENCODE_TYPE, 17179869209ull, 0x9EF3455AD47C9E31ull>( ""  __DATE__ __TIME__ );
+const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull * ( 2 * sb_prime_4_factor + 1 ) };
 #endif
 // TODO: some unit tests
 
