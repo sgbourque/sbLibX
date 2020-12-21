@@ -7,6 +7,10 @@
       "Command": "run $(ProjectName)/parser"
     },
     {
+      "Id": "2f51687d-50f5-4266-bbe1-5d49dd9ca2d4",
+      "Command": "data/src/UnicodeData.txt"
+    },
+    {
       "Id": "85b6ed68-d51b-42f9-9867-8d8de00c830c",
       "Command": "\"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
     }

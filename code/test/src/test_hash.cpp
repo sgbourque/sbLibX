@@ -85,9 +85,9 @@ namespace StructuredBuffer
 //
 }} // namespace sbLibX
 
-//template<typename char_t, size_t _LENGHT_>
-//constexpr size_t string_length( [[maybe_unused]] const char_t( &str )[_LENGHT_] ) {
-//	return _LENGHT_;
+//template<typename char_t, size_t _LENGTH_>
+//constexpr size_t string_length( [[maybe_unused]] const char_t( &str )[_LENGTH_] ) {
+//	return _LENGTH_;
 //}
 //template<typename Char, typename Arg, typename ... Args>
 //constexpr auto concat( Arg&& arg, Args&& ... args ) {

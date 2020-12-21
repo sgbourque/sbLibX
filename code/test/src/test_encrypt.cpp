@@ -10,14 +10,14 @@
 #ifdef __clang__
 SBCOMPILE_MESSAGE( "non-type template parameter is not yet supported by clang" )
 #else
-//	template< typename _CHAR_TYPE_, size_t _LENGHT_ >
+//	template< typename _CHAR_TYPE_, size_t _LENGTH_ >
 //struct encoded_string
 //{
 ////	constexpr encoded_string() : data() {}
 ////
 ////	std::basic_string<size_t> data;
 //	std::basic_string<char> decrypt() const { return data.data(); }
-//	std::array<_CHAR_TYPE_, _LENGHT_> data;
+//	std::array<_CHAR_TYPE_, _LENGTH_> data;
 //};
 
 
@@ -40,21 +40,21 @@ SBCOMPILE_MESSAGE( "non-type template parameter is not yet supported by clang" )
 //	return test;//xhash_string_view_t{ typename xhash_string_view_t::value_t( string, length ) };
 //}
 //
-//	template< typename _CHAR_TYPE_, size_t _LENGHT_ >
-//inline std::ostream& operator << ( std::ostream& os, encoded_string<_CHAR_TYPE_, _LENGHT_> encoded )
+//	template< typename _CHAR_TYPE_, size_t _LENGTH_ >
+//inline std::ostream& operator << ( std::ostream& os, encoded_string<_CHAR_TYPE_, _LENGTH_> encoded )
 //{
 //	return os << encoded.decrypt();
 //}
 
-//static inline constexpr std::array<size_t, 32> encrypt( [[maybe_unused]] const char* unencrypted, [[maybe_unused]] size_t lenght )
+//static inline constexpr std::array<size_t, 32> encrypt( [[maybe_unused]] const char* unencrypted, [[maybe_unused]] size_t length )
 //{
-//	return {};//encrypt(unencrypted, lenght);
+//	return {};//encrypt(unencrypted, length);
 //}
 //
 //
-//static inline constexpr auto operator ""_x64 ( const char* unencrypted, [[maybe_unused]] size_t lenght )
+//static inline constexpr auto operator ""_x64 ( const char* unencrypted, [[maybe_unused]] size_t length )
 //{
-//	return encrypt(unencrypted, lenght);
+//	return encrypt(unencrypted, length);
 //}
 
 #ifdef __clang__
@@ -91,14 +91,14 @@ struct encryption_traits
 		encode_block       = encode_size / char_size,
 
 		//encoded_data_size  = sbLibX::align_up( unencrypted_length * char_size, encode_size ),
-		//encode_lenght      = encoded_data_size / encode_size,
+		//encode_length      = encoded_data_size / encode_size,
 
 		char_mask          = encode_t{~0ull} >> ( ( encode_block - 1 ) * char_size * CHAR_BIT ),
 	};
 	static_assert( encode_block * char_size == encode_size );
-	//using decrypted_string_t = std::array<encode_t, decode_lenght>;
+	//using decrypted_string_t = std::array<encode_t, decode_length>;
 	//using decrypted_string_t = std::basic_string<char_t>;
-	//using encrypted_string_t = std::array<encode_t, encode_lenght>;
+	//using encrypted_string_t = std::array<encode_t, encode_length>;
 
 	enum : encode_t
 	{
@@ -221,10 +221,10 @@ struct encoding_helper
 		static_assert( unencrypted_size <= unencrypted_length, "Not enough capacity to store string. Use a larger encryption traits" );
 		return encrypt( unencrypted, std::make_index_sequence<residue_size>{}, initialValue );
 	}
-		template< size_t _UNENCODED_LENGHT_ >
-	static inline constexpr auto encrypt( [[maybe_unused]] const char_t( &unencrypted )[_UNENCODED_LENGHT_] )
+		template< size_t _UNENCODED_LENGTH_ >
+	static inline constexpr auto encrypt( [[maybe_unused]] const char_t( &unencrypted )[_UNENCODED_LENGTH_] )
 	{
-		return encrypt( unencrypted, std::make_index_sequence<_UNENCODED_LENGHT_>{} );
+		return encrypt( unencrypted, std::make_index_sequence<_UNENCODED_LENGTH_>{} );
 	}
 };
 
@@ -262,10 +262,10 @@ struct decoding_helper
 		const encode_t initialValue = decrypt_block( invalid_block, last_block, std::make_index_sequence<std::min<size_t>(encrypted_size + 1, 2) - 1>{} );
 		return decrypt( encrypted, std::make_index_sequence<encrypted_size - 1>{}, initialValue );
 	}
-		template< size_t _ENCODED_LENGHT_ >
-	static inline constexpr auto decrypt( [[maybe_unused]] const std::array<encode_t, _ENCODED_LENGHT_>& encrypted )
+		template< size_t _ENCODED_LENGTH_ >
+	static inline constexpr auto decrypt( [[maybe_unused]] const std::array<encode_t, _ENCODED_LENGTH_>& encrypted )
 	{
-		return decrypt( encrypted.data(), std::make_index_sequence<_ENCODED_LENGHT_>{} );
+		return decrypt( encrypted.data(), std::make_index_sequence<_ENCODED_LENGTH_>{} );
 	}
 };
 #endif
@@ -312,25 +312,25 @@ const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull * ( 2 * sb_prim
 #endif
 // TODO: some unit tests
 
-	template<typename _CHAR_TYPE_/*, size_t _LENGHT_= SB_ENCRYPT_BLOCK_COUNT*/, typename _ENCODE_TYPE_ = SB_ENCODE_TYPE >
-using encryption_traits_base_t = encryption_traits<_CHAR_TYPE_/*, _LENGHT_*/, _ENCODE_TYPE_, SB_PRIME_0, SB_PRIME_1>;
+	template<typename _CHAR_TYPE_/*, size_t _LENGTH_= SB_ENCRYPT_BLOCK_COUNT*/, typename _ENCODE_TYPE_ = SB_ENCODE_TYPE >
+using encryption_traits_base_t = encryption_traits<_CHAR_TYPE_/*, _LENGTH_*/, _ENCODE_TYPE_, SB_PRIME_0, SB_PRIME_1>;
 
 
-	template< typename _CHAR_TYPE_, size_t _LENGHT_, typename _ENCODE_BLOCK_TYPE_ = SB_ENCODE_TYPE,
+	template< typename _CHAR_TYPE_, size_t _LENGTH_, typename _ENCODE_BLOCK_TYPE_ = SB_ENCODE_TYPE,
 			template<typename /*_CHAR_TYPE_*/, size_t /*_DEFAULT_UNENCRYPTED_LENGTH_*/, typename /*_ENCODE_BLOCK_TYPE_*/, _ENCODE_BLOCK_TYPE_ /*_PRIME_*/, _ENCODE_BLOCK_TYPE_ /*_COPRIME_*/>
 		typename _ENCRYPT_TRAITS_ = encryption_traits
 	>
-static inline constexpr auto encrypt( [[maybe_unused]] const _CHAR_TYPE_( &unencrypted )[_LENGHT_] )
+static inline constexpr auto encrypt( [[maybe_unused]] const _CHAR_TYPE_( &unencrypted )[_LENGTH_] )
 {
-	using encrypt_traits = _ENCRYPT_TRAITS_<_CHAR_TYPE_/*, _LENGHT_*/, _ENCODE_BLOCK_TYPE_, SB_PRIME_0, SB_PRIME_1>;
+	using encrypt_traits = _ENCRYPT_TRAITS_<_CHAR_TYPE_/*, _LENGTH_*/, _ENCODE_BLOCK_TYPE_, SB_PRIME_0, SB_PRIME_1>;
 	const typename encrypt_traits::encrypted_string_t encrypted = encrypt_traits::encrypt( unencrypted );
 	return encrypted;
 }
 
-	template< size_t _LENGHT_, typename _ENCRYPT_TRAITS_ = encryption_traits_base_t<char> >
-static inline constexpr auto decrypt( [[maybe_unused]] const std::array<typename _ENCRYPT_TRAITS_::encode_t, _LENGHT_> encrypted )
+	template< size_t _LENGTH_, typename _ENCRYPT_TRAITS_ = encryption_traits_base_t<char> >
+static inline constexpr auto decrypt( [[maybe_unused]] const std::array<typename _ENCRYPT_TRAITS_::encode_t, _LENGTH_> encrypted )
 {
-	using encrypt_traits = _ENCRYPT_TRAITS_;// <_CHAR_TYPE_, _LENGHT_, _ENCODE_BLOCK_TYPE_, SB_PRIME_0, SB_PRIME_1>;
+	using encrypt_traits = _ENCRYPT_TRAITS_;// <_CHAR_TYPE_, _LENGTH_, _ENCODE_BLOCK_TYPE_, SB_PRIME_0, SB_PRIME_1>;
 	const typename encrypt_traits::decrypted_string_t decrypted = encrypt_traits::decrypt( encrypted );
 	return decrypted;
 }

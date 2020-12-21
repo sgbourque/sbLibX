@@ -59,13 +59,17 @@
 #else
 	#error "Undefined platform"
 #endif
-#if !defined(SB_LIBX_INTERNAL)
-	#define SB_LIB_PROJECT	"sbLibX"
-	#define SB_LIB_DEPEND_NAME	SB_LIB_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
-	#define SB_LIB_DEPENDS	__pragma( comment( lib, SB_LIB_DEPEND_NAME ) )
-#else
-	#define SB_LIB_DEPENDS
+#if defined(SB_LIBX_INTERNAL)
+	#define SB_COMMON_DEPENDS
+	#define SB_COMMON_EXPORT SB_EXPORT_LIB
+	#ifndef SB_LIBPLATFORM_INTERNAL
 	#define SB_LIBPLATFORM_INTERNAL
+	#endif
+#else
+	#define SB_COMMON_PROJECT	"sbLibX"
+	#define SB_COMMON_DEPEND_NAME	SB_COMMON_PROJECT SB_ARCH_SUFFIX SB_TARGET_SUFFIX SB_LIB_EXTENSION
+	#define SB_COMMON_DEPENDS	__pragma( comment( lib, SB_COMMON_DEPEND_NAME ) )
+	#define SB_COMMON_EXPORT SB_IMPORT_LIB
 #endif
 
 #if !defined(SB_LIBPLATFORM_INTERNAL)

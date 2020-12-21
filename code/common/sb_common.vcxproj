@@ -188,6 +188,7 @@
     <ClCompile Include="src\sbLibX_main.cpp" />
     <ClCompile Include="src\sb_interface.cpp" />
     <ClCompile Include="src\sb_interface_asio.cpp" />
+    <ClCompile Include="src\sb_unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\internal\arch\VisualC_specific.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="include\internal\interface_vst_base.h" />
     <ClInclude Include="include\internal\ref_ptr.h" />
     <ClInclude Include="include\internal\temp_delete_me.h" />
+    <ClInclude Include="include\internal\unicode\basic_latin.h" />
     <ClInclude Include="include\internal\unicode\name_aliases_basic_latin.h" />
     <ClInclude Include="include\internal\unicode\property_value_aliases.h" />
     <ClInclude Include="include\internal\unicode\unicode_data_basic_latin.h" />
@@ -215,6 +217,7 @@
     <ClInclude Include="include\sb_range.h" />
     <ClInclude Include="include\sb_structured_buffer.h" />
     <ClInclude Include="include\sb_type_hash.h" />
+    <ClInclude Include="include\sb_unicode.h" />
     <ClInclude Include="include\sb_utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

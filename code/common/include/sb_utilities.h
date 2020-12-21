@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace SB { namespace LibX
 {
 #if defined(__clang__)
@@ -55,8 +57,8 @@ static inline constexpr size_t array_count( const T& _array );
 
 	template< typename T, size_t N >
 static inline constexpr size_t array_count( const T( & )[N] ) { return N; }
-//	template< typename T, size_t N >
-//static inline constexpr size_t array_count( const std::array<T, N>& ) { return N; }
+	template< typename T, size_t N >
+static inline constexpr size_t array_count( const std::array<T, N>& ) { return N; }
 
 ////
 	template< typename dataSize_t, typename align_t >

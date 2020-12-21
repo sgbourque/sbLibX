@@ -1,12 +1,12 @@
 ﻿#include <common/include/sb_range.h>
 #include <common/include/sb_encrypted_string.h>
-#include <common/include/sb_structured_buffer.h>
+//#include <common/include/sb_structured_buffer.h>
+#include <common/include/sb_unicode.h>
 
-#include <compare>
 #include <string_view>
-#include <vector>
+//#include <vector>
 #include <unordered_set>
-#include <set>
+//#include <set>
 
 //#include <cassert>
 #define assert(X)\
@@ -19,193 +19,69 @@
 namespace SB { namespace LibX
 {
 
-namespace Character
-{
+// Assume that the input is either already normalized or is to be preserved as un-normalized (raw) unicode data not to be modified.
+// For this reason, the basic lexer/parser will differentiate different encodings of equivalent unicode combinations.
 
-// First let's support only basic properties of ASCII, just enough
-// to parse unicode data files
-
-// General_Category (gc)
-enum class General_Category : uint32_t
-{
-#define SBDEF_GC_PROPERTY(property_name, category_alias, category_name, misc_alias, value) \
-	category_name = value, category_alias = category_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
-// @missing: 0000..10FFFF; General_Category; Unassigned
-};
-sb_enum_class_flags(General_Category);
-static std::unordered_map<General_Category, const char*> general_category_name =
-{
-#define SBDEF_GC_PROPERTY(property_name, category_alias, category_name, misc_alias, value) \
-	{General_Category :: category_name, ("" # category_name)},
-#include "common/include/internal/unicode/property_value_aliases.h"
-};
-
-// Canonical_Combining_Class( ccc )
-enum class Canonical_Combining_Class : uint8_t
-{
-#define SBDEF_CCC_PROPERTY(property_name, value, class_alias, class_name) \
-	class_name = value, class_alias = class_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
-};
-static std::unordered_map<Canonical_Combining_Class, const char*> canonical_combining_class_name =
-{
-#define SBDEF_CCC_PROPERTY(property_name, value, class_alias, class_name) \
-	{Canonical_Combining_Class :: class_name, ("" # class_name)},
-#include "common/include/internal/unicode/property_value_aliases.h"
-};
-
-enum class Bidi_Class : uint32_t
-{
-#define SBDEF_BIDI_PROPERTY(property_name, bidi_alias, bidi_name, value) \
-	bidi_name = value, bidi_alias = bidi_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
-};
-sb_enum_class_flags(Bidi_Class);
-static std::unordered_map<Bidi_Class, const char*> bidi_class_name =
-{
-#define SBDEF_BIDI_PROPERTY(property_name, bidi_alias, bidi_name, value) \
-	{Bidi_Class :: bidi_name, ("" # bidi_name)},
-#include "common/include/internal/unicode/property_value_aliases.h"
-};
-
-struct DecimalDigit
-{
-	enum value_t : int
-	{
-		undefined = -1,
-		zero,
-		one,
-		two,
-		three,
-		four,
-		five,
-		six,
-		seven,
-		eight,
-		nine
-	};
-	int value = undefined;
-};
-
-
-enum class Bidi_Mirrored : bool
-{
-	False = false, F = False, No = F,  N = No,
-	True  = true,  T = True,  Yes = T, Y = Yes,
-};
-
-
-	template< typename unicode_subset >
-struct Simple_Character_Mapping
-{
-	using underlying_type_t = std::underlying_type_t<unicode_subset>;
-	static inline constexpr unicode_subset code_point = unicode_subset{ - 1};
-	Simple_Character_Mapping( underlying_type_t _code_point = code_point ) : value( unicode_subset{ _code_point } ) {}
-	auto operator <=>( const Simple_Character_Mapping& ) const = default;
-
-	unicode_subset value;
-};
-
-
-// based on Unicode 13.0.0: UCD / UnicodeData.txt
-template< typename unicode_subset = char32_t >
-struct unicode_data
-{
-	using unicode_subset_t = unicode_subset;
-	using simple_character_mapping_t = Simple_Character_Mapping<unicode_subset_t>;
-	
-	unicode_subset_t code_point;
-	const char* name;
-	General_Category general_category;
-	Canonical_Combining_Class canonical_combining_class;
-	Bidi_Class bidi_class;
-	const char* decomposition_type;
-	DecimalDigit decimal_value;
-	DecimalDigit digit_value;
-	const char* numeric_value;
-	Bidi_Mirrored bidi_mirrored;
-	const char* unicode_1_name_obsolete;
-	const char* unicode_comment_obsolete;
-	simple_character_mapping_t simple_uppercase_mapping;
-	simple_character_mapping_t simple_lowercase_mapping;
-	simple_character_mapping_t simple_titlecase_mapping;
-	
-	unicode_data() = delete;
-	
-	unicode_data(
-		unicode_subset_t _code_point,
-		const char* _name,
-		General_Category _general_category,
-		Canonical_Combining_Class _canonical_combining_class,
-		Bidi_Class _bidi_class,
-		const char* _decomposition_type = nullptr,
-		DecimalDigit _decimal_value = DecimalDigit{DecimalDigit::undefined},
-		DecimalDigit _digit_value = DecimalDigit{DecimalDigit::undefined},
-		const char* _numeric_value = nullptr,
-		Bidi_Mirrored _bidi_mirrored = Bidi_Mirrored::N,
-		const char* _unicode_1_name_obsolete = nullptr,
-		const char* _unicode_comment_obsolete = nullptr,
-		simple_character_mapping_t _simple_uppercase_mapping = {},
-		simple_character_mapping_t _simple_lowercase_mapping = {},
-		simple_character_mapping_t _simple_titlecase_mapping = {}
-	) :
-		code_point               ( _code_point                ),
-		name                     ( _name                      ),
-		general_category         ( _general_category != General_Category{} ? _general_category : General_Category::Unassigned ),
-		canonical_combining_class( _canonical_combining_class ),
-		bidi_class               ( _bidi_class                ),
-		decomposition_type       ( _decomposition_type        ),
-		decimal_value            ( _decimal_value             ),
-		digit_value              ( _digit_value               ),
-		numeric_value            ( _numeric_value             ),
-		bidi_mirrored            ( _bidi_mirrored             ),
-		unicode_1_name_obsolete  ( _unicode_1_name_obsolete   ),
-		unicode_comment_obsolete ( _unicode_comment_obsolete  ),
-		simple_uppercase_mapping ( _simple_uppercase_mapping != simple_character_mapping_t{} ? _simple_uppercase_mapping : _code_point ),
-		simple_lowercase_mapping ( _simple_lowercase_mapping != simple_character_mapping_t{} ? _simple_lowercase_mapping : _code_point ),
-		simple_titlecase_mapping ( _simple_titlecase_mapping != simple_character_mapping_t{} ? _simple_titlecase_mapping : _simple_uppercase_mapping != simple_character_mapping_t{} ? _simple_uppercase_mapping : _code_point )
-	{}
-};
-
-// ASCII unicode subset (UnicodeData.txt)
-// These ones deserve an enum since they are the most used ones in C++
-enum basic_latin_t : int8_t
-{
-#define SBDEF_NAME_ALIAS( code_point, name, alias, tag ) \
-	alias = code_point,
-#include "common/include/internal/unicode/name_aliases_basic_latin.h"
-};
-using ascii_t = basic_latin_t;
-static std::unordered_map<ascii_t, const char*> ascii_name =
-{
-#define SBDEF_NAME_ALIAS( code_point, name, alias, tag ) \
-	{ascii_t :: alias, ("" # name)},
-#include "common/include/internal/unicode/name_aliases_basic_latin.h"
-
-#define SBDEF_UNICODE_DATA(	code_point, name, gc, ccc, bidi,\
-							decomposition, decimal, digit, value, mirror, legacy, comment, upper, lower, title ) \
-	{ascii_t{code_point}, ("" # name)},
-#include "common/include/internal/unicode/unicode_data_basic_latin.h"
-#undef SBDEF_UNICODE_DATA
-};
-
-
-/*static inline constexpr*/ unicode_data<ascii_t> ascii_data[] =
-{
-#define SBDEF_UNICODE_DATA(	code_point, name, gc, ccc, bidi,\
-							decomposition, decimal, digit, value, mirror, legacy, comment, upper, lower, title ) \
-		{\
-			ascii_t{code_point}, {"" # name}, General_Category :: gc, Canonical_Combining_Class{ ccc }, Bidi_Class :: bidi,\
-			{"" # decomposition}, {decimal}, {digit}, ("" # value), Bidi_Mirrored :: mirror, ("" # legacy), ("" # comment),\
-			ascii_t{upper}, ascii_t{lower}, ascii_t{title}, \
-		},
-
-#include "common/include/internal/unicode/unicode_data_basic_latin.h"
-#undef SBDEF_UNICODE_DATA
-};
-
-}
+//static inline constexpr size_t utf8_codepoint_size( const char first_byte )
+//{
+//	enum range_t
+//	{
+//		size_1_mask  = 0x80,
+//		size_1_value = 0x00,
+//		//size_1_begin = 0x00,
+//		//size_1_end   = 0x7F,
+//
+//		size_2_mask  = 0xE0,
+//		size_2_value = 0xC0,
+//		//size_2_begin = 0xC2,
+//		//size_2_end   = 0xDF,
+//
+//		size_3_mask  = 0xF0,
+//		size_3_value = 0xE0,
+//		//size_3_begin = 0xE0,
+//		//size_3_end   = 0xEF,
+//
+//		size_4_mask  = 0xF8,
+//		size_4_value = 0xF0,
+//		//size_4_begin = 0xF0,
+//		//size_4_end   = 0xF4,
+//	};
+//	if( ( first_byte & size_1_mask ) == size_1_value )
+//		return 1;
+//	if( ( first_byte & size_2_mask ) == size_2_value )
+//		return 2;
+//	if( ( first_byte & size_3_mask ) == size_3_value )
+//		return 3;
+//	if( ( first_byte & size_4_mask ) == size_4_value )
+//		return 4;
+//
+//	return size_t{~0ull};
+//}
+//
+//// returns the complete codepoints and the end of processed data
+//static inline constexpr auto get_codepoint_count( const char utf8_input[], size_t max_length )
+//{
+//	size_t valid_end = 0;
+//	size_t valid_count = 0;
+//	for( size_t next_length = 0; valid_end + next_length < max_length; ++valid_count )
+//	{
+//		valid_end += next_length;
+//		next_length += utf8_codepoint_size( utf8_input[valid_end] );
+//	}
+//	return std::make_tuple( valid_count, valid_end );
+//}
+//
+//static inline constexpr auto utf8_to_utf32( const char utf8_input[], size_t max_length )
+//{
+//	get_codepoint_count( utf8_input, max_length );
+//}
+//
+//	template< size_t max_length >
+//static inline constexpr auto utf8_to_utf32( const char( &utf8_input )[max_length] )
+//{
+//	return utf8_to_utf32(utf8_input, max_length);
+//}
+//
 
 #if 1
 // WIP: lexer (w/ basic_unicode transform + buffer_view) - phase 1 libX integration...
@@ -273,7 +149,7 @@ constexpr auto UTF8_to_UTF32(const char utf8_input[], size_t max_length)
 	assert(utf32 < 0x110000 && (utf32 < 0xD800 || utf32 > 0xDFFF));
 	assert(utf8_iterator == utf8_input + length);
 #endif
-	return std::make_tuple(static_cast<char32_t>(utf32), utf8_iterator);
+	return std::make_tuple(char32_t{utf32}, utf8_iterator);
 }
 
 std::string UTF32_to_UTF8(const char32_t utf32)
@@ -314,7 +190,9 @@ std::string UTF32_to_UTF8(const char32_t utf32)
 	assert(std::get<0>(UTF8_to_UTF32(&utf8[0], 4)) == utf32);
 	return utf8;
 }
+#endif
 
+#if 1
 ////
 	template< typename VIEW_TYPE, typename _CONTAINER_, typename TOKEN_TYPE >
 auto token_to_view(const _CONTAINER_* container, const TOKEN_TYPE& token)
@@ -359,11 +237,13 @@ private:
 };
 
 ////
-	template< typename char_type >
+	template< typename char_type, typename unicode_subset_type >
 class symbol_lexer_t
 {
 public:
 	using char_t = char_type;
+	using unicode_subset_t = unicode_subset_type;
+
 	using view_t = std::basic_string_view<char_t>;
 	using unicode_t = char32_t;
 	using token_t = index_range_t<size_t>;
@@ -382,19 +262,19 @@ public:
 
 	view_t input(const view_t module_name, const view_t file_name, view_t input);
 
-	constexpr bool add_lexical_separator(unicode_t whitespace_char)
-	{
-		insert_token<token_type::SILENT>(whitespace_char);
-		return whitespace_set.insert(whitespace_char).second;
-	}
-		template< typename container_type >
-	constexpr bool add_lexical_separator(const container_type& whitespace_table)
-	{
-		bool success = true;
-		for (auto whitespace : whitespace_table)
-			success &= add_lexical_separator(whitespace);
-		return success;
-	}
+	//constexpr bool add_lexical_separator(unicode_t whitespace_char)
+	//{
+	//	insert_token<token_type::SILENT>(whitespace_char);
+	//	return whitespace_set.insert(whitespace_char).second;
+	//}
+	//	template< typename container_type >
+	//constexpr bool add_lexical_separator(const container_type& whitespace_table)
+	//{
+	//	bool success = true;
+	//	for (auto whitespace : whitespace_table)
+	//		success &= add_lexical_separator(whitespace);
+	//	return success;
+	//}
 
 	// raw token data
 	auto data() const { return token_buffer.data(); }
@@ -410,9 +290,9 @@ public:
 	auto count() const { return token_collection.size(); }
 
 protected:
-	using bounds = index_range_t<const char_t*>;
-	bounds get_next_token(bounds bounds);
-	auto get_next_char(bounds bounds);
+	using bounds_t = index_range_t<const char_t*>;
+	bounds_t get_next_token(bounds_t bounds);
+	auto get_next_char(bounds_t bounds);
 
 private:
 	using token_buffer_t = std::vector<unicode_t>;
@@ -428,7 +308,28 @@ private:
 	token_sequence_t   token_sequence;
 	token_collection_t token_collection;
 
-	std::set<unicode_t>	whitespace_set;
+	bool can_group( char32_t a, char32_t b )
+	{
+		auto data_a = sbUnicode::get_data<unicode_subset_t>( a );
+		auto data_b = sbUnicode::get_data<unicode_subset_t>( b );
+		if( compare( data_a.canonical_combining_class, data_b.canonical_combining_class ) != std::strong_ordering::equivalent )
+			return false;
+		if( compare( data_a.bidi_class, data_b.bidi_class ) != std::strong_ordering::equivalent )
+			return false;
+
+		if( ( (data_a.general_category|data_b.general_category) & sbUnicode::General_Category::Other ) != sbUnicode::General_Category::invalid )
+			return false;
+		if( ( (data_a.general_category|data_b.general_category) & sbUnicode::General_Category::Separator ) != sbUnicode::General_Category::invalid )
+			return false;
+		if( ( (data_a.general_category|data_b.general_category) & sbUnicode::General_Category::Punctuation ) != sbUnicode::General_Category::invalid )
+			return false;
+
+		// in unicode, combining marks are placed after the main character
+		if( ( (data_b.general_category) & sbUnicode::General_Category::Mark ) != sbUnicode::General_Category::invalid )
+			return true;
+
+		return compare( data_a.general_category, data_b.general_category ) == std::strong_ordering::equivalent;
+	}
 
 private:
 	enum class token_type { ACTIVE, SILENT };
@@ -441,40 +342,38 @@ private:
 	template<> void activate_token<token_type::SILENT>(token_t) {}
 
 		template< token_type token_type = token_type::ACTIVE >
-	token_t insert_token(unicode_t single_char_token)
+	token_t new_token(unicode_t first_char)
 	{
 		token_t token{ { token_buffer.size(), token_buffer.size() + 1 } };
-		token_buffer.emplace_back(single_char_token);
-		auto inserted = token_collection.insert(token);
-		activate_token<token_type>(*inserted.first);
-		if (!inserted.second)
-		{
-			token_buffer.resize(token.begin());
-			token.end() = token.begin();
-		}
+		token_buffer.emplace_back(first_char);
 		return token;
 	}
 		template< token_type token_type = token_type::ACTIVE >
 	token_t insert_token(token_t token)
 	{
-		assert(token_sequence.size() == 0 || token.begin() >= token_sequence.back().end());
 		if (token.size())
 		{
 			auto inserted = token_collection.insert(token);
-			activate_token<token_type>(*inserted.first);
-			if (!inserted.second)
+			if ( !inserted.second )
 			{
 				std::fill(token_buffer.data() + token.begin(), token_buffer.data() + token.end(), 0);
 				token_buffer.resize(token.begin());
 				token.end() = token.begin();
 			}
+			activate_token<token_type>( *inserted.first );
 		}
 		return token;
 	}
+
+	bounds_t drop_token( token_t token, bounds_t _bounds )
+	{
+		token_buffer.resize(token_buffer.size() - token.size());
+		return bounds_t{{ _bounds.begin(), _bounds.begin() }};
+	}
 };
 
-	template< typename char_type >
-auto symbol_lexer_t<char_type>::get_next_char(bounds bounds)
+	template< typename char_type, typename unicode_subset_type >
+auto symbol_lexer_t<char_type, unicode_subset_type>::get_next_char(bounds_t bounds)
 {
 #if VALIDATE
 	const auto begin = bounds.begin();
@@ -504,21 +403,22 @@ auto symbol_lexer_t<char_type>::get_next_char(bounds bounds)
 	return std::make_tuple(next_char, bounds);
 }
 
-	template< typename char_type >
-typename symbol_lexer_t<char_type>::bounds symbol_lexer_t<char_type>::get_next_token(typename symbol_lexer_t<char_type>::bounds bounds)
+	template< typename char_type, typename unicode_subset_type >
+typename symbol_lexer_t<char_type, unicode_subset_type>::bounds_t symbol_lexer_t<char_type, unicode_subset_type>::get_next_token(typename symbol_lexer_t<char_type, unicode_subset_type>::bounds_t bounds)
 {
+	char32_t last_char = char32_t(-1);
 	token_t token{ { token_buffer.size(), token_buffer.size() } };
 	token_buffer.reserve(token_buffer.size() + bounds.size());
-	typename symbol_lexer_t<char_type>::bounds incompleteBounds = bounds;
+
+	bounds_t incompleteBounds = bounds;
 	while (bounds.size())
 	{
 		char32_t next_char;
 		std::tie(next_char, bounds) = get_next_char(bounds);
-		auto found_whitespace = whitespace_set.find(next_char);
-		if (found_whitespace != whitespace_set.end())
+		if( !can_group( last_char, next_char ) )
 		{
-			token = insert_token(token);
-			token = insert_token(next_char);
+			insert_token(token);
+			token = new_token(next_char);
 			incompleteBounds = bounds;
 		}
 		else
@@ -526,23 +426,19 @@ typename symbol_lexer_t<char_type>::bounds symbol_lexer_t<char_type>::get_next_t
 			token_buffer.emplace_back(next_char);
 			++token.end();
 		}
+		last_char = next_char;
 	}
 
 	if (token.size())
 	{
-		//unfinished token
-		bounds.begin() = bounds.end() = incompleteBounds.begin();
-		token_buffer.resize(token_buffer.size() - token.size());
+		bounds = drop_token( token, incompleteBounds );
 	}
 	return bounds;
 }
 
-	template< typename char_type >
-std::basic_string_view<char_type> symbol_lexer_t<char_type>::input(const view_t module_name, const view_t file_name, view_t input)
+	template< typename char_type, typename unicode_subset_type >
+std::basic_string_view<char_type> symbol_lexer_t<char_type, unicode_subset_type>::input([[maybe_unused]] const view_t module_name, [[maybe_unused]] const view_t file_name, view_t input)
 {
-	(void)module_name;
-	(void)file_name;
-
 	assert(RangeAccessors::get<0>(input) <= RangeAccessors::get<1>(input));
 	auto current = input.data();
 	auto end = input.data() + input.size();
@@ -556,44 +452,51 @@ std::basic_string_view<char_type> symbol_lexer_t<char_type>::input(const view_t 
 	return std::basic_string_view<char_type>(next, static_cast<size_t>(std::distance(next, end)));
 }
 
-////
-	template<>
-auto token_to_view< std::basic_string_view<char> >(const symbol_lexer_t<char>* container, const typename symbol_lexer_t<char>::token_t& token)
+//
+	template< typename unicode_subset_type >
+auto token_to_view(const symbol_lexer_t<char, unicode_subset_type>* container, const typename symbol_lexer_t<char, unicode_subset_type>::token_t& token)
 {
-	static_assert(std::is_same_v<char32_t, typename symbol_lexer_t<char>::unicode_t>);
+	static_assert(std::is_same_v<char32_t, typename symbol_lexer_t<char, unicode_subset_type>::unicode_t>);
 	const char32_t* token_it = container->data() + token.begin();
 	const char32_t* const token_end = container->data() + token.end();
 
 	std::basic_string<char> view;
+	view.reserve(token.end() - token.begin());
 	while (token_it < token_end)
 		view += UTF32_to_UTF8(*(token_it++));
 	return view;
 }
 
-	template< typename out_char_type >
-std::basic_ostream<out_char_type>& operator <<(std::basic_ostream<out_char_type>& out, const symbol_lexer_t<out_char_type>& lexer)
+	template< typename out_char_type, typename unicode_subset_type >
+std::basic_ostream<out_char_type>& operator <<(std::basic_ostream<out_char_type>& out, const symbol_lexer_t<out_char_type, unicode_subset_type>& lexer)
 {
-	using view_type = typename symbol_lexer_t<out_char_type>::view_t;
+	//using view_type = typename symbol_lexer_t<out_char_type, unicode_subset_type>::view_t;
 	out << "unique token count: " << lexer.count() << "; "
 		<< "sequence length: " << std::size(lexer) << "; "
 		<< "token data size: " << lexer.datasize()
 		<< std::endl;
 	size_t last_token = 0;
+	int64_t max_output = 64 * 1024;
 	for (auto token : lexer)
 	{
 		const bool newToken = (token.end() > last_token);
 		last_token = newToken ? token.end() : last_token;
-		const auto token_view = token_to_view<view_type>(&lexer, token);
-		if (!(out << token_view))
+		const auto token_view = token_to_view(&lexer, token);
+		if ( max_output > 0 && !(out << token_view))
 		{
 			out.clear();
 			out << '?';
 		}
+		max_output -= token_view.size();
 	}
+	if( max_output <= 0 )
+		out << "...";
+
 	return out << "(eof)" << std::endl;
 }
 #endif
 }} // namespace sbLibX
+
 
 
 
@@ -604,28 +507,52 @@ std::basic_ostream<out_char_type>& operator <<(std::basic_ostream<out_char_type>
 //#include <common/include/sb_common.h>
 SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {
-#if 1
-	using sbLibX::operator "" _xhash64;
-	using sbLibX::StructuredBuffer::get;
-	using std::get;
-	sbLibX::symbol_lexer_t<char> lexer;
+#if 0
 	{
 		// TODO : de-hardcode this and use Unicode Data (UCD) instead
-		using General_Category = sbLibX::Character::General_Category;
-		using Bidi_Class = sbLibX::Character::Bidi_Class;
+		using General_Category = sbUnicode::General_Category;
+		using Bidi_Class = sbUnicode::Bidi_Class;
 
-		const auto& ascii_data = sbLibX::Character::ascii_data;
 		constexpr General_Category separator_category = General_Category::Z;
 		constexpr Bidi_Class       bidi_space = Bidi_Class::White_Space | Bidi_Class::Paragraph_Separator | Bidi_Class::Segment_Separator;
 		static const char32_t whitespaces[] = { U'\0', U'\n', U'\t', U'\v', U'\f', U'\r', U' ', U'\uFEFF' };
-		for( const auto& c : ascii_data )
+
+		using ascii_t = sbUnicode::ascii_t;
+		using ascii_data_t = std::remove_cvref_t< decltype(sbUnicode::get_data( ascii_t{}) ) >;
+
+		using code_point_t = std::underlying_type_t<ascii_t>;
+		constexpr size_t ascii_count = sbLibX::array_count( sbUnicode::ascii_data );
+		static_assert( ascii_count == code_point_t(ascii_t::end_value) - code_point_t(ascii_t::begin_value) );
+
+		std::array< ascii_data_t, ascii_count > sorted_ascii_data{};
+		for( code_point_t codepoint(ascii_t::begin_value); codepoint < code_point_t(ascii_t::end_value); ++codepoint )
+			sorted_ascii_data[codepoint] = get_data(ascii_t{codepoint});
+
+		std::sort( std::begin( sorted_ascii_data ), std::end( sorted_ascii_data ), []( const ascii_data_t& a, const ascii_data_t& b ) -> bool { return is_less( a, b ); } );
+
+		char32_t last_char = char32_t(-1);
+		for( const auto& char_data : sorted_ascii_data )
 		{
-			const auto props = ascii_data[c.code_point];
-			std::cout << "'" << props.code_point << "' ( " << sbLibX::Character::ascii_name[props.code_point] << " ): " << std::endl
-				<< "\tcategory = " << sbLibX::Character::general_category_name[props.general_category] << std::endl
-				<< "\tcombine  = " << sbLibX::Character::canonical_combining_class_name[props.canonical_combining_class] << std::endl
-				<< "\tbidi     = " << sbLibX::Character::bidi_class_name[props.bidi_class] << std::endl
-			;
+			const auto cur_char = char_data.code_point;
+			const auto ascii_data = sbUnicode::get_data(cur_char);
+
+			if( last_char < ascii_t::begin_value || last_char >= ascii_t::end_value || compare( ascii_data, sbUnicode::get_data(ascii_t{last_char}) ) != 0 )
+			{
+				std::cout << "\n"
+					<< "category = " << sbUnicode::get_name(ascii_data.general_category) << '\t'
+					<< "combine  = " << sbUnicode::get_name(ascii_data.canonical_combining_class) << '\t'
+					<< "bidi     = " << sbUnicode::get_name(ascii_data.bidi_class) << ":\n";
+			}
+
+			int code_point_value = ascii_data.code_point;
+			std::cout
+				 << "\t'" << ascii_data.code_point
+				 << "' ( U+" << std::hex << code_point_value
+				 << " : " << sbUnicode::get_name(ascii_data.code_point)
+				 << " )";
+
+			std::cout << std::endl;
+			last_char = cur_char;
 
 			//const bool is_separator = anybit( props.general_category & separator_category );
 			//const bool is_space = anybit( props.bidi_class & bidi_space );
@@ -643,18 +570,26 @@ SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unu
 			//	}
 			//}
 		}
-
-		lexer.add_lexical_separator(
-			#if 0
-				unicode_bidi_white_space
-			#else
-				whitespaces
-			#endif
-		);
 	}
+#endif
+#if 1
+	using sbLibX::operator "" _xhash64;
+	//using sbLibX::StructuredBuffer::get;
+	using std::get;
+	sbLibX::symbol_lexer_t<char, sbUnicode::ascii_t> lexer;
+	//{
+	//	lexer.add_lexical_separator(
+	//		#if 0
+	//			unicode_bidi_white_space
+	//		#else
+	//			whitespaces
+	//		#endif
+	//	);
+	//}
 	{
 		const std::string module_name = "";
-		const std::string file_name = "ReadMe.md";
+		const std::string file_name = argc == 0 ? "ReadMe.md" : argv[argc-1];
+
 		std::ifstream input_file{ file_name };
 
 		std::vector<char> content;

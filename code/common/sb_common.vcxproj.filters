@@ -102,6 +102,12 @@
     <ClInclude Include="include\internal\unicode\name_aliases_basic_latin.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_unicode.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\basic_latin.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">
@@ -111,6 +117,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\sb_interface_asio.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sb_unicode.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
