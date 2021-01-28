@@ -49,8 +49,5 @@
     <ClInclude Include="include\test_precompile.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\test_vulkan.h">
-      <Filter>include</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

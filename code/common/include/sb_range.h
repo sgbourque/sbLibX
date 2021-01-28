@@ -31,7 +31,7 @@ struct container_traits< type_t* >
 	template< typename type_t >
 struct container_traits< type_t*[] > : container_traits< type_t** > {};
 
-// old WIP
+// old WIP... use std::span instead
 //	template< typename type_t, typename allocator_t = void >
 //struct array_view
 //{

@@ -3,7 +3,7 @@
 #if (SB_TARGET_TYPE & (SB_TARGET_TYPE_STATIC|SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) != SB_TARGET_TYPE_STATIC
 	#error "sbDebug is not meant to be used as a DLL/exe. It should be a static lib"
 #endif
-static_assert( SB_TARGET_TYPE != 0 && (SB_TARGET_TYPE&(SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) == 0 );
+//static_assert( SB_TARGET_TYPE != 0 && (SB_TARGET_TYPE & (SB_TARGET_TYPE_DYNAMIC|SB_TARGET_TYPE_STANDALONE)) == 0 );
 
 ////
 #if defined(SBWIN64) || defined(SBWIN32)
@@ -32,6 +32,10 @@ static_assert( SB_TARGET_TYPE != 0 && (SB_TARGET_TYPE&(SB_TARGET_TYPE_DYNAMIC|SB
 
 namespace SB { namespace LibX { namespace Debug
 {
+#if defined(SBDEBUG)
+	static_assert( sizeof( Settings::data ) >= sizeof( _CrtMemState ) );
+#endif
+
 	////
 	Settings::Settings() noexcept
 	{
@@ -49,6 +53,41 @@ namespace SB { namespace LibX { namespace Debug
 	}
 	Settings::~Settings()
 	{
+	}
+
+	void Settings::checkpoint()
+	{
+	#if defined(SBDEBUG)
+		_CrtMemState* mem = reinterpret_cast<_CrtMemState*>( data );
+		_CrtMemCheckpoint( mem );
+	#endif
+	}
+	bool Settings::mem_difference()
+	{
+	#if defined(SBDEBUG)
+		_CrtMemState* mem = reinterpret_cast<_CrtMemState*>( data );
+		_CrtMemState state{};
+		_CrtMemCheckpoint( &state );
+
+		_CrtMemState diff{};
+		return _CrtMemDifference( &diff, mem, &state ) != 0;
+	#else
+		return false;
+	#endif
+	}
+	bool Settings::dump()
+	{
+	#if defined(SBDEBUG)
+		bool is_diff = mem_difference();
+		if( is_diff )
+		{
+			const _CrtMemState* mem = reinterpret_cast<_CrtMemState*>( data );
+			_CrtMemDumpAllObjectsSince( mem );
+		}
+		return is_diff;
+	#else
+		return false;
+	#endif
 	}
 
 	////

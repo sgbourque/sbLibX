@@ -12,7 +12,7 @@ SB_LIB_EXPORT bool DestroyInstance( InstanceHandle instance, const Configuration
 #ifndef SBLIB_CUSTOM_ADAPTER_ARRAY
 using adapter_array_t = std::vector<AdapterHandle>;
 #endif
-SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
+SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance = CreateInstance(), size_t maxCount = ~0u );
 
 #ifndef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 struct DeviceInfo

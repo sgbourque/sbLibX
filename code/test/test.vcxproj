@@ -36,7 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\test_precompile.h" />
-    <ClInclude Include="include\test_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test_asio.cpp">
@@ -152,7 +151,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -161,7 +160,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -172,7 +171,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -183,7 +182,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -194,7 +193,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -205,7 +204,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -214,9 +213,9 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <IncludePath>$(IncludePath);$(SolutionDir)code;$(VCClangInstallDir)include;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath);$(VCClangInstallDir)include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
@@ -225,9 +224,9 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <IncludePath>$(IncludePath);$(SolutionDir)code;$(VCClangInstallDir)include;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath);$(VCClangInstallDir)include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(VULKAN_SDK)\Source\lib;$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <ClCompile>
@@ -272,7 +271,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBDEBUG;SBWIN64;SBWIN_EXELIB;DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SBSTANDALONE;SBDEBUG;SBWIN64;SBWIN_EXELIB;DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
       <MSExtensions>false</MSExtensions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -348,7 +347,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBFINAL;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SBSTANDALONE;SBFINAL;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
       <MSExtensions>false</MSExtensions>
       <EnablePREfast>true</EnablePREfast>
@@ -424,7 +423,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SBSTANDALONE;SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>$(ProjectName)/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
       <MSExtensions>false</MSExtensions>
@@ -499,7 +498,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SBSTANDALONE;SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>$(ProjectName)/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
       <MSExtensions>false</MSExtensions>

@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-    <LocalDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/main</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_$(Configuration).exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
-    <RemoteDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test/main</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -24,8 +24,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
-    <LocalDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</LocalDebuggerCommandArguments>
-    <RemoteDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</RemoteDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/main</LocalDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test/main</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <LocalDebuggerCommandArguments>run test/asio</LocalDebuggerCommandArguments>
@@ -41,12 +41,12 @@
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
-    <LocalDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/main</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_release.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
-    <RemoteDebuggerCommandArguments>run test/parser data/src/UnicodeData.txt</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test/main</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>

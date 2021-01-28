@@ -15,11 +15,17 @@
 #endif
 
 #if defined( _WINDLL )
-#define SB_TARGET_TYPE	SB_TARGET_TYPE_DYNAMIC
+#define SB_TARGET_TYPE_BASE	SB_TARGET_TYPE_DYNAMIC
 SBCOMPILE_MESSAGE(" * Building dll *")
 #else
-#define SB_TARGET_TYPE	SB_TARGET_TYPE_STATIC
+#define SB_TARGET_TYPE_BASE	SB_TARGET_TYPE_STATIC
 SBCOMPILE_MESSAGE(" * Building static binaries *")
+#endif
+#if defined( SBSTANDALONE )
+#define SB_TARGET_TYPE	( SB_TARGET_TYPE_STANDALONE | SB_TARGET_TYPE_BASE )
+SBCOMPILE_MESSAGE( " * Using standalone binaries *" )
+#else
+#define SB_TARGET_TYPE	( SB_TARGET_TYPE_BASE )
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +57,7 @@ SBCOMPILE_MESSAGE( "| " )
 ///////////////////////////////////////////////////////////////////////////////
 // dynamic/run-time C++ support
 #ifdef _CPPUNWIND
-	SBCOMPILE_MESSAGE( "| • Exception support enabled." )
+	SBCOMPILE_MESSAGE( "| \x7 Exception support enabled." )
 	#define SBEXCEPTIONS
 
 	#if defined(_HAS_EXCEPTIONS)
@@ -99,7 +105,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#define _SECURE_SCL        0
 #endif
 #ifdef _CPPRTTI
-	SBCOMPILE_MESSAGE( "| • Run-time type information (RTTI) enabled." )
+	SBCOMPILE_MESSAGE( "| \x7 Run-time type information (RTTI) enabled." )
 	#define SBRUNTIME
 #endif
 
@@ -107,7 +113,7 @@ SBCOMPILE_MESSAGE( "| " )
 ///////////////////////////////////////////////////////////////////////////////
 //	Debug / Release compilation
 #ifdef _DEBUG
-	SBCOMPILE_MESSAGE( "| • Compiling DEBUG code." )
+	SBCOMPILE_MESSAGE( "| \x7 Compiling DEBUG code." )
 	#ifdef SBRELEASE
 		#error "Release and Debug mode are incompatible. Please select only one..."
 	#endif
@@ -116,7 +122,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#endif
 #endif
 #ifdef _NDEBUG
-	SBCOMPILE_MESSAGE( "| • Compiling RELEASE code." )
+	SBCOMPILE_MESSAGE( "| \x7 Compiling RELEASE code." )
 	#ifdef SBDEBUG
 		#error "Release and Debug mode are incompatible. Please select only one..."
 	#endif
@@ -128,32 +134,32 @@ SBCOMPILE_MESSAGE( "| " )
 ///////////////////////////////////////////////////////////////////////////////
 // Multithreading support
 #ifdef _MT
-	SBCOMPILE_MESSAGE( "| • Multithreaded CRT support." )
+	SBCOMPILE_MESSAGE( "| \x7 Multithreaded CRT support." )
 	#define SBMULTITHREADEDCRT
 #endif
 #ifdef _OPENMP
-	SBCOMPILE_MESSAGE( "| • OpenMP extended pragma support." )
+	SBCOMPILE_MESSAGE( "| \x7 OpenMP extended pragma support." )
 	#define SBOPENMP
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Runtime library
 #if defined(_DLL)
-	SBCOMPILE_MESSAGE( "| • Dynamic (.dll) runtime library." )
+	SBCOMPILE_MESSAGE( "| \x7 Dynamic (.dll) runtime library." )
 	#define SBDLLRUNTIME
 #else
-	SBCOMPILE_MESSAGE( "| • Static runtime library." )
+	SBCOMPILE_MESSAGE( "| \x7 Static runtime library." )
 	#define SBSTATICRUNTIME
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // MS Windows-specific
 #ifdef _WIN32
-	SBCOMPILE_MESSAGE( "| • May use Win32-specific definitions." )
+	SBCOMPILE_MESSAGE( "| \x7 May use Win32-specific definitions." )
 	#define SBLIB32
 #endif
 #ifdef _WIN64
-	SBCOMPILE_MESSAGE( "| • May use Win64-specific definitions." )
+	SBCOMPILE_MESSAGE( "| \x7 May use Win64-specific definitions." )
 	#define SBLIB64
 #endif
 
@@ -172,7 +178,7 @@ SBCOMPILE_MESSAGE( "| " )
 #endif
 
 #if !defined(_NATIVE_WCHAR_T_DEFINED)
-	SBCOMPILE_MESSAGE("| • wchar_t emulated")
+	SBCOMPILE_MESSAGE("| \x7 wchar_t emulated")
 #endif
 #ifdef _ATL_VER
 	#error "Not tested with ATL"
@@ -184,7 +190,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#error "Not tested with MFC"
 #endif
 #ifdef _MSC_EXTENSIONS
-	SBCOMPILE_MESSAGE("| • Using MSC extensions")
+	SBCOMPILE_MESSAGE("| \x7 Using MSC extensions")
 #endif
 /*
 	List of unstandard definition that may be defined by MS Visual C++ compiler
@@ -202,13 +208,13 @@ _VC_NODEFAULTLIB
 _Wp64
 */
 #ifdef _DLL
-	SBCOMPILE_MESSAGE("| • Building DLL")
+	SBCOMPILE_MESSAGE("| \x7 Building DLL")
 #endif
 #ifdef __MSVC_RUNTIME_CHECKS
-	SBCOMPILE_MESSAGE("| • Using runtime checks")
+	SBCOMPILE_MESSAGE("| \x7 Using runtime checks")
 #endif
 #ifdef _CPPLIB_VER
-	SBCOMPILE_MESSAGE("| • C++ lib compiler version: " CSTR(_CPPLIB_VER) )
+	SBCOMPILE_MESSAGE("| \x7 C++ lib compiler version: " CSTR(_CPPLIB_VER) )
 #endif
 
 namespace SB { namespace LibX {

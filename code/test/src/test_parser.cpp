@@ -1,23 +1,72 @@
-﻿#include <common/include/sb_range.h>
+﻿//#include <common/include/sb_range.h>
 #include <common/include/sb_encrypted_string.h>
 //#include <common/include/sb_structured_buffer.h>
 #include <common/include/sb_unicode.h>
 
+//#include<span>
 #include <string_view>
 //#include <vector>
 #include <unordered_set>
 //#include <set>
 
 //#include <cassert>
+#if defined(SBDEBUG)
 #define assert(X)\
 	do{ if (!(X)) __debugbreak(); } while(false)
-
-
 #define VALIDATE (false)
-
+#endif
 
 namespace SB { namespace LibX
 {
+#if 0 // referactor in progress
+	template< typename unicode_subset_t, typename encoding_t = char8_t >
+struct symbol_lexer_t
+{
+	struct lexicon_t
+	{
+		using unicode_string_t = const encoding_t*;
+		using data_t = std::vector<encoding_t>;
+		data_t lexicon_data;
+
+		string_view_t = std::basic_string_view<encoding_t>;
+		struct token_t { size_t begin_index; size_t end_index; };
+		class token_hash_t : std::hash<unicode_string_t>
+		{
+		public:
+			token_hash_t(const data_t& data) : data(&data) {}
+			auto operator ()( const token_t& token ) const
+			{
+				string_view_t view{ data->data() + token.begin_index, data->data() + token.end_index };
+				return std::hash::operator ()( view );
+			}
+		private:
+			const data_t* data;
+		};
+
+		std::unordered_set< token_t, token_hash_t > lexicon;
+
+		// iterator_t is only valid while lexicon is const so only const_iterator exists
+		struct const_iterator_t
+		{
+			const_iterator_t() = delete;
+			const_iterator_t( const data_t& data, std::unordered_set::const_iterator token )
+				: token_view(data.data() + token->begin_index, data.data() + token->end_index), token_iterator(token) {}
+
+			string_view_t operator *() const
+			{
+				return token_begin != token_end ? string_view_t{token_begin, token_end} : string_view_t{};
+			}
+			const_iterator_t operator ++() { *this = const_iterator_t{++token_iterator}; }
+
+			string_view_t token_view{};
+			std::unordered_set::const_iterator token_iterator;
+		};
+
+		//string_view_t get_
+	};
+};
+#endif
+
 
 // Assume that the input is either already normalized or is to be preserved as un-normalized (raw) unicode data not to be modified.
 // For this reason, the basic lexer/parser will differentiate different encodings of equivalent unicode combinations.
@@ -83,7 +132,7 @@ namespace SB { namespace LibX
 //}
 //
 
-#if 1
+#if 0
 // WIP: lexer (w/ basic_unicode transform + buffer_view) - phase 1 libX integration...
 ////
 constexpr auto UTF8_to_UTF32(const char utf8_input[], size_t max_length)
@@ -192,7 +241,7 @@ std::string UTF32_to_UTF8(const char32_t utf32)
 }
 #endif
 
-#if 1
+#if 0
 ////
 	template< typename VIEW_TYPE, typename _CONTAINER_, typename TOKEN_TYPE >
 auto token_to_view(const _CONTAINER_* container, const TOKEN_TYPE& token)
@@ -205,7 +254,7 @@ struct token_hash_t : std::hash< std::basic_string_view<typename _CONTAINER_::va
 {
 	using container_t = _CONTAINER_;
 	using value_t = typename container_t::value_type;
-	using string_view = std::basic_string_view<value_t>;
+	using string_view = std::basic_string<value_t>;
 	using hash_traits = _HASH_TRAITS_;
 
 	token_hash_t(const container_t* _container) : container(_container) {}
@@ -367,6 +416,7 @@ private:
 
 	bounds_t drop_token( token_t token, bounds_t _bounds )
 	{
+		token_to_view
 		token_buffer.resize(token_buffer.size() - token.size());
 		return bounds_t{{ _bounds.begin(), _bounds.begin() }};
 	}
@@ -572,7 +622,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unu
 		}
 	}
 #endif
-#if 1
+#if 0
 	using sbLibX::operator "" _xhash64;
 	//using sbLibX::StructuredBuffer::get;
 	using std::get;
@@ -595,7 +645,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unu
 		std::vector<char> content;
 		while (input_file)
 		{
-			enum { read_size = 32 * 1024, };
+			enum { read_size = /*32 * 1024*/1, };
 			const auto current_size = content.size();
 			content.resize(current_size + read_size);
 			const auto read_count = input_file.read(content.data() + current_size, read_size).gcount();
@@ -614,6 +664,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_parser([[maybe_unused]] int argc, [[maybe_unu
 		if (!input_file.eof())
 			std::cerr << "Error reading file";
 	}
+	//lexer.optimize();
 	std::cerr << lexer;
 
 #endif

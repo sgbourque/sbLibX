@@ -404,9 +404,9 @@ template<> struct future_traits<Future::GetInternalBufferSamples> { using type_t
 struct Device : public IUnknown
 {
 	virtual Bool init(void* sysHandle) = 0;
-	virtual void getDriverName(char* name) = 0;
+	virtual void getDriverName(char ( &name )[32]) = 0;
 	virtual int32_t getDriverVersion() = 0;
-	virtual void getErrorMessage(char* string) = 0;
+	virtual void getErrorMessage(char ( &string )[124]) = 0;
 	virtual ErrorType start() = 0;
 	virtual ErrorType stop() = 0;
 	virtual ErrorType getChannels(int32_t* numInputChannels, int32_t* numOutputChannels) = 0;
@@ -422,7 +422,7 @@ struct Device : public IUnknown
 	virtual ErrorType createBuffers(BufferInfo* bufferInfos, int32_t numChannels, int32_t bufferSize, Callbacks* callbacks) = 0;
 	virtual ErrorType disposeBuffers() = 0;
 	virtual ErrorType controlPanel() = 0;
-	virtual ErrorType future(Future selector, void* opt) = 0;
+	virtual ErrorType future( Future selector, void* opt = nullptr ) = 0;
 	virtual ErrorType outputReady() = 0;
 
 		template<Future selector>

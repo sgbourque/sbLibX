@@ -38,5 +38,8 @@
     <ClCompile Include="src\sbwin_interface_vst.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\sbwin_interface_vulkan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

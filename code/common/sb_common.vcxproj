@@ -62,7 +62,7 @@
     <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <UseMultiToolTask>true</UseMultiToolTask>
-    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);</LibraryPath>
   </PropertyGroup>
@@ -73,7 +73,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
-    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
@@ -84,7 +84,7 @@
     <UseMultiToolTask>true</UseMultiToolTask>
     <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <IncludePath>$(SolutionDir)code;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64); $(OutDir);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
@@ -219,6 +219,7 @@
     <ClInclude Include="include\sb_type_hash.h" />
     <ClInclude Include="include\sb_unicode.h" />
     <ClInclude Include="include\sb_utilities.h" />
+    <ClInclude Include="include\sb_interface_vulkan.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

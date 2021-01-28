@@ -6,13 +6,6 @@
 
 namespace SB { namespace LibX
 {
-// designed initializer not supported before 201705
-#if _MSVC_LANG < 201705
-	#define SB_STRUCT_SET( X_eq )
-#else
-	#define SB_STRUCT_SET( X_eq ) X_eq
-#endif
-
 //	So the idea here is to have a key mapping to a hash;
 //	That hash will be used through the key_info_array which maps it to its data_info.
 //

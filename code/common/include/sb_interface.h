@@ -16,6 +16,12 @@
 namespace SB { namespace LibX
 {
 
+struct Configuration
+{
+	xhash_string_view_t name;
+	xhash_string_view_t version;
+};
+
 // Each lib should make sure any resource handle it references is safe.
 	template< typename traits = xhash_traits_t >
 struct HandleBase { using hash_t = typename traits::hash_t; using char_ptr_t = typename traits::char_ptr_t; union { hash_t hash; char_ptr_t ptr; } key; };

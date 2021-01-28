@@ -310,10 +310,18 @@ const SB_ENCODE_TYPE SB_PRIME_3 = SB_ENCODE_TYPE{ 17592186044423ull * ( 2 * sb_p
 static inline constexpr SB_ENCODE_TYPE sb_prime_4_factor = hash<SB_ENCODE_TYPE, 17179869209ull, 0x9EF3455AD47C9E31ull>( ""  __DATE__ __TIME__ );
 const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull * ( 2 * sb_prime_4_factor + 1 ) };
 #endif
+
+static inline constexpr SB_ENCODE_TYPE SB_PRIME_A = SB_PRIME_0;
+static inline constexpr SB_ENCODE_TYPE SB_PRIME_B = sbLibX::gcd( SB_PRIME_0, SB_PRIME_1 ) == 1 ? SB_PRIME_1 : 
+                                                    sbLibX::gcd( SB_PRIME_0, SB_PRIME_2 ) == 1 ? SB_PRIME_2 : 
+                                                    sbLibX::gcd( SB_PRIME_0, SB_PRIME_3 ) == 1 ? SB_PRIME_3 : 
+                                                    sbLibX::gcd( SB_PRIME_0, SB_PRIME_4 ) == 1 ? SB_PRIME_4 : 0;
+static_assert( SB_PRIME_B != 0, "Bad luck generating coprime values, please try again... it is time dependent... I know, bad idea but I'm experimenting!" );
+
 // TODO: some unit tests
 
 	template<typename _CHAR_TYPE_/*, size_t _LENGTH_= SB_ENCRYPT_BLOCK_COUNT*/, typename _ENCODE_TYPE_ = SB_ENCODE_TYPE >
-using encryption_traits_base_t = encryption_traits<_CHAR_TYPE_/*, _LENGTH_*/, _ENCODE_TYPE_, SB_PRIME_0, SB_PRIME_1>;
+using encryption_traits_base_t = encryption_traits<_CHAR_TYPE_/*, _LENGTH_*/, _ENCODE_TYPE_, SB_PRIME_A, SB_PRIME_B>;
 
 
 	template< typename _CHAR_TYPE_, size_t _LENGTH_, typename _ENCODE_BLOCK_TYPE_ = SB_ENCODE_TYPE,

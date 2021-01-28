@@ -111,7 +111,9 @@ int WinMain(
 	[[maybe_unused]] _In_ int nShowCmd
 )
 {
+#if SB_SUPPORTS( SB_DEV_THREADED )
 	[[maybe_unused]] auto multithreadedAppartmentResult = CoInitializeEx( NULL, COINIT_MULTITHREADED );
+#endif
 	LibX::Debug::Settings debugSettings;
 	// TODO: Parse base system configuration parameters / file(s)
 
@@ -313,7 +315,7 @@ int WinMain(
 					// Note : running on a separate thread is needed for any DLL that requires a particular thread appartment models (as ASIO).
 					using task_t = std::packaged_task<int()>;
 					task_t run_task(
-						[&local_main, &module_name, &function_name, local_argc, local_argv, flags]() -> auto
+						[&local_main, &module_name, &function_name, local_argc, local_argv, flags, &debugSettings]() -> auto
 						{
 							decltype(local_main(local_argc, local_argv)) return_code = kError;
 							try
@@ -323,7 +325,9 @@ int WinMain(
 									[[maybe_unused]] auto appartmentThreadedResult = CoInitializeEx( NULL, COINIT_APARTMENTTHREADED );
 									assert( SUCCEEDED( appartmentThreadedResult ) );
 								}
+								debugSettings.checkpoint();
 								return_code = unsafe_entry(local_main)(local_argc, local_argv);
+								assert( !debugSettings.dump() );
 							}
 							catch (std::exception except)
 							{

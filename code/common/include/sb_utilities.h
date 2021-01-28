@@ -4,6 +4,13 @@
 
 namespace SB { namespace LibX
 {
+// designed initializer not supported before 201705
+#if _MSVC_LANG < 201705
+	#define SB_STRUCT_SET( X_eq )
+#else
+	#define SB_STRUCT_SET( X_eq ) X_eq
+#endif
+
 #if defined(__clang__)
 #define SBCLANG_PUSH_IGNORE_UNUSED() \
 	__pragma( clang diagnostic push ) \

@@ -27,7 +27,7 @@ enum class float_representation_type
 	double_precision = binary_64,
 };
 template <size_t _sign_bits, size_t _exponent_bits, size_t _mantissa_bits>
-struct float_raw_representation_traits
+struct float_binary_representation_traits
 {
 	enum
 	{
@@ -45,13 +45,13 @@ struct float_raw_representation_traits
 
 template <float_representation_type float_type>
 struct float_binary_traits;
-template<> struct float_binary_traits<float_representation_type::binary_16>      { using representation_traits = float_raw_representation_traits<1,  5,  16 -  5 - 1>; };
-template<> struct float_binary_traits<float_representation_type::binary_32>      { using representation_traits = float_raw_representation_traits<1,  8,  32 -  8 - 1>; };
-template<> struct float_binary_traits<float_representation_type::binary_64>      { using representation_traits = float_raw_representation_traits<1, 11,  64 - 11 - 1>; };
-template<> struct float_binary_traits<float_representation_type::binary_128>     { using representation_traits = float_raw_representation_traits<1, 15, 128 - 15 - 1>; };
-template<> struct float_binary_traits<float_representation_type::binary_256>     { using representation_traits = float_raw_representation_traits<1, 19, 256 - 19 - 1>; };
-template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_10> { using representation_traits = float_raw_representation_traits<0,  5,  10 -  5 - 0>; };
-template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_11> { using representation_traits = float_raw_representation_traits<0,  5,  11 -  5 - 0>; };
+template<> struct float_binary_traits<float_representation_type::binary_16>      { using representation_traits = float_binary_representation_traits<1,  5,  16 -  5 - 1>; };
+template<> struct float_binary_traits<float_representation_type::binary_32>      { using representation_traits = float_binary_representation_traits<1,  8,  32 -  8 - 1>; };
+template<> struct float_binary_traits<float_representation_type::binary_64>      { using representation_traits = float_binary_representation_traits<1, 11,  64 - 11 - 1>; };
+template<> struct float_binary_traits<float_representation_type::binary_128>     { using representation_traits = float_binary_representation_traits<1, 15, 128 - 15 - 1>; };
+template<> struct float_binary_traits<float_representation_type::binary_256>     { using representation_traits = float_binary_representation_traits<1, 19, 256 - 19 - 1>; };
+template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_10> { using representation_traits = float_binary_representation_traits<0,  5,  10 -  5 - 0>; };
+template<> struct float_binary_traits<float_representation_type::dxgi_vulkan_11> { using representation_traits = float_binary_representation_traits<0,  5,  11 -  5 - 0>; };
 
 template <typename _type>
 struct float_representation_traits;
@@ -74,6 +74,7 @@ struct float_traits
 
 		representation_size = representation_traits::representation_size,
 	};
+	// can't do this here since it might be used in type_t's definition so sizeof(type_t) might not yet be available
 	//static_assert( sizeof(type_t) == representation_size );
 };
 
@@ -95,7 +96,7 @@ struct raw_float_type
 };
 
 template< typename T >
-union float_type
+union float_raw
 {
 	using unsigned_integer_type = typename float_traits<T>::unsigned_integer_type;
 	using signed_integer_type = typename float_traits<T>::signed_integer_type;
@@ -105,12 +106,12 @@ union float_type
 	unsigned_integer_type raw_value;
 	T                     value;
 
-	explicit constexpr float_type() : value{} {}
-	template<typename U> constexpr float_type( U _value) : value(_value) {}
+	explicit constexpr float_raw() : value{} {}
+	template<typename U> constexpr float_raw( U _value) : value(_value) {}
 
-	explicit constexpr float_type( int32_t _raw ) : raw_value(_raw) {} // mostly for sample_type{0};
-	explicit constexpr float_type( raw_type&& _value ) : raw(std::forward<raw_type>(_value)) {}
-	explicit constexpr float_type( int32_t&& _sign, uint32_t&& _exponent, uint32_t&& _mantissa ) : raw{std::forward<uint32_t>(_mantissa), std::forward<uint32_t>(_exponent), std::forward<int32_t>(_sign)} {}
+	explicit constexpr float_raw( int32_t _raw ) : raw_value(_raw) {} // mostly for sample_type{0};
+	explicit constexpr float_raw( raw_type&& _value ) : raw(std::forward<raw_type>(_value)) {}
+	explicit constexpr float_raw( int32_t&& _sign, uint32_t&& _exponent, uint32_t&& _mantissa ) : raw{std::forward<uint32_t>(_mantissa), std::forward<uint32_t>(_exponent), std::forward<int32_t>(_sign)} {}
 
 	constexpr operator T() const { return value; }
 };
@@ -121,14 +122,15 @@ template<> struct float_representation_traits<half> { static inline constexpr fl
 
 struct half
 {
-	using unsigned_integer_type = uint16_t;
-	using signed_integer_type = int16_t;
+	using unsigned_integer_type = typename float_representation_traits<half>::unsigned_integer_type;
+	using signed_integer_type = typename float_representation_traits<half>::signed_integer_type;
 	using raw_type = raw_float_type<half, unsigned_integer_type, signed_integer_type>;
+	using float_t = float_raw<float>;
 	raw_type raw_value;
 	constexpr half(float _value)
 	{
-		[[maybe_unused]] float_type<float> value = _value;
-		//raw_value = float_type<half>::raw_type{
+		[[maybe_unused]] float_t value = _value;
+		//raw_value = float_raw<half>::raw_type{
 		//	static_cast<uint16_t>(value.raw.mantissa & 0x1),
 		//	static_cast<uint16_t>(value.raw.normalised_exponent & 0x1),
 		//	static_cast<int16_t>(value.raw.sign & 0x1)
@@ -136,10 +138,10 @@ struct half
 	}
 	constexpr operator float() const
 	{
-		constexpr float_type<float> float_value{
-		//	raw_float_type{ raw_value.mantissa, raw_value.normalised_exponent, raw_value.sign }
+		constexpr float_t float_value{
+		//	raw_float_raw{ raw_value.mantissa, raw_value.normalised_exponent, raw_value.sign }
 		};
-		//raw_value = float_type<half>::raw_type{
+		//raw_value = float_raw<half>::raw_type{
 		//	static_cast<uint16_t>(value.raw.mantissa & 0x1),
 		//	static_cast<uint16_t>(value.raw.normalised_exponent & 0x1),
 		//	static_cast<int16_t>(value.raw.sign & 0x1)
@@ -150,7 +152,7 @@ struct half
 }
 
 
-using sample_type = SB::float_type<float>;
+using sample_type = SB::float_raw<float>;
 static_assert( sizeof(sample_type) == sizeof(sample_type::value) );
 static_assert( sizeof(sample_type::raw_type) == sizeof(sample_type::raw_value) );
 constexpr sample_type zero      =  0.0f;//	static_assert( (float)zero.value      ==  0.0f );

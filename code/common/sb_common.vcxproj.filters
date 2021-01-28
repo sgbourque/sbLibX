@@ -108,6 +108,9 @@
     <ClInclude Include="include\internal\unicode\basic_latin.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_interface_vulkan.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

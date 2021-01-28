@@ -105,6 +105,7 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 			}
 		}
 		while (refCount < 0);
+		assert( refCount != 0 ); // this would mean it was already released
 		_InterlockedExchange(&ref_count, refCount - 1);
 		return refCount - 1;
 	}
@@ -302,6 +303,13 @@ static std::wstring GetAsioDllPath( CLSID deviceId )
 		}
 	}
 	return path;
+}
+
+SB_WIN_EXPORT DeviceInfo GetDeviceInfo( AdapterHandle adapter )
+{
+	DeviceInfo deviceInfo{};
+	adapter->GetDeviceInfo( &deviceInfo );
+	return deviceInfo;
 }
 
 SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)

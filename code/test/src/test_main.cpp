@@ -55,7 +55,9 @@ SB_EXPORT_TYPE int SB_STDCALL deinit([[maybe_unused]] int argc, [[maybe_unused]]
 }
 #endif
 
-//#define test_main main
+#if ( (SB_TARGET_TYPE & SB_TARGET_TYPE_STANDALONE) != 0 )
+#define test_main main
+#endif
 //LibX::Debug::Console debugConsole;
 SB_EXPORT_TYPE int SB_STDCALL test_main([[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[])
 {

@@ -33,24 +33,24 @@ namespace SB {
 			#define SBARCH_ID SBARCHx64_ID
 		#endif
 		#if _M_X64 < 200
-			SBCOMPILE_MESSAGE( "| • Compiled for generic x64 (" CSTR(_M_X64) ")" )
+			SBCOMPILE_MESSAGE( "| \x7 Compiled for generic x64 (" CSTR(_M_X64) ")" )
 		#else
-			SBCOMPILE_MESSAGE( "| • Compiled for x64 generation " CSTR(_M_X64) )
+			SBCOMPILE_MESSAGE( "| \x7 Compiled for x64 generation " CSTR(_M_X64) )
 		#endif
 	#endif
 
 	#if !defined(_M_X64_FP)
 		#define SBSIMDx64_ID SB::ARCH_traits< SB::ARCH_x64 >::simd_t::simd_default
-		SBCOMPILE_MESSAGE( "| • Using default SIMD" )
+		SBCOMPILE_MESSAGE( "| \x7 Using default SIMD" )
 	#else
 		#define SBSIMDx64_ID static_cast< SB::ARCH_traits< SB::ARCH_x64 >::simd_t >(_M_X64_FP)
 		#if !defined(SBSIMD_ID)
 			#define SBSIMD_ID SBSIMDx64_ID
 		#endif
 		#if _M_X64 < 200
-			SBCOMPILE_MESSAGE( "| • Compiled for generic x64 (" CSTR(_M_X64) ")" )
+			SBCOMPILE_MESSAGE( "| \x7 Compiled for generic x64 (" CSTR(_M_X64) ")" )
 		#else
-			SBCOMPILE_MESSAGE( "| • Compiled for x64 generation " CSTR(_M_X64) )
+			SBCOMPILE_MESSAGE( "| \x7 Compiled for x64 generation " CSTR(_M_X64) )
 		#endif
 	#endif
 

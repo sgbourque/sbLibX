@@ -24,7 +24,12 @@ namespace SB { namespace LibX { namespace Debug
 struct Settings
 {
 	Settings() noexcept;
-	virtual ~Settings();
+	~Settings();
+	void checkpoint();
+	bool mem_difference();
+	bool dump();
+
+	uint8_t data[256]{};
 };
 
 struct Console
