@@ -32,6 +32,7 @@ struct instance_extension_traits
 	using properties_t = VkExtensionProperties;
 	enum extension_id_t
 	{
+		kGeneric = 0,
 		kSurface,
 		kPlatformSurface,
 		//kSwapchain,
@@ -118,9 +119,9 @@ enum class instance_layer_t : uint64_t
 };
 sb_enum_class_flags( instance_layer_t );
 
-struct vulkanInstanceConfig : Configuration
+struct InstanceConfiguration : Configuration
 {
-	vulkanInstanceConfig() : Configuration{ "sbVulkanConfig"_xhash64, "0.1"_xhash64 } {}
+	InstanceConfiguration() : Configuration{ "sbVulkanConfig"_xhash64, "0.1"_xhash64 } {}
 
 	xhash_string_view_t applicationName = "sbVulkan"_xhash64;
 	xhash_string_view_t engineName = "sbLibX"_xhash64;

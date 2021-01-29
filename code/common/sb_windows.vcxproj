@@ -180,6 +180,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\sbwin_interface_asio.cpp" />
+    <ClCompile Include="src\sbwin_interface_dx12.cpp" />
     <ClCompile Include="src\sbwin_interface_vst.cpp" />
     <ClCompile Include="src\sbwin_library.cpp" />
     <ClCompile Include="src\sbwin_registry.cpp" />

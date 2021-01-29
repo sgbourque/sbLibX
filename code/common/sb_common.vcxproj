@@ -212,6 +212,7 @@
     <ClInclude Include="include\sb_interface.h" />
     <ClInclude Include="include\sbLibX_precompile.h" />
     <ClInclude Include="include\sb_interface_asio.h" />
+    <ClInclude Include="include\sb_interface_dx12.h" />
     <ClInclude Include="include\sb_interface_vst.h" />
     <ClInclude Include="include\sb_library.h" />
     <ClInclude Include="include\sb_range.h" />

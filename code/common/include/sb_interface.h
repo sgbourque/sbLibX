@@ -100,7 +100,7 @@ struct Chunk
 };
 
 template<typename _RETURN_T_, typename ...> _RETURN_T_ get( BaseHandle );
-template<> inline constexpr size_t get<size_t>( BaseHandle handle ) { return static_cast<size_t>( get_value(handle) ); }
+template<> inline constexpr size_t get<size_t>( BaseHandle handle ) { return size_t{ get_value(handle) }; }
 
 	template<typename data_t>
 struct UniqueChunk : Chunk<data_t>

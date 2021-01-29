@@ -50,7 +50,7 @@ auto PrintInstanceExtensions( const vulkan_instance_extension_array_t& vulkan_in
 	}
 }
 
-auto FilterInstanceLayers( sbLibVulkan::vulkanInstanceConfig& config, const vulkan_instance_layer_array_t& vulkan_instance_layers )
+auto FilterInstanceLayers( sbLibVulkan::InstanceConfiguration& config, const vulkan_instance_layer_array_t& vulkan_instance_layers )
 {
 	using namespace sbLibX;
 	using instance_layer_t =  sbLibVulkan::instance_layer_t;
@@ -86,7 +86,7 @@ auto FilterInstanceLayers( sbLibVulkan::vulkanInstanceConfig& config, const vulk
 	#undef ALLOWED_LAYER
 }
 
-auto FilterInstanceExtensions( sbLibVulkan::vulkanInstanceConfig& config, const vulkan_instance_extension_array_t& vulkan_instance_extensions )
+auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const vulkan_instance_extension_array_t& vulkan_instance_extensions )
 {
 	using namespace sbLibX;
 	using namespace sbLibVulkan;
@@ -201,7 +201,7 @@ int TestVulkan( [[maybe_unused]] void* hwnd )
 	auto vulkan_instance_extensions = vulkan::enumerate<vulkan::instance_extension_traits::properties_t>();
 	PrintInstanceExtensions( vulkan_instance_extensions );
 
-	vulkan::vulkanInstanceConfig config{};
+	vulkan::InstanceConfiguration config{};
 	config.applicationName = "sbVulkan"_xhash64;
 	config.engineName = "sbLibX"_xhash64;
 	config.applicationVersion = 0;
@@ -214,7 +214,7 @@ int TestVulkan( [[maybe_unused]] void* hwnd )
 	//if( useGraphicToolsLayers )
 	//	config.layer_mask |= vulkan::instance_layer_t::graphics_tools_mask;
 	//if( useValveLayers )
-	//	config.layer_mask |= vulkan::vulkanInstanceConfig::VALVE_mask;
+	//	config.layer_mask |= vulkan::InstanceConfiguration::VALVE_mask;
 
 	{
 		config.requested_layers.reserve( vulkan_instance_layers.size() );

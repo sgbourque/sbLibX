@@ -41,5 +41,8 @@
     <ClCompile Include="src\sbwin_interface_vulkan.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\sbwin_interface_dx12.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

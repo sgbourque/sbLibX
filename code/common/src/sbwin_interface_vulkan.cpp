@@ -102,13 +102,8 @@ namespace SB { namespace LibX { namespace vulkan
 {
 
 ////
-struct instance_layer
-{
-	using properties_t = VkLayerProperties;
-};
-
 	template<>
-SB_WIN_EXPORT std::vector<instance_layer::properties_t> enumerate<instance_layer::properties_t>(const uint32_t max_count)
+SB_WIN_EXPORT std::vector<instance_layer_traits::properties_t> enumerate<instance_layer_traits::properties_t>(const uint32_t max_count)
 {
 	uint32_t count = 0;
 	{
@@ -117,7 +112,7 @@ SB_WIN_EXPORT std::vector<instance_layer::properties_t> enumerate<instance_layer
 	}
 	count = std::min(count, max_count);
 
-	std::vector<instance_layer::properties_t> result(count);
+	std::vector<instance_layer_traits::properties_t> result(count);
 	if (count > 0)
 	{
 		[[maybe_unused]] VkResult err = vkEnumerateInstanceLayerProperties(&count, result.data());
@@ -153,13 +148,14 @@ struct instance_extension
 	#error "vulkan support missing"
 	#endif
 
-	inline static const char name[extension_id_t::kMaxExtension][VK_MAX_EXTENSION_NAME_SIZE]
-	= {
-		VK_KHR_SURFACE_EXTENSION_NAME, // kSurface
-		SB_VK_KHR_PLATFORM_SURFACE_EXTENSION_NAME, // kPlatformSurface
-		//VK_KHR_SWAPCHAIN_EXTENSION_NAME, // kSwapchain
-		//VK_EXT_DEBUG_UTILS_EXTENSION_NAME, // kDebugUtils
-		};
+	//inline static const char name[extension_id_t::kMaxExtension][VK_MAX_EXTENSION_NAME_SIZE]
+	//= {
+	//	"Generic",
+	//	VK_KHR_SURFACE_EXTENSION_NAME, // kSurface
+	//	SB_VK_KHR_PLATFORM_SURFACE_EXTENSION_NAME, // kPlatformSurface
+	//	//VK_KHR_SWAPCHAIN_EXTENSION_NAME, // kSwapchain
+	//	//VK_EXT_DEBUG_UTILS_EXTENSION_NAME, // kDebugUtils
+	//	};
 };
 
 	template<>
@@ -291,8 +287,8 @@ SB_WIN_EXPORT InstanceHandle CreateInstance( [[maybe_unused]] const Configuratio
 	if( config && config->name != "sbVulkanConfig"_xhash64 )
 		return InstanceHandle{};
 
-	vulkanInstanceConfig defaultConfig{};
-	auto instanceConfig = config ? static_cast<const vulkanInstanceConfig*>( config ) : &defaultConfig;
+	InstanceConfiguration defaultConfig{};
+	auto instanceConfig = config ? static_cast<const InstanceConfiguration*>( config ) : &defaultConfig;
 	auto requestedExtension = [instanceConfig]( xhash_string_view_t feature ) -> bool {
 		auto found = std::find_if( instanceConfig->requested_extensions.cbegin(), instanceConfig->requested_extensions.cend(), [feature]( xhash_string_view_t extension ) -> bool {
 			return feature == extension;
