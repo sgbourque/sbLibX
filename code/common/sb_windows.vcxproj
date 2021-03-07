@@ -188,6 +188,10 @@
     <ClCompile Include="src\sb_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\internal\win32\win32_results.h" />
+    <ClInclude Include="include\internal\win32\win32_errors.h" />
+    <ClInclude Include="include\internal\win32\win32_result_codes.h" />
+    <ClInclude Include="include\internal\win32\win32_messages.h" />
     <ClInclude Include="include\sbWindows_precompile.h" />
     <ClInclude Include="include\sbwin_registry.h" />
   </ItemGroup>

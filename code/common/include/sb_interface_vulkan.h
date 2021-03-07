@@ -30,17 +30,6 @@ SB_LIB_EXPORT std::vector<_TYPE_> enumerate( _OTHERS_...);
 struct instance_extension_traits
 {
 	using properties_t = VkExtensionProperties;
-	enum extension_id_t
-	{
-		kGeneric = 0,
-		kSurface,
-		kPlatformSurface,
-		//kSwapchain,
-		//kDebugUtils,
-		// add others
-
-		kMaxExtension = 64, // raise or lower as desired
-	};
 };
 	template<>
 SB_LIB_EXPORT std::vector<instance_extension_traits::properties_t> enumerate<instance_extension_traits::properties_t>( const uint32_t max_count, const char* layer_name );
@@ -78,44 +67,7 @@ SB_LIB_EXPORT std::vector<device_extension_traits::properties_t> enumerate<devic
 
 enum class instance_layer_t : uint64_t
 {
-	none                        = ( 0 ),
-
-	// debug layer
-	KHRONOS_validation          = ( 1ull <<  0 ), // Khronos Validation Layer (March 2019: Supported)
-	validation_mask             = ( KHRONOS_validation ),
-
-	// api tools
-	LUNARG_api_dump             = ( 1ull <<  1 ), // LunarG debug layer
-	LUNARG_device_simulation    = ( 1ull <<  2 ), // LunarG device simulation layer
-	LUNARG_monitor              = ( 1ull <<  3 ), // Execution Monitoring Layer
-	LUNARG_screenshot           = ( 1ull <<  4 ), // LunarG image capture layer
-	LUNARG_gfxreconstruct       = ( 1ull <<  5 ), // GFXReconstruct Capture Layer Version 0.9.3
-	api_utils                   = ( LUNARG_api_dump | LUNARG_device_simulation | LUNARG_monitor | LUNARG_screenshot | LUNARG_gfxreconstruct ),
-
-	RENDERDOC_Capture           = ( 1ull <<  6ull ), // Debugging capture layer for RenderDoc
-	graphics_tools_mask         = ( api_utils | RENDERDOC_Capture ),
-
-	// deprecated
-	LUNARG_vktrace              = ( 1ull << 20 ), // Vktrace tracing library
-	LUNARG_assistant_layer      = ( 1ull << 21 ), // LunarG Validation Factory Layer
-	LUNARG_standard_validation  = ( 1ull << 22 ), // LunarG Standard Validation (February 2016: Deprecated)
-	LUNARG_core_validation      = ( 1ull << 23 ), // LunarG Validation Layer (March 2016: Deprecated)
-	LUNARG_parameter_validation = ( 1ull << 24 ), // LunarG Validation Layer (December 2014: Deprecated)
-	LUNARG_object_tracker       = ( 1ull << 25 ), // LunarG Validation Layer (October 2014: Deprecated)
-	GOOGLE_unique_objects       = ( 1ull << 26 ), // Google Validation Layer (December 2015: Deprecated)
-	GOOGLE_threading            = ( 1ull << 27 ), // Google Validation Layer (April 2015: Deprecated)
-	deprecated_mask             = ( LUNARG_vktrace | LUNARG_assistant_layer | LUNARG_standard_validation | LUNARG_core_validation | LUNARG_parameter_validation | LUNARG_object_tracker | GOOGLE_unique_objects | GOOGLE_threading ),
-
-	// Khronos/VALVE extensions
-	VALVE_steam_overlay         = ( 1ull << 30 ), // Steam Overlay Layer
-	VALVE_steam_fossilize       = ( 1ull << 31 ), // Steam Pipeline Caching Layer
-	VALVE_mask                  = ( VALVE_steam_fossilize | VALVE_steam_overlay ),
-
-	// vendor extensions
-	NV_optimus                  = ( 1ull << 32 ), // NVIDIA Optimus layer
-	NV_mask                     = ( NV_optimus ),
-
-	AMD_mask                    = ( 0ull ), // TODO
+	#include <common/include/internal/vulkan/vulkan_instance_layers.h>
 };
 sb_enum_class_flags( instance_layer_t );
 
@@ -132,17 +84,19 @@ struct InstanceConfiguration : Configuration
 		0
 		| instance_layer_t::NV_mask
 		| instance_layer_t::AMD_mask
+#if defined( SB_VULKAN_GRAPHICS_TOOLS )
 		// Could activate these by default through compile flags
-		// | instance_layer_t::debug_utils_mask
-		// | instance_layer_t::graphics_tools_mask
-		// | instance_layer_t::full_debug_mask
-		// | instance_layer_t::VALVE_mask
+		 | instance_layer_t::validation_mask
+		 | instance_layer_t::
+		 | instance_layer_t::full_debug_mask
+#endif
+#if defined( SB_VULKAN_VALVE_TOOLS )
+		 | instance_layer_t::VALVE_mask
+#endif
 	};
 
-	std::vector<xhash_string_view_t> requested_layers = {
-	};
-	std::vector<xhash_string_view_t> requested_extensions = {
-	};
+	std::vector<xhash_string_view_t> requested_layers = {};
+	std::vector<xhash_string_view_t> requested_extensions = {};
 };
 
 #define SBLIB_DECLARE_DEVICE_INTERNAL

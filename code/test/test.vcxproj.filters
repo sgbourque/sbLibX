@@ -44,10 +44,21 @@
     <ClCompile Include="src\test_encrypt.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\test_win32_2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_encrypt2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\test_precompile.h">
       <Filter>include</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\private_generated_512.key">
+      <Filter>include</Filter>
+    </None>
   </ItemGroup>
 </Project>

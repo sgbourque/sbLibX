@@ -14,7 +14,7 @@ enum basic_latin_t : uint8_t
 	begin_value = 0,
 #define SBDEF_NAME_ALIAS( code_point, name, alias, tag ) \
 	alias = code_point,
-#include "common/include/internal/unicode/name_aliases_basic_latin.h"
+#include "common/include/internal/unicode/unicode_name_aliases_basic_latin.h"
 	end_value,
 };
 using ascii_t = basic_latin_t;

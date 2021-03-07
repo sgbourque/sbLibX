@@ -4,7 +4,7 @@
   "Items": [
     {
       "Id": "5f264324-3188-402d-88a2-89d4d4061b0a",
-      "Command": "run $(ProjectName)/main"
+      "Command": "run $(ProjectName)/test_encrypt2"
     },
     {
       "Id": "2f51687d-50f5-4266-bbe1-5d49dd9ca2d4",

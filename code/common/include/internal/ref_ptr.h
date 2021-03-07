@@ -1,11 +1,11 @@
 #pragma once
 #include <cstdint>
 #if !defined(SBDEBUG) && _ITERATOR_DEBUG_LEVEL > 0
-#error "Compiling with incompatible settings (linker error) : Iterator debug level shoud only be enabled with debug type targets."
+#error "Using <cstdint> with incompatible linker settings (linker error) : Iterator debug level shoud only be enabled with debug type targets."
 #endif
 
 namespace SB { namespace LibX {
-// This is binary-compatible with the COM interface, without requiring anything under "windows.h" and compiler's limitations involved
+// This must be binary-compatible with the COM interface, without requiring anything under "windows.h" and compiler's limitations involved
 struct IUnknown
 {
 	using result_t   = int32_t;
@@ -23,6 +23,11 @@ struct IUnknown
 
 // This is kind of half of a ComPtr (without the QueryInterface casting).
 // If needing the interface casting, a new com_ptr template shall be inheriting from ref_ptr, completing the remaining half of ComPtr.
+// However, the preferred approach for interface queries would be to create adaptor templates like:
+//
+//  ref_ptr<my_type> my_interface;
+//	query_type new_interface = query_interface< query_type >( my_interface );
+//
 	template<typename Type>
 struct ref_ptr
 {

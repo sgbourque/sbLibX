@@ -22,6 +22,9 @@
     <Filter Include="include\internal\unicode">
       <UniqueIdentifier>{3b6b4b05-92ce-4a3f-99b7-8387ee83f016}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\internal\vulkan">
+      <UniqueIdentifier>{f2c3b1b1-46dd-4eec-bd75-3ab284b36109}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sb_interface.h">
@@ -90,29 +93,32 @@
     <ClInclude Include="include\internal\arch\x86_specific.h">
       <Filter>include\internal\arch</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\unicode\property_value_aliases.h">
-      <Filter>include\internal\unicode</Filter>
-    </ClInclude>
     <ClInclude Include="include\internal\unicode\unicode_data_basic_latin.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\unicode\name_aliases_basic_latin.h">
-      <Filter>include\internal\unicode</Filter>
-    </ClInclude>
     <ClInclude Include="include\sb_unicode.h">
       <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\unicode\basic_latin.h">
-      <Filter>include\internal\unicode</Filter>
     </ClInclude>
     <ClInclude Include="include\sb_interface_vulkan.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\sb_interface_dx12.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\vulkan\vulkan_instance_layers.h">
+      <Filter>include\internal\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\unicode_property_value_aliases.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\unicode_name_aliases_basic_latin.h">
+      <Filter>include\internal\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\unicode\unicode_basic_latin.h">
+      <Filter>include\internal\unicode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,10 +128,10 @@
     <ClCompile Include="src\sb_interface.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\sb_interface_asio.cpp">
+    <ClCompile Include="src\sb_unicode.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\sb_unicode.cpp">
+    <ClCompile Include="src\sb_interface_asio_deprecated.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

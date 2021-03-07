@@ -7,6 +7,8 @@ namespace SB { namespace LibX {
 struct Configuration;
 }}
 
+// Note: eventually, we should not require this.
+// Hoever, since not all functionalities are exposed in sbLib, we are going to use low-level access here
 #define COM_NO_WINDOWS_H
 #include <dxgi1_6.h>
 #include <d3d12.h>
@@ -62,7 +64,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 			for( const auto& adapter : vulkan_adapters )
 			{
 				vulkan::DeviceInfo device_info = vulkan::GetDeviceInfo( adapter );
-				// TODO : filter by requirements from config
+				// TODO : filter by requirements from config (we probably won't want all adapters... but we may want to be able to :) )
 				vulkan_devices.emplace_back( std::make_tuple( vulkan_device( adapter ), device_info ) );
 			}
 		}

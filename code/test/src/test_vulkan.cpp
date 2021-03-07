@@ -54,36 +54,18 @@ auto FilterInstanceLayers( sbLibVulkan::InstanceConfiguration& config, const vul
 {
 	using namespace sbLibX;
 	using instance_layer_t =  sbLibVulkan::instance_layer_t;
-	#define ALLOWED_LAYER( X ) case xhash_string_view_t("VK_LAYER_" #X).get_key(): if ( ( config.layer_mask & instance_layer_t::X ) != instance_layer_t::none ) config.requested_layers.emplace_back( xhash_string_view_t("VK_LAYER_" #X) ); break
 	for( const auto& layer_property : vulkan_instance_layers )
 	{
 		switch( xhash_string_view_t{ layer_property.layerName }.get_key() )
 		{
-			ALLOWED_LAYER( NV_optimus ); // NVIDIA Optimus layer
-			// 
-			ALLOWED_LAYER( LUNARG_api_dump ); // LunarG debug layer
-			ALLOWED_LAYER( LUNARG_device_simulation ); // LunarG device simulation layer
-			ALLOWED_LAYER( LUNARG_monitor ); // Execution Monitoring Layer
-			ALLOWED_LAYER( LUNARG_screenshot ); // LunarG image capture layer
-			// 
-			ALLOWED_LAYER( LUNARG_gfxreconstruct ); // GFXReconstruct Capture Layer Version 0.9.3
-			ALLOWED_LAYER( RENDERDOC_Capture ); // Debugging capture layer for RenderDoc
-			//ALLOWED_LAYER( LUNARG_vktrace ); // Vktrace tracing library
-			//ALLOWED_LAYER( LUNARG_assistant_layer ); // LunarG Validation Factory Layer
-			ALLOWED_LAYER( KHRONOS_validation ); // Khronos Validation Layer (March 2019: Supported)
-			// ...
-			//ALLOWED_LAYER( LUNARG_standard_validation ); // LunarG Standard Validation
-			//ALLOWED_LAYER( LUNARG_core_validation ); // LunarG Validation Layer
-			//ALLOWED_LAYER( LUNARG_parameter_validation ); // LunarG Validation Layer
-			//ALLOWED_LAYER( LUNARG_object_tracker ); // LunarG Validation Layer
-			//ALLOWED_LAYER( GOOGLE_unique_objects ); // Google Validation Layer
-			//ALLOWED_LAYER( GOOGLE_threading ); // Google Validation Layer
-			// ...
-			ALLOWED_LAYER( VALVE_steam_overlay ); // Steam Overlay Layer
-			ALLOWED_LAYER( VALVE_steam_fossilize ); // Steam Pipeline Caching Layer
+			#define SB_INSTANCE_LAYER_DEF( name, type, value ) \
+			case xhash_string_view_t("VK_LAYER_" # name).get_key(): \
+				if ( ( config.layer_mask & instance_layer_t::name ) != instance_layer_t::none ) \
+					config.requested_layers.emplace_back( xhash_string_view_t("VK_LAYER_" # name) ); \
+				break;
+			#include <common/include/internal/vulkan/vulkan_instance_layers.h>
 		}
 	}
-	#undef ALLOWED_LAYER
 }
 
 auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const vulkan_instance_extension_array_t& vulkan_instance_extensions )
@@ -102,6 +84,7 @@ auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const
 	};
 	const bool requiresDebugReport = requestedExtension( "VK_EXT_debug_report"_xhash64 );
 	const bool requiresDebugUtils = requestedExtension( "VK_EXT_debug_utils"_xhash64 );
+	const bool requiresValidationFeature = requestedExtension( "VK_EXT_validation_features"_xhash64 );
 
 	//RDOC 022076: [22:28:01] vk_device_funcs.cpp( 403 ) - Error   - RenderDoc does not support instance extension 'VK_KHR_surface_protected_capabilities'.
 	const bool supportsProtectedSurface = !requiresDebugUtils &&
@@ -127,6 +110,7 @@ auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const
 
 			ALLOWED_EXTENSION( VK_EXT_debug_report, requiresDebugReport );
 			ALLOWED_EXTENSION( VK_EXT_debug_utils, requiresDebugUtils );
+			ALLOWED_EXTENSION( VK_EXT_validation_features, requiresValidationFeature );
 			default: __debugbreak();
 		}
 	}
@@ -189,6 +173,12 @@ auto CreateDevices( const sbLibVulkan::adapter_array_t& adapters )
 	return devices;
 }
 
+
+// I know, it's still can't be run by itself (because I depends on a UI api to create a swapchain).
+// Once I have a proper Win32 wrapper interface, I can make test_vulkan as an independant unit.
+// For now, it is part of test_main (which eventually should be transformed as the central runtime unit test
+// entry point).
+
 #include <algorithm>
 int TestVulkan( [[maybe_unused]] void* hwnd )
 {
@@ -207,14 +197,14 @@ int TestVulkan( [[maybe_unused]] void* hwnd )
 	config.applicationVersion = 0;
 	config.engineVersion = 0;
 
-	//if( useValidationLayers )
+	////if( useValidationLayers )
 	//	config.layer_mask |= vulkan::instance_layer_t::validation_mask;
-	//if( useApiUtils )
-	//	config.layer_mask |= vulkan::instance_layer_t::api_utils;
-	//if( useGraphicToolsLayers )
-	//	config.layer_mask |= vulkan::instance_layer_t::graphics_tools_mask;
-	//if( useValveLayers )
-	//	config.layer_mask |= vulkan::InstanceConfiguration::VALVE_mask;
+	////if( useApiUtils )
+	//	config.layer_mask |= vulkan::instance_layer_t::utility_mask;
+	////if( useGraphicToolsLayers )
+	//	config.layer_mask |= vulkan::instance_layer_t::LUNARG_gfxreconstruct | vulkan::instance_layer_t::RENDERDOC_Capture;
+	////if( useValveLayers )
+	//	config.layer_mask |= vulkan::instance_layer_t::VALVE_mask;
 
 	{
 		config.requested_layers.reserve( vulkan_instance_layers.size() );

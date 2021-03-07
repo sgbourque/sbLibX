@@ -87,17 +87,17 @@
 
 
 #if defined(SBDEBUG)
-	#define SBCONSOLE 1 // TODO : Fix SBCONSOLE !! It works really badly with unicode input, especially mixing cout and wcout
-	#define SBDEBUG_OUTPUT 1
+	#define SBCONSOLE SB_SUPPORTED // TODO : Fix SBCONSOLE !! It works really badly with unicode input, especially mixing cout and wcout
+	#define SBDEBUG_OUTPUT SB_SUPPORTED
 #endif
 #if !defined(SBDEBUG_OUTPUT)
-	#define SBCONSOLE 0
+	#define SBCONSOLE SB_UNSUPPORTED
 #if defined(SBRELEASE)
-	#define SBCONSOLE_ATTACH 1
-	#define SBDEBUG_OUTPUT 1
+	#define SBCONSOLE_ATTACH SB_SUPPORTED
+	#define SBDEBUG_OUTPUT SB_SUPPORTED
 #else
-	#define SBCONSOLE_ATTACH 0
-	#define SBDEBUG_OUTPUT 0
+	#define SBCONSOLE_ATTACH SB_UNSUPPORTED
+	#define SBDEBUG_OUTPUT SB_UNSUPPORTED
 #endif
 #endif
 

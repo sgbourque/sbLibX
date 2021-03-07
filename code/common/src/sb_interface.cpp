@@ -4,6 +4,17 @@
 
 #include <iostream>
 
+
+// Note: not sure if that kind of interface is what I want to use.
+// I don't actually like it much. While expected to be used for
+// Configuration, it might not be as useful as expected.
+//
+// So while this is not yet deprecated, it's mostly in an unusable state ATM.
+// Future of the static/dynamic layer interface is TBD.
+//
+// This file as to be looked as a proof-of-concept and nothing more
+// (it should not even be part of sbLibX given its highly experimental nature).
+
 namespace SB { namespace LibX
 {
 

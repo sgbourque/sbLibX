@@ -7,9 +7,20 @@
 #include <string>
 #include <iostream>
 
+
 #ifdef __clang__
 SBCOMPILE_MESSAGE( "non-type template parameter is not yet supported by clang" )
 #else
+
+
+#ifdef __clang__
+#define clang_pragma( ... ) __pragma( clang __VA_ARGS__ )
+#define SB_CLANG_MESSAGE( ... ) __pragma( message( __VA_ARGS__ ) )
+#else
+#define clang_pragma( ... )
+#define SB_CLANG_MESSAGE( ... )
+#endif
+
 //	template< typename _CHAR_TYPE_, size_t _LENGTH_ >
 //struct encoded_string
 //{
@@ -57,10 +68,9 @@ SBCOMPILE_MESSAGE( "non-type template parameter is not yet supported by clang" )
 //	return encrypt(unencrypted, length);
 //}
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-string-literal-operator-template"
-#endif
+clang_pragma( diagnostic push )
+clang_pragma( diagnostic ignored "-Wgnu-string-literal-operator-template" )
+
 
 //	template< typename _T, _T... _UNENCRYPTED_STRING_ >
 //constexpr auto operator "" _x64()
@@ -68,9 +78,8 @@ SBCOMPILE_MESSAGE( "non-type template parameter is not yet supported by clang" )
 //	return std::basic_string<_T>{_UNENCRYPTED_STRING_...};
 //}
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+clang_pragma( diagnostic pop )
+
 
 	template<typename _CHAR_TYPE_/*, size_t _DEFAULT_UNENCRYPTED_LENGTH_*/, typename _ENCODE_BLOCK_TYPE_, _ENCODE_BLOCK_TYPE_ _PSEUDO_PRIME_, _ENCODE_BLOCK_TYPE_ _COPRIME_>
 struct encryption_traits
@@ -272,17 +281,21 @@ struct decoding_helper
 //using char_t = char8_t; // default to UTF-8
 using default_encode_t = uint64_t;
 	template< typename encode_t, encode_t prime, encode_t coprime, typename char_t >
-static inline constexpr typename encode_t hash( const char_t* string, size_t length )
+static inline constexpr encode_t hash( const char_t* string, size_t length )
 {
-	return string && *string && length > 0 ? ( hash<encode_t, prime, coprime>( ++string, --length ) + *string * prime ) ^ coprime : 0;
+	return string && *string && length > 0 ? ( hash<encode_t, prime, coprime>( string + 1, --length ) + std::make_unsigned_t<char_t>(*string) * prime ) ^ coprime : 0;
 }
 
 	template< typename encode_t, encode_t prime, encode_t coprime, typename char_t, size_t length >
-static inline constexpr typename encode_t hash( const char_t( &string )[length] )
+static inline constexpr encode_t hash( const char_t( &string )[length] )
 {
 	return hash<encode_t, prime, coprime>( string, length );
 }
 //using sbLibX::operator "" _xhash64;
+
+
+clang_pragma( diagnostic push )
+clang_pragma( diagnostic ignored "-Wdate-time" )
 
 #ifndef SB_ENCODE_TYPE
 using SB_ENCODE_TYPE = default_encode_t;
@@ -310,6 +323,8 @@ const SB_ENCODE_TYPE SB_PRIME_3 = SB_ENCODE_TYPE{ 17592186044423ull * ( 2 * sb_p
 static inline constexpr SB_ENCODE_TYPE sb_prime_4_factor = hash<SB_ENCODE_TYPE, 17179869209ull, 0x9EF3455AD47C9E31ull>( ""  __DATE__ __TIME__ );
 const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull * ( 2 * sb_prime_4_factor + 1 ) };
 #endif
+clang_pragma( diagnostic pop )
+
 
 static inline constexpr SB_ENCODE_TYPE SB_PRIME_A = SB_PRIME_0;
 static inline constexpr SB_ENCODE_TYPE SB_PRIME_B = sbLibX::gcd( SB_PRIME_0, SB_PRIME_1 ) == 1 ? SB_PRIME_1 : 
@@ -343,9 +358,10 @@ static inline constexpr auto decrypt( [[maybe_unused]] const std::array<typename
 	return decrypted;
 }
 
-#ifdef __clang__
-SBCOMPILE_MESSAGE( "sbLibX: Non-type template not yet supported in clang (error follows)" )
-#endif
+
+
+SB_CLANG_MESSAGE( "sbLibX: Non-type template not yet supported in clang (error follows)" )
+
 	template< auto _DATA_ >
 struct static_data
 {

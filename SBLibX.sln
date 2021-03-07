@@ -64,8 +64,8 @@ Global
 		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.final|x64.ActiveCfg = final-exec|x64
 		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.final|x64.Build.0 = final-exec|x64
 		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.final|x86.ActiveCfg = final|x64
-		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.release|x64.ActiveCfg = clang-release|x64
-		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.release|x64.Build.0 = clang-release|x64
+		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.release|x64.ActiveCfg = release|x64
+		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.release|x64.Build.0 = release|x64
 		{35A665B5-55F4-4AC5-B258-5574ABBDC53C}.release|x86.ActiveCfg = release|x64
 		{A180834D-4AD7-42C9-82D3-FEC959CCBEFA}.debug|x64.ActiveCfg = debug|x64
 		{A180834D-4AD7-42C9-82D3-FEC959CCBEFA}.debug|x64.Build.0 = debug|x64

@@ -10,9 +10,9 @@
 #endif
 
 
-#define SB_SUPPORTS(X)		(0 || X || 0)
-#define SB_SUPPORTED		(1)
-#define SB_UNSUPPORTED		(0)
+#define SB_SUPPORTS(X)		(0 X 0)
+#define SB_SUPPORTED		)| 1 |(
+#define SB_UNSUPPORTED		)| 0 |(
 
 
 #define SBCONSOLE_UNICODE	SB_UNSUPPORTED

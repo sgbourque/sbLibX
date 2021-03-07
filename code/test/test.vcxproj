@@ -43,6 +43,7 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\test_encrypt.cpp" />
+    <ClCompile Include="src\test_encrypt2.cpp" />
     <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
@@ -52,6 +53,10 @@
     <ClCompile Include="src\test_vulkan.cpp" />
     <ClCompile Include="src\test_wavelet.cpp" />
     <ClCompile Include="src\test_win32.cpp" />
+    <ClCompile Include="src\test_win32_2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\private_generated_512.key" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

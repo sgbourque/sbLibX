@@ -16,7 +16,7 @@ enum class General_Category : uint32_t
 	invalid = 0,
 #define SBDEF_GC_PROPERTY(property_name, category_alias, category_name, misc_alias, value) \
 	category_name = value, category_alias = category_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
+#include "common/include/internal/unicode/unicode_property_value_aliases.h"
 // @missing: 0000..10FFFF; General_Category; Unassigned
 };
 sb_enum_class_flags(General_Category);
@@ -56,7 +56,7 @@ enum class Canonical_Combining_Class : uint8_t
 {
 #define SBDEF_CCC_PROPERTY(property_name, value, class_alias, class_name) \
 	class_name = value, class_alias = class_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
+#include "common/include/internal/unicode/unicode_property_value_aliases.h"
 	invalid,
 };
 
@@ -71,7 +71,7 @@ enum class Bidi_Class : uint32_t
 	invalid = 0,
 #define SBDEF_BIDI_PROPERTY(property_name, bidi_alias, bidi_name, value) \
 	bidi_name = value, bidi_alias = bidi_name,
-#include "common/include/internal/unicode/property_value_aliases.h"
+#include "common/include/internal/unicode/unicode_property_value_aliases.h"
 };
 sb_enum_class_flags(Bidi_Class);
 
@@ -203,7 +203,7 @@ static inline constexpr std::strong_ordering compare( const unicode_data<unicode
 }}} // sbUnicode
 namespace sbUnicode = SB::LibX::Unicode;
 
-#include "common/include/internal/unicode/basic_latin.h"
+#include "common/include/internal/unicode/unicode_basic_latin.h"
 
 //
 namespace SB { namespace LibX { namespace Unicode

@@ -61,7 +61,7 @@ struct scoped_handle
 	scoped_handle(HandleType handler, ResourceType resource) { AcquireResource(handler, resource); }
 
 	scoped_handle(const scoped_handle&) = delete;
-	scoped_handle(scoped_handle&& temp) noexcept { handle = std::move(temp.handle); }
+	scoped_handle(scoped_handle&& temp) noexcept : handle(std::move(temp.handle)) {}
 
 	virtual ~scoped_handle() noexcept { ReleaseResource(handle); }
 

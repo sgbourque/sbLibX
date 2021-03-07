@@ -13,6 +13,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="include\internal">
+      <UniqueIdentifier>{c801ac61-3b6d-4bd0-b806-b83194f28b8e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sbWindows_precompile.h">
@@ -20,6 +23,18 @@
     </ClInclude>
     <ClInclude Include="include\sbwin_registry.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\win32\win32_result_codes.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\win32\win32_errors.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\win32\win32_results.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\win32\win32_messages.h">
+      <Filter>include\internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

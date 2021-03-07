@@ -18,19 +18,18 @@ struct Instance : IUnknown
 {
 };
 // This is where device driver binding is setup
-struct DeviceInfo;
-struct Adapter : IUnknown
+struct ASIODeviceInfo
 {
-	virtual void GetDeviceInfo( DeviceInfo* ) const = 0;
-};
-
-struct DeviceInfo
-{
-	static constexpr size_t kDescSize = 256;
-	static constexpr size_t kIIDSize = 16;
+	static inline constexpr size_t kDescSize = 256;
+	static inline constexpr size_t kIIDSize = 16;
 	char     description[kDescSize];
 	uint8_t  uid[16];
 };
+struct Adapter : IUnknown
+{
+	virtual void GetDeviceInfo( ASIODeviceInfo* ) const = 0;
+};
+#define SBLIB_DEVICE_INFO_TYPE ASIODeviceInfo
 
 /////////////////////////////////////////////////////////
 using InstanceHandle = ref_ptr<ASIO::Instance>;
@@ -43,7 +42,6 @@ using DeviceHandle = ref_ptr<ASIO::Device>;
 #define SB_LIB_EXPORT SB_IMPORT_LIB
 #endif
 
-#define SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL

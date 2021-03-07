@@ -9,12 +9,15 @@
 SB_LIB_EXPORT InstanceHandle CreateInstance( const Configuration* config = nullptr );
 SB_LIB_EXPORT bool DestroyInstance( InstanceHandle instance, const Configuration* config = nullptr);
 
-#ifndef SBLIB_CUSTOM_ADAPTER_ARRAY
+#ifndef SBLIB_ADAPTER_ARRAY_TYPE
 using adapter_array_t = std::vector<AdapterHandle>;
+#else
+#undef SBLIB_ADAPTER_ARRAY_TYPE
+using adapter_array_t = SBLIB_CUSTOM_ADAPTER_ARRAY;
 #endif
 SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance = CreateInstance(), size_t maxCount = ~0u );
 
-#ifndef SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
+#ifndef SBLIB_DEVICE_INFO_TYPE
 struct DeviceInfo
 {
 	static constexpr size_t kDescSize = 256;
@@ -26,6 +29,8 @@ struct DeviceInfo
 	uint32_t driverVersion;
 	uint8_t  uid[16];
 };
+#else
+using DeviceInfo = SBLIB_DEVICE_INFO_TYPE;
 #endif
 SB_LIB_EXPORT DeviceInfo GetDeviceInfo(AdapterHandle adapter);
 

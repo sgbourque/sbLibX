@@ -15,8 +15,9 @@ namespace VST
 
 using Instance = IUnknown;
 using Adapter = IPluginFactory;
-using DeviceInfo = ClassInfo;
 using Device = IPluginFactory;
+
+#define SBLIB_DEVICE_INFO_TYPE ClassInfo;
 
 /////////////////////////////////////////////////////////
 using InstanceHandle = ref_ptr<VST::Instance>;
@@ -29,7 +30,6 @@ using DeviceHandle = ref_ptr<VST::Device>;
 #define SB_LIB_EXPORT SB_IMPORT_LIB
 #endif
 
-#define SBLIB_FORWARD_DECLARE_DEVICE_INFO_INTERNAL
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL

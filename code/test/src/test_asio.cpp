@@ -255,7 +255,9 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 		// stupid lazy hack coz I dont want to pump win32 messages yet so just pop control panels of "real" low latency devices...
 		bool is_low_latency = false;
 		auto deviceInfo = std::get<DeviceInfo>( device );
-		DeviceHandle handle = std::get<unique_device>( device );
+		//auto handle = std::get<unique_device>( device ); // should not compile (Constructor for struct 'SB::LibX::ASIO::unique_device' is declared 'explicit')
+		const auto& handle = std::get<unique_device>( device ); // valid
+		//DeviceHandle handle = std::get<unique_device>( device ); // valid
 		if( handle )
 		{
 			is_low_latency = printInfo( handle, deviceInfo );

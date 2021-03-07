@@ -125,7 +125,19 @@ SB_WIN_EXPORT std::vector<instance_layer_traits::properties_t> enumerate<instanc
 struct instance_extension
 {
 	using properties_t = typename instance_extension_traits::properties_t;
-	using extension_id_t = typename instance_extension_traits::extension_id_t;
+	//using extension_id_t = typename instance_extension_traits::extension_id_t;
+	enum extension_id_t
+	{
+		kGeneric = 0,
+		kSurface,
+		kPlatformSurface,
+		//kSwapchain,
+		//kDebugUtils,
+		// add others
+
+		kMaxExtension = 64, // raise or lower as desired
+	};
+
 
 	//// platform-specific
 	#if defined(VK_USE_PLATFORM_WIN32_KHR)
