@@ -28,6 +28,7 @@ using namespace SB;
 
 #define SB_DEV_THREADED	SB_SUPPORTED
 
+#pragma optimize("", off)
 
 ////
 	template<size_t kMaxArgc>
@@ -345,6 +346,7 @@ int WinMain(
 					run_task();
 #endif
 					return_code = result.get();
+					std::cin.clear();
 				}
 				//debugConsole.RedirectStdIO();
 				//module_name.clear();

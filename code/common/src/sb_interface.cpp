@@ -41,7 +41,7 @@ struct StructuredBuffer
 	using NAME##_t = TYPE;\
 	NAME##_t NAME;\
 	template<> struct traits<"." #NAME ""_xhash64> { using data_t = NAME##_t; using return_t = RETURN_TYPE; };\
-	template<> static constexpr typename traits<"." #NAME ""_xhash64>::return_t get<"." #NAME ""_xhash64>(my_type& obj) { return obj.##NAME; }
+	template<> /*static*/ constexpr typename traits<"." #NAME ""_xhash64>::return_t get<"." #NAME ""_xhash64>(my_type& obj) { return obj.##NAME; }
 	//template<> static constexpr typename traits<"." #NAME ""_xhash64>::return_t offset("." #NAME ""_xhash64) { return obj.##NAME; }
 
 #define SB_STRUCT_END(STRUCT_NAME)\

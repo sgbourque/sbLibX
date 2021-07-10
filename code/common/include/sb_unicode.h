@@ -112,7 +112,7 @@ enum class Bidi_Mirrored : bool
 struct Simple_Character_Mapping
 {
 	using underlying_type_t = std::underlying_type_t<unicode_subset>;
-	static inline constexpr unicode_subset parent_code_point = unicode_subset{ - 1};
+	static inline constexpr unicode_subset parent_code_point = unicode_subset(-1);
 	constexpr Simple_Character_Mapping( underlying_type_t _code_point = parent_code_point ) : value( unicode_subset{ _code_point } ) {}
 	//constexpr auto operator <=>( const Simple_Character_Mapping& ) const = default;
 	constexpr operator bool() const { return value != parent_code_point; }
@@ -128,7 +128,7 @@ struct unicode_data
 	using unicode_subset_t = unicode_subset;
 	using simple_character_mapping_t = Simple_Character_Mapping<unicode_subset_t>;
 	
-	unicode_subset_t code_point = unicode_subset_t{-1};
+	unicode_subset_t code_point = unicode_subset_t(-1);
 	const char* name = nullptr;
 	General_Category general_category = General_Category::invalid;
 	Canonical_Combining_Class canonical_combining_class = Canonical_Combining_Class::invalid;
