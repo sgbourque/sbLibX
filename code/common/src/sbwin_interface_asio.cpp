@@ -71,6 +71,7 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 
 	virtual refcount_t SB_STDCALL AddRef() override
 	{
+		// AddRef/Release can be called concurrently on multiple threads with init/shutdown called only once at a time on a single object
 		refcount_t refCount;
 		do 
 		{
@@ -90,6 +91,7 @@ struct RefClassImpl : RefCountedImpl<_base_t_>
 	}
 	virtual refcount_t SB_STDCALL Release() override
 	{
+		// AddRef/Release can be called concurrently on multiple threads with init/shutdown called only once at a time on a single object
 		refcount_t refCount;
 		do
 		{
@@ -120,7 +122,7 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 		result_t result = RefClassImpl::QueryInterface(riid, ppvObject);
 		if (result < 0)
 		{
-			if ( memcmp(riid.uid, &deviceInfo.uid, sizeof(riid)) == 0 )
+			if ( memcmp(riid.uid, &deviceDesc.uid, sizeof(riid)) == 0 )
 				*ppvObject = handle.Get();
 			
 		}
@@ -138,17 +140,17 @@ struct AdapterImpl1 : RefClassImpl<AdapterImpl1, Adapter>
 
 	AdapterImpl1( CLSID deviceId, std::wstring_view desc )
 	{
-		memcpy( deviceInfo.uid, &deviceId, sizeof(DeviceInfo::uid) );
-		WideCharToMultiByte( CP_UTF8, 0, desc.data(), (int)desc.size(), deviceInfo.description, sizeof(deviceInfo.description), nullptr, nullptr );
+		memcpy( deviceDesc.uid, &deviceId, sizeof(DeviceDesc::uid) );
+		WideCharToMultiByte( CP_UTF8, 0, desc.data(), (int)desc.size(), deviceDesc.name, sizeof(deviceDesc.name), nullptr, nullptr );
 		auto path = GetAsioDllPath( deviceId );
 		memcpy( driverPath, path.data(), path.size() * sizeof(*path.data()) );
 	}
 
-	virtual void GetDeviceInfo( DeviceInfo* info ) const override
+	virtual void GetDeviceDesc( DeviceDesc* desc ) const override
 	{
-		if( info )
+		if( desc )
 		{
-			memcpy( info, &deviceInfo, sizeof(deviceInfo) );
+			memcpy( desc, &deviceDesc, sizeof(deviceDesc) );
 		}
 	}
 
@@ -157,7 +159,7 @@ public:
 
 	static constexpr size_t kDescSize = 256;
 	static constexpr size_t kIIDSize = 16;
-	DeviceInfo deviceInfo{};
+	DeviceDesc deviceDesc{};
 	wchar_t  driverPath[MAX_PATH]{};
 	DeviceHandle handle;
 };
@@ -172,7 +174,7 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 			// pass to children
 			for( auto adapter : asioAdapters )
 			{
-				if (memcmp(riid.uid, &adapter.second.deviceInfo.uid, sizeof(riid)) == 0)
+				if (memcmp(riid.uid, &adapter.second.deviceDesc.uid, sizeof(riid)) == 0)
 				{
 					*ppvObject = adapter.second.handle.Get();
 					break;
@@ -305,11 +307,11 @@ static std::wstring GetAsioDllPath( CLSID deviceId )
 	return path;
 }
 
-SB_WIN_EXPORT DeviceInfo GetDeviceInfo( AdapterHandle adapter )
+SB_WIN_EXPORT DeviceDesc GetDeviceDesc( AdapterHandle adapter )
 {
-	DeviceInfo deviceInfo{};
-	adapter->GetDeviceInfo( &deviceInfo );
-	return deviceInfo;
+	DeviceDesc deviceDesc{};
+	adapter->GetDeviceDesc( &deviceDesc );
+	return deviceDesc;
 }
 
 SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)
@@ -317,7 +319,7 @@ SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, 
 	DeviceHandle handle{};
 	if( AdapterImpl1* ptr; QueryInterface(adapter.Get(), &ptr) == S_OK )
 	{
-		const CLSID& clsid = *reinterpret_cast<CLSID*>(ptr->deviceInfo.uid);
+		const CLSID& clsid = *reinterpret_cast<CLSID*>(ptr->deviceDesc.uid);
 		[[maybe_unused]] auto result = CoCreateInstance( clsid, 0, CLSCTX_INPROC_SERVER, clsid, handle.ReleaseAndGetAddressOf<void>() );
 		if(result != S_OK || !handle->init( GetCurrentProcess() ))
 		{

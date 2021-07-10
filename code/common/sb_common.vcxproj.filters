@@ -120,6 +120,12 @@
     <ClInclude Include="include\internal\unicode\unicode_basic_latin.h">
       <Filter>include\internal\unicode</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\sb_features.h">
+      <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sb_encrypted_data.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">
@@ -134,5 +140,10 @@
     <ClCompile Include="src\sb_interface_asio_deprecated.cpp">
       <Filter>src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\sb_default_256.key">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
 </Project>

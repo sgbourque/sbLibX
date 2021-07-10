@@ -18,11 +18,11 @@ using adapter_array_t = SBLIB_CUSTOM_ADAPTER_ARRAY;
 SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance = CreateInstance(), size_t maxCount = ~0u );
 
 #ifndef SBLIB_DEVICE_INFO_TYPE
-struct DeviceInfo
+struct DeviceDesc
 {
-	static constexpr size_t kDescSize = 256;
+	static constexpr size_t kNameSize = 256;
 	static constexpr size_t kIIDSize = 16;
-	char     description[kDescSize];
+	char     name[kNameSize];
 	uint32_t vendorID;
 	uint32_t deviceID;
 	uint32_t apiID;
@@ -30,9 +30,9 @@ struct DeviceInfo
 	uint8_t  uid[16];
 };
 #else
-using DeviceInfo = SBLIB_DEVICE_INFO_TYPE;
+using DeviceDesc = SBLIB_DEVICE_INFO_TYPE;
 #endif
-SB_LIB_EXPORT DeviceInfo GetDeviceInfo(AdapterHandle adapter);
+SB_LIB_EXPORT DeviceDesc GetDeviceDesc(AdapterHandle adapter);
 
 SB_LIB_EXPORT DeviceHandle CreateDevice(AdapterHandle adapter, const Configuration* config = nullptr);
 SB_LIB_EXPORT bool DestroyDevice(DeviceHandle device, const Configuration* config = nullptr);

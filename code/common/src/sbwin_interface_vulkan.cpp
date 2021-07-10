@@ -381,24 +381,24 @@ SB_WIN_EXPORT adapter_array_t EnumerateAdapters([[maybe_unused]] InstanceHandle 
 	return enumerate<physical_device::device_t>(instance);
 }
 
-SB_WIN_EXPORT DeviceInfo GetDeviceInfo( AdapterHandle adapter )
+SB_WIN_EXPORT DeviceDesc GetDeviceDesc( AdapterHandle adapter )
 {
 	VkPhysicalDeviceProperties adapter_properties;
 	vkGetPhysicalDeviceProperties(adapter, &adapter_properties);
-	DeviceInfo device_info = {
-		SB_STRUCT_SET( .description   = ) {},
+	DeviceDesc device_desc = {
+		SB_STRUCT_SET( .name          = ) {},
 		SB_STRUCT_SET( .vendorID      = ) adapter_properties.vendorID,
 		SB_STRUCT_SET( .deviceID      = ) adapter_properties.deviceID,
 		SB_STRUCT_SET( .apiID         = ) adapter_properties.apiVersion,
 		SB_STRUCT_SET( .driverVersion = ) adapter_properties.driverVersion,
 		SB_STRUCT_SET( .uid           = ) {}
 	};
-	static_assert(sizeof(device_info.uid) >= sizeof(adapter_properties.pipelineCacheUUID));
-	memcpy(device_info.uid, adapter_properties.pipelineCacheUUID, sizeof(adapter_properties.pipelineCacheUUID));
-	static_assert( sizeof(device_info.description) >= sizeof(adapter_properties.deviceName) );
-	memcpy(device_info.description, adapter_properties.deviceName, sizeof(adapter_properties.deviceName) );
+	static_assert(sizeof(device_desc.uid) >= sizeof(adapter_properties.pipelineCacheUUID));
+	memcpy(device_desc.uid, adapter_properties.pipelineCacheUUID, sizeof(adapter_properties.pipelineCacheUUID));
+	static_assert( sizeof(device_desc.name) >= sizeof(adapter_properties.deviceName) );
+	memcpy(device_desc.name, adapter_properties.deviceName, sizeof(adapter_properties.deviceName) );
 
-	return device_info;
+	return device_desc;
 }
 
 SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, [[maybe_unused]] const Configuration* config)

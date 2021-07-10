@@ -148,10 +148,10 @@ void SortAdapters( sbLibVulkan::adapter_array_t& vulkan_adapters )
 	constexpr uint32_t kDebugDeviceStart = 0x00010000;
 	auto vulkan_adapter_sort_predicate = [&vendor_order]( const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second ) -> bool
 	{
-		vulkan::DeviceInfo device1_info = vulkan::GetDeviceInfo( first );
-		vulkan::DeviceInfo device2_info = vulkan::GetDeviceInfo( second );
+		vulkan::DeviceDesc device1_desc = vulkan::GetDeviceDesc( first );
+		vulkan::DeviceDesc device2_desc = vulkan::GetDeviceDesc( second );
 		// TODO add sort information here from config
-		return vendor_order( device1_info.vendorID ) < vendor_order( device2_info.vendorID );
+		return vendor_order( device1_desc.vendorID ) < vendor_order( device2_desc.vendorID );
 	};
 
 	std::sort( vulkan_adapters.begin(), vulkan_adapters.end(), vulkan_adapter_sort_predicate );
@@ -162,12 +162,12 @@ auto CreateDevices( const sbLibVulkan::adapter_array_t& adapters )
 {
 	using namespace sbLibX;
 	using namespace vulkan;
-	std::vector< std::tuple<unique_device, DeviceInfo> > devices;
+	std::vector< std::tuple<unique_device, DeviceDesc> > devices;
 	devices.reserve( adapters.size() );
 	for( const auto& adapter : adapters )
 	{
-		DeviceInfo device_info = GetDeviceInfo( adapter );
-		std::clog << device_info.description << " : " << std::endl;
+		DeviceDesc device_info = GetDeviceDesc( adapter );
+		std::clog << device_info.name << " : " << std::endl;
 		auto device_extensions = enumerate<device_extension_traits::properties_t>( adapter );
 		for( const auto& extension_properties : device_extensions )
 		{

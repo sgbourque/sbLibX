@@ -44,6 +44,7 @@
     </ClCompile>
     <ClCompile Include="src\test_encrypt.cpp" />
     <ClCompile Include="src\test_encrypt2.cpp" />
+    <ClCompile Include="src\test_int_type.cpp" />
     <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />

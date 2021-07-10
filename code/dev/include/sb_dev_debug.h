@@ -2,21 +2,17 @@
 #include <dev/include/sb_dev.h>
 
 #include <cstdint>
-#if defined(SBCONSOLE) || (defined(SBDEBUG_OUTPUT) && SBDEBUG_OUTPUT)
+#if defined(SBCONSOLE) || (defined(SBDEBUG_OUTPUT) && SB_SUPPORTS(SBDEBUG_OUTPUT))
 #include <array>
 #include <iosfwd>
 #include <sstream>
 #include <string>
 #endif
 
-
-#define SB_SUPPORTS(X)		(0 X 0)
-#define SB_SUPPORTED		)| 1 |(
-#define SB_UNSUPPORTED		)| 0 |(
-
-
+//#define SB_SUPPORTS(X)		(0 X 0)
+//#define SB_SUPPORTED		)| 1 |(
+//#define SB_UNSUPPORTED		)| 0 |(
 #define SBCONSOLE_UNICODE	SB_UNSUPPORTED
-
 
 namespace SB { namespace LibX { namespace Debug
 {

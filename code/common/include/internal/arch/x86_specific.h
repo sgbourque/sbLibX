@@ -1,8 +1,8 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-//SBCOMPILE_MESSAGE( "  " SBLIB_x86SPECIFIC_H )
-//SBCOMPILE_MESSAGE( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
-//SBCOMPILE_MESSAGE( "| " )
+//SBCOMPILE_INFO( "  " SBLIB_x86SPECIFIC_H )
+//SBCOMPILE_INFO( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
+//SBCOMPILE_INFO( "| " )
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace SB
@@ -18,19 +18,19 @@ namespace SB
 			#define SBARCH_ID SBARCHx86_ID
 		#endif
 		#if   _M_IX86 < 200
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for 8086/88 or 186 (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for 8086/88 or 186 (" CSTR(_M_IX86) ")" )
 		#elif _M_IX86 < 300
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for 286 (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for 286 (" CSTR(_M_IX86) ")" )
 		#elif _M_IX86 < 400
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for 386 (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for 386 (" CSTR(_M_IX86) ")" )
 		#elif _M_IX86 < 500
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for 486 (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for 486 (" CSTR(_M_IX86) ")" )
 		#elif _M_IX86 < 600
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for pentium (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for pentium (" CSTR(_M_IX86) ")" )
 		#elif _M_IX86 < 700
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for pentium pro/pentium II/pentium III or better CPU (" CSTR(_M_IX86) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled for pentium pro/pentium II/pentium III or better CPU (" CSTR(_M_IX86) ")" )
 		#else
-			SBCOMPILE_MESSAGE( "| \x7 Compiled for x86 generation " CSTR(_M_IX86) )
+			SBCOMPILE_INFO( "| \x7 Compiled for x86 generation " CSTR(_M_IX86) )
 		#endif
 	#endif
 
@@ -42,13 +42,13 @@ namespace SB
 			#define SBSIMD_ID SBSIMDx86_ID
 		#endif
 		#if   _M_IX86_FP < 1
-			SBCOMPILE_MESSAGE( "| \x7 Compiled using no SIMD intrinsic (" CSTR(_M_IX86_FP) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled using no SIMD intrinsic (" CSTR(_M_IX86_FP) ")" )
 		#elif _M_IX86_FP < 2
-			SBCOMPILE_MESSAGE( "| \x7 Compiled using SSE intrinsic (" CSTR(_M_IX86_FP) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled using SSE intrinsic (" CSTR(_M_IX86_FP) ")" )
 		#elif _M_IX86_FP < 3
-			SBCOMPILE_MESSAGE( "| \x7 Compiled using SSE2 intrinsic (" CSTR(_M_IX86_FP) ")" )
+			SBCOMPILE_INFO( "| \x7 Compiled using SSE2 intrinsic (" CSTR(_M_IX86_FP) ")" )
 		#else
-			SBCOMPILE_MESSAGE( "| \x7 Compiled using SIMD intrinsic generation " CSTR(_M_IX86_FP) )
+			SBCOMPILE_INFO( "| \x7 Compiled using SIMD intrinsic generation " CSTR(_M_IX86_FP) )
 		#endif
 	#endif
 
@@ -78,6 +78,6 @@ namespace SB
 	};
 
 } // namespace SB
-//SBCOMPILE_MESSAGE( "| " )
+//SBCOMPILE_INFO( "| " )
 
 ///////////////////////////////////////////////////////////////////////////////
