@@ -40,53 +40,89 @@ namespace SB
 //	#define SBSIMD_ID max_SIMD_subset
 //
 ///////////////////////////////////////////////////////////////////////////////
-#define SBCOMPILE_VERBOSE 1
+#define SBCOMPILE_MESSAGE_INFO    0
+#define SBCOMPILE_MESSAGE_WARNING 1
+#define SBCOMPILE_MESSAGE_ERROR   2
+
 #if defined(_MSC_VER) && defined( _M_X64 )
-	#ifdef SBCOMPILE_VERBOSE
-		#define SBCOMPILE_MESSAGE(...) __pragma( message(__VA_ARGS__) )
-	#else
-		#define SBCOMPILE_MESSAGE(...)
-	#endif
-	#include <common/include/internal/arch/VisualC_specific.h>
+	#define SBCOMPILE_MESSAGE(...) __pragma( message(__VA_ARGS__) )
 #else
 	#define SBCOMPILE_MESSAGE(...) __pragma( __VA_ARGS__ )
 	#error "Compiler/Platform not supported yet."
 #endif
 
+
+#define SBCOMPILE_MESSAGE_INFO    0
+#define SBCOMPILE_MESSAGE_WARNING 1
+#define SBCOMPILE_MESSAGE_ERROR   2
+#ifndef SBCOMPILE_VERBOSE_MODE
+	#if defined(SBDEBUG)
+	#define SBCOMPILE_VERBOSE_MODE SBCOMPILE_MESSAGE_WARNING
+	#else
+	#define SBCOMPILE_VERBOSE_MODE SBCOMPILE_MESSAGE_WARNING
+	#endif
+#endif
+#if SBCOMPILE_VERBOSE_MODE <= SBCOMPILE_MESSAGE_INFO
+	#define SBCOMPILE_INFO(...) SBCOMPILE_MESSAGE(__VA_ARGS__)
+#else
+	#define SBCOMPILE_INFO(...)
+#endif
+#if SBCOMPILE_VERBOSE_MODE <= SBCOMPILE_MESSAGE_WARNING
+	#define SBCOMPILE_WARNING(...) SBCOMPILE_MESSAGE(__VA_ARGS__)
+#else
+	#define SBCOMPILE_WARNING(...)
+#endif
+#if SBCOMPILE_VERBOSE_MODE <= SBCOMPILE_MESSAGE_ERROR
+	#define SBCOMPILE_ERROR(...) SBCOMPILE_MESSAGE(__VA_ARGS__)
+#else
+	#define SBCOMPILE_ERROR(...)
+#endif
+
+#include <common/include/internal/arch/VisualC_specific.h>
+
+
+#ifdef __clang__
+	#define clang_pragma( ... ) __pragma( clang __VA_ARGS__ )
+	#define SB_CLANG_MESSAGE( ... ) __pragma( message( __VA_ARGS__ ) )
+#else
+	#define clang_pragma( ... )
+	#define SB_CLANG_MESSAGE( ... )
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
-//	SBCOMPILE_MESSAGE( "| " )
-//	SBCOMPILE_MESSAGE( "  " __FILE__ " (" CSTR(__LINE__) ")" )
-//	SBCOMPILE_MESSAGE( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
+//	SBCOMPILE_INFO( "| " )
+//	SBCOMPILE_INFO( "  " __FILE__ " (" CSTR(__LINE__) ")" )
+//	SBCOMPILE_INFO( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
 #if !defined(__STDC__) || !__STDC__
 	#if defined(__cplusplus)
-	SBCOMPILE_MESSAGE( "| Using ANSI C++-compliant version " CSTR(__cplusplus) )
+	SBCOMPILE_INFO( "| Using ANSI C++-compliant version " CSTR(__cplusplus) )
 	#else
 		#error "\nNo C++ compiler found and not using ANSI-C compliant compiler. What are you trying to do, exactly?"
 	#endif
 #else
 	#if defined(__cplusplus)
-	SBCOMPILE_MESSAGE( "| Using full C/C++ ANSI compliant compiler." )
+	SBCOMPILE_INFO( "| Using full C/C++ ANSI compliant compiler." )
 	#else
-	SBCOMPILE_MESSAGE( "| Using ANSI C-compliant compiler" )
+	SBCOMPILE_INFO( "| Using ANSI C-compliant compiler" )
 	#endif
 	#if defined(__STDC_VERSION__ )
-	SBCOMPILE_MESSAGE( "| C-compliance version : " CSTR(__STDC_VERSION__) )
+	SBCOMPILE_INFO( "| C-compliance version : " CSTR(__STDC_VERSION__) )
 	#endif
 	#if defined(__STDC_HOSTED__) && __STDC_HOSTED__
 	#error "TODO : __STDC_HOSTED__"
-	//SBCOMPILE_MESSAGE( "| C-compliance version : " CSTR(__STDC_VERSION__) )
+	//SBCOMPILE_INFO( "| C-compliance version : " CSTR(__STDC_VERSION__) )
 	#endif
 #endif
-	SBCOMPILE_MESSAGE( "| " )
-	SBCOMPILE_MESSAGE( "| Architecture : " CSTR( SBARCH ) )
+	SBCOMPILE_INFO( "| " )
+	SBCOMPILE_INFO( "| Architecture : " CSTR( SBARCH ) )
 	#if defined(SBARCH_ID)
-	SBCOMPILE_MESSAGE( "| Architecture subset : " CSTR( SBARCH_ID ) )
+	SBCOMPILE_INFO( "| Architecture subset : " CSTR( SBARCH_ID ) )
 	#endif
 	#if defined(SBSIMD_ID)
-	SBCOMPILE_MESSAGE( "| SIMD subset         : " CSTR( SBSIMD_ID ) )
+	SBCOMPILE_INFO( "| SIMD subset         : " CSTR( SBSIMD_ID ) )
 	#endif
-	SBCOMPILE_MESSAGE( " ------------------------- " )
-	SBCOMPILE_MESSAGE( " " )
+	SBCOMPILE_INFO( " ------------------------- " )
+	SBCOMPILE_INFO( " " )
 
 ///////////////////////////////////////////////////////////////////////////////
 #undef SBLIBX_COMPILERSPECIFIC_H

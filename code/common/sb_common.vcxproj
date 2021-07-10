@@ -200,6 +200,7 @@
     <ClInclude Include="include\internal\interface_asio_error.hpp" />
     <ClInclude Include="include\internal\interface_vst_base.h" />
     <ClInclude Include="include\internal\ref_ptr.h" />
+    <ClInclude Include="include\internal\sb_features.h" />
     <ClInclude Include="include\internal\temp_delete_me.h" />
     <ClInclude Include="include\internal\unicode\unicode_basic_latin.h" />
     <ClInclude Include="include\internal\unicode\unicode_name_aliases_basic_latin.h" />
@@ -208,6 +209,7 @@
     <ClInclude Include="include\internal\unicode\unicode_data_latin-1_suppl.h" />
     <ClInclude Include="include\internal\vulkan\vulkan_instance_layers.h" />
     <ClInclude Include="include\sb_common.h" />
+    <ClInclude Include="include\sb_encrypted_data.h" />
     <ClInclude Include="include\sb_encrypted_string.h" />
     <ClInclude Include="include\sb_hash.h" />
     <ClInclude Include="include\sb_interface.h" />
@@ -222,6 +224,9 @@
     <ClInclude Include="include\sb_unicode.h" />
     <ClInclude Include="include\sb_utilities.h" />
     <ClInclude Include="include\sb_interface_vulkan.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\sb_default_256.key" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

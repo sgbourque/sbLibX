@@ -26,7 +26,7 @@ struct IUnknown
 // However, the preferred approach for interface queries would be to create adaptor templates like:
 //
 //  ref_ptr<my_type> my_interface;
-//	query_type new_interface = query_interface< query_type >( my_interface );
+//	ref_ptr<query_type> new_interface = query_interface< query_type >( my_interface );
 //
 	template<typename Type>
 struct ref_ptr

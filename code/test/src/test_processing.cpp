@@ -44,15 +44,15 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 	constexpr uint32_t kDebugDeviceStart = 0x00010000;
 
 	vulkan_instance test_vulkan{};
-	std::vector<std::tuple<vulkan_device, vulkan::DeviceInfo>> vulkan_devices{};
+	std::vector<std::tuple<vulkan_device, vulkan::DeviceDesc>> vulkan_devices{};
 	int vulkanActiveDeviceCount = 0;
 	{
 		auto vulkan_adapter_sort_predicate = [&vendor_order](const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second) -> bool
 		{
-			vulkan::DeviceInfo device1_info = vulkan::GetDeviceInfo(first);
-			vulkan::DeviceInfo device2_info = vulkan::GetDeviceInfo(second);
+			vulkan::DeviceDesc device1_desc = vulkan::GetDeviceDesc(first);
+			vulkan::DeviceDesc device2_desc = vulkan::GetDeviceDesc(second);
 			// TODO add sort information here from config
-			return vendor_order(device1_info.vendorID) < vendor_order(device2_info.vendorID);
+			return vendor_order(device1_desc.vendorID) < vendor_order(device2_desc.vendorID);
 		};
 
 		{
@@ -63,9 +63,9 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 			vulkan_devices.reserve( vulkan_adapters.size() );
 			for( const auto& adapter : vulkan_adapters )
 			{
-				vulkan::DeviceInfo device_info = vulkan::GetDeviceInfo( adapter );
+				vulkan::DeviceDesc device_desc = vulkan::GetDeviceDesc( adapter );
 				// TODO : filter by requirements from config (we probably won't want all adapters... but we may want to be able to :) )
-				vulkan_devices.emplace_back( std::make_tuple( vulkan_device( adapter ), device_info ) );
+				vulkan_devices.emplace_back( std::make_tuple( vulkan_device( adapter ), device_desc ) );
 			}
 		}
 
@@ -75,21 +75,21 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 
 		for( const auto& device : vulkan_devices )
 		{
-			auto device_info = std::get<1>( device );
-			std::cerr << "\t" << device_info.description << std::endl;
+			auto device_desc = std::get<1>( device );
+			std::cerr << "\t" << device_desc.name << std::endl;
 		}
 	}
 
 	dx12_instance test_dx12{};
-	std::vector<std::tuple<dx12::DeviceHandle, dx12::DeviceInfo>> dx12_devices;
+	std::vector<std::tuple<dx12::DeviceHandle, dx12::DeviceDesc>> dx12_devices;
 	size_t dx12ActiveDeviceCount = 0;
 	{
 		auto dx12_adapter_sort_predicate = [&vendor_order](const dx12::AdapterHandle& first, const dx12::AdapterHandle& second) -> bool
 		{
-			dx12::DeviceInfo device1_info = dx12::GetDeviceInfo(first);
-			dx12::DeviceInfo device2_info = dx12::GetDeviceInfo(second);
+			dx12::DeviceDesc device1_desc = dx12::GetDeviceDesc(first);
+			dx12::DeviceDesc device2_desc = dx12::GetDeviceDesc(second);
 			// TODO add sort information here from config
-			return vendor_order(device1_info.vendorID) < vendor_order(device2_info.vendorID);
+			return vendor_order(device1_desc.vendorID) < vendor_order(device2_desc.vendorID);
 		};
 
 		{
@@ -101,15 +101,15 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 			{
 				for (const auto& adapter : dx12_adapters)
 				{
-					dx12::DeviceInfo device_info = dx12::GetDeviceInfo(adapter);
+					dx12::DeviceDesc device_desc = dx12::GetDeviceDesc(adapter);
 					// TODO : filter by requirements from config
-					if ( vendor_order(device_info.vendorID) <= kDebugDeviceStart)
+					if ( vendor_order(device_desc.vendorID) <= kDebugDeviceStart)
 					{
-						dx12_devices.emplace_back(std::make_tuple(dx12_device(adapter), device_info));
+						dx12_devices.emplace_back(std::make_tuple(dx12_device(adapter), device_desc));
 					}
 					else
 					{
-						dx12_devices.emplace_back(std::make_tuple(nullptr, device_info));
+						dx12_devices.emplace_back(std::make_tuple(nullptr, device_desc));
 					}
 				}
 			}
@@ -121,10 +121,10 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 
 		for( const auto& device : dx12_devices )
 		{
-			auto device_info = std::get<1>( device );
-			std::cerr << "\t" << device_info.description;
+			auto device_desc = std::get<1>( device );
+			std::cerr << "\t" << device_desc.name;
 			if( !std::get<0>(device) )
-				std::cerr << " (" << (vendor_order( device_info.vendorID ) <= kDebugDeviceStart ? "" : "debug: ") << "skipped)";
+				std::cerr << " (" << (vendor_order( device_desc.vendorID ) <= kDebugDeviceStart ? "" : "debug: ") << "skipped)";
 			std::cerr << std::endl;
 		}
 	}

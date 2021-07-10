@@ -1,30 +1,32 @@
 #pragma once
 
-#define SB_TARGET_TYPE_STATIC		(1 << 0)
-#define SB_TARGET_TYPE_DYNAMIC		(1 << 1)
+#define SB_TARGET_TYPE_STATIC    	(1 << 0)
+#define SB_TARGET_TYPE_DYNAMIC   	(1 << 1)
 #define SB_TARGET_TYPE_STANDALONE	(1 << 2)
+
 #if defined(SBWIN64)
-#define SB_TARGET_PLATFORM			"x64"
-#define SB_TARGET_NAME_STATIC		"lib"
-#define SB_TARGET_NAME_DYNAMIC		"dll"
+#define SB_TARGET_NAME_STATIC    	"lib"
+#define SB_TARGET_NAME_DYNAMIC   	"dll"
 #define SB_TARGET_NAME_STANDALONE	"exe"
 #else
 #error "Unknown platform"
 #endif
 
-
 #if defined( _M_X64 )
-	#define SB_ARCH_SUFFIX	"_x64"
+#define SB_TARGET_PLATFORM			"x64"
 #else
-	#error "Undefined platform"
+#error "Undefined platform"
 #endif
 #if defined(SBDEBUG)
-	#define SB_TARGET_SUFFIX "_debug"
+#define SB_TARGET "debug"
 #elif defined(SBRELEASE)
-	#define SB_TARGET_SUFFIX "_release"
+#define SB_TARGET "release"
 #else
-	#define SB_TARGET_SUFFIX "_final"
+#define SB_TARGET "final"
 #endif
+
+#define SB_ARCH_SUFFIX  	"_" SB_TARGET_PLATFORM
+#define SB_TARGET_SUFFIX	"_" SB_TARGET
 
 #if defined(SBWIN64)
 	#define SB_FASTCALL    __fastcall
@@ -45,14 +47,12 @@
 		#define SB_IMPORT_TYPE SB_EXTERN_LIB SB_IMPORT_LIB
 	#endif
 
-	#if 0 // expected main declaration
+	#if 0 // Expected main declaration. Arguments are optional, thanks to stdcall.
 		SB_EXTERN_LIB int SB_STDCALL main(int _nArgs = 0, const char* const pArgs[] = nullptr);
 	#endif
 #else
 #error "unsupported platform"
 #endif
-
-
 
 #if defined( SBWIN32 ) || defined( SBWIN64 )
 	#define SB_LIB_EXTENSION	".lib"
@@ -153,3 +153,6 @@
 	}} // namespace SB:LibX
 #endif
 namespace sbLibX = SB::LibX;
+
+
+#include "common/include/internal/sb_features.h"

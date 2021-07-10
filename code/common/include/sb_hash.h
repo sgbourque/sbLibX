@@ -40,7 +40,7 @@ struct xhash_traits
 	hash(const_char_ptr_t string, size_t length = default_length)
 	{
 		// TODO: get next unicode32 char from string instead of byte per byte
-		// so that different encodings of the same string would give the same result!!
+		// so that different encodings of the same string would give the same result.
 		return string && *string && length > 0 ? (hash(++string, --length) + *string * prime) ^ coprime : 0;
 	}
 };
@@ -49,8 +49,15 @@ using char_t = char; // lets focus on ascii -> UTF-8 first : system is ascii/nat
 using xhash_t = uint64_t;
 
 	template<typename _CHAR_TYPE_, typename _HASH_TYPE_>
-using xhash_traits_base_t = xhash_traits<_CHAR_TYPE_, _HASH_TYPE_, 256, 0x9EF3455AD47C9E31ull, 0x03519CFFA7F0F405ull>;
+using xhash_traits_base_t = xhash_traits<_CHAR_TYPE_, _HASH_TYPE_, 256, _HASH_TYPE_(0x9EF3455AD47C9E31ull & _HASH_TYPE_(-1)), _HASH_TYPE_(0x03519CFFA7F0F405ull & _HASH_TYPE_(-1))>;
 using xhash_traits_t = xhash_traits_base_t<char_t, xhash_t>;
+
+
+	template< typename _TYPE_T = xhash_t, typename _CHAR_T = char_t, size_t _LENGTH_ >
+static inline constexpr auto hash( const _CHAR_T ( &string )[_LENGTH_] )
+{
+	return sbLibX::xhash_traits_base_t<_CHAR_T, _TYPE_T>::hash( string, _LENGTH_ );
+}
 
 }} // namespace SB::LibX
 namespace sbLibX = SB::LibX;

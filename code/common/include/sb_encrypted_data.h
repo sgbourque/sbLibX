@@ -1,21 +1,164 @@
 #pragma once
-#include <common/include/sb_hash.h> // sb_hash and sb_encrypted_string are to be used together but won't use each other directly (only through traits)
+#include <common/include/sb_hash.h>
 #include <common/include/sb_utilities.h>
 
 #include <cstdint>
 #include <array>
-#include <iosfwd>
-#include <string>
 
 
-#if 0
-#include <common/include/sb_encrypted_data.h>
-#else
-// deprecated : a new version should supercede this implementation
 namespace SB { namespace LibX
 {
-// encrypted string
-#if 1
+namespace Encryption
+{
+
+	template< typename _TYPE_T = uint64_t, size_t _KEY_LENGTH_ = 4 >
+using private_key_t = std::array<_TYPE_T, _KEY_LENGTH_>;
+
+// Essentially, this is 4 encryption keys with their modular inverse in characteristic 2^64
+#ifndef SBPRIVATE_KEY_FILE
+	#define SBPRIVATE_KEY_FILE "test/include/sb_default_256.key"
+#endif
+	template< typename _KEY_T = private_key_t<> >
+struct key_pair_t
+{
+	static_assert( result.size() > 3, "key must have length at least 4" );
+
+	using key_t = _KEY_T;
+	using value_t = typename key_t::value_type;
+	static inline constexpr key_t default_encrypt_key = {
+		#define KEY_PRIME(value) type_t((value ## ull) & type_t(-1)),
+		#include SBPRIVATE_KEY_FILE
+	};
+	static inline constexpr key_t default_decrypt_key = {
+		#define KEY_PRIME(value) sbLibX::modular_inverse(type_t((value ## ull) & type_t(-1))),
+		#include SBPRIVATE_KEY_FILE
+	};
+	static inline constexpr value_t public_encrypt_key( size_t seed = 0 ) noexcept {
+		return default_encrypt_key[(seed + 0) % result.size()] * default_encrypt_key[(seed + 1) % result.size()] * default_decrypt_key[(seed + result.size() - 1) % result.size()];
+	}
+	static inline constexpr value_t public_decrypt_key( size_t seed = 0 ) noexcept {
+		return default_decrypt_key[( seed + 0 ) % result.size()] * default_encrypt_key[( seed + 1 ) % result.size()] * default_encrypt_key[( seed + result.size() - 1 ) % result.size()];
+	}
+
+	key_t encrypt_key = public_encrypt_key();
+	key_t decrypt_key = public_decrypt_key();
+}
+
+
+//	template< typename _TYPE_T = uint64_t, size_t _KEY_LENGTH_ = 8 >
+//struct encrypted_key_traits
+//{
+//	static_assert( std::is_unsigned_v<type_t> );
+//	#ifndef SBPRIVATE_KEY_FILE
+//		#define SBPRIVATE_KEY_FILE "test/include/private_generated_512.key"
+//	#endif
+//	static inline constexpr key_t private_key = {
+//		#define KEY_PRIME(value) type_t((value ## ull) & type_t(-1)), sbLibX::modular_inverse(type_t((value ## ull) & type_t(-1))),
+//		#include SBPRIVATE_KEY_FILE
+//	};
+//	static_assert( private_key[0] * private_key[1] == 1ull
+//	            && private_key[2] * private_key[3] == 1ull
+//	            && private_key[4] * private_key[5] == 1ull
+//	            && private_key[6] * private_key[7] == 1ull, "Keys must be paired" );
+//	static_assert( private_key[0] * private_key[0] != 1ull
+//	            && private_key[2] * private_key[2] != 1ull
+//	            && private_key[4] * private_key[4] != 1ull
+//	            && private_key[6] * private_key[6] != 1ull, "Keys must not be trivial" );
+//};
+
+	template< typename _CHAR_T, size_t _LENGTH_, typename _KEY_T >
+struct encrypted_data_traits
+{
+	using char_t = _CHAR_T;
+	using uchar_t = std::make_unsigned_t<char_t>;
+	using decrypted_t = std::array<char_t, _LENGTH_>;
+
+	using key_t = _KEY_T;
+	using value_t = typename key_t::value_type;
+	static_assert( sizeof( value_t ) >= sizeof( char_t ) );
+	static inline constexpr size_t packed_size = sizeof( value_t ) / sizeof( char_t );
+	static inline constexpr size_t encrypted_size = sbLibX::div_align_up( _LENGTH_, packed_size );
+	using encrypted_t = std::array< value_t, encrypted_size >;
+
+	static inline constexpr size_t size( [[maybe_unused]] const data_t& data ) noexcept { return encrypted_size; }
+	static inline constexpr size_t size( [[maybe_unused]] const decrypted_t& data ) noexcept { return _LENGTH_; }
+
+	static inline constexpr void resize_encrypted_data( [[maybe_unused]] data_t& data, [[maybe_unused]] size_t length ) {}
+	static inline constexpr void resize_decrypted_data( [[maybe_unused]] decrypted_t& data, [[maybe_unused]] size_t encrypted_size ) {}
+};
+	template< typename _CHAR_T, typename _KEY_T >
+struct encrypted_data_traits< _CHAR_T, 0, _KEY_T >
+{
+	using char_t = _CHAR_T;
+	using uchar_t = std::make_unsigned_t<char_t>;
+	using decrypted_t = std::vector<char_t>;
+
+	using key_t = _KEY_T;
+	using value_t = typename key_t::value_type;
+	static_assert( sizeof( value_t ) >= sizeof( char_t ) );
+	static inline constexpr size_t packed_size = sizeof( value_t ) / sizeof( char_t );
+	using encrypted_t = std::vector< value_t >;
+
+	static inline constexpr size_t size( const data_t& data ) noexcept { return data.size(); }
+	static inline constexpr size_t size( const decrypted_t& data ) noexcept { return data.size(); }
+
+	static inline constexpr void resize_encrypted_data( [[maybe_unused]] data_t& data, [[maybe_unused]] size_t length )
+	{
+		data.resize( sbLibX::div_align_up( length, packed_size ) );
+	}
+	static inline constexpr void resize_decrypted_data( [[maybe_unused]] decrypted_t& data, [[maybe_unused]] size_t encrypted_size )
+	{
+		data.resize( packed_size * encrypted_size );
+	}
+};
+
+	template< typename _CHAR_T, size_t _LENGTH_ = 0 >
+struct encrypted_data
+{
+	using key_t = encrypt_key_t<>;
+	using traits_t = encrypted_data_traits< _CHAR_T, _LENGTH_, key_t >;
+	using char_t = typename traits_t::char_t;
+	using uchar_t = typename traits_t::uchar_t;
+	using decrypted_t = typename traits_t::decrypted_t;
+	using type_t = key_t::type_t;
+	using data_t = typename traits_t::data_t;
+
+	static inline constexpr key_t private_key = traits_t::private_key;
+	static inline constexpr type_t private_encrypt_key = private_key.value[(_LENGTH_ + 0 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 7 ) % key_t::split_count];
+	static inline constexpr type_t private_decrypt_key = private_key.value[(_LENGTH_ + 4 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 5 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 3 ) % key_t::split_count];
+	static_assert( private_encrypt_key * private_decrypt_key == 1 );
+
+	static inline constexpr type_t public_encrypt_key = private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[2] * private_key.value[(_LENGTH_ + 4 ) % key_t::split_count];
+	static inline constexpr type_t public_decrypt_key = private_key.value[(_LENGTH_ + 5 ) % key_t::split_count] * private_key.value[6] * private_key.value[(_LENGTH_ + 0 ) % key_t::split_count];
+	static_assert( public_encrypt_key * public_decrypt_key == 1 );
+
+
+	static inline constexpr size_t packed_size = traits_t::packed_size;
+	static inline constexpr size_t size( const decrypted_t& data ) noexcept { return traits_t::size( data ); }
+	static inline constexpr size_t size( const data_t& data ) noexcept { return traits_t::size( data ); }
+	type_t public_key;
+	data_t data{};
+
+	static inline constexpr void resize_encrypted_data( [[maybe_unused]] data_t& data, [[maybe_unused]] size_t length )
+	{
+		traits_t::resize_encrypted_data( data, length );
+	}
+	static inline constexpr void resize_decrypted_data( [[maybe_unused]] decrypted_t& data, [[maybe_unused]] size_t length )
+	{
+		traits_t::resize_decrypted_data( data, length );
+	}
+
+	constexpr encrypted_data( data_t&& _data, type_t _public_key ) noexcept : data( std::move( _data ) ), public_key( _public_key ) {}
+
+	constexpr auto begin() const { return data.begin(); }
+	constexpr auto end() const { return data.end(); }
+
+	constexpr type_t operator []( size_t index ) const { return data[index]; }
+};
+
+}
+
+#if 0 // deprecated : a new version should supercede this implementation
 ////
 	template <typename _CHAR_TYPE_, typename _HASH_TRAITS_, size_t _LENGTH_>
 struct encrypted_string_base
@@ -90,7 +233,7 @@ static inline constexpr auto encrypted_string_unsecured( const char_t* unencrypt
 	template<typename char_t, size_t _LENGTH_>
 static inline constexpr auto encrypted_string_unsecured( const char_t( &unencrypted )[_LENGTH_] )
 {
-	return encrypted_string_unsecured<sbLibX::xhash_traits_t, char_t, align_up(_LENGTH_, /*sbLibX::xhash_traits_t::max_data_size*/32u)>( unencrypted, std::make_index_sequence<_LENGTH_>{} );
+	return encrypted_string_unsecured<sbLibX::xhash_traits_t, char_t, align_up(_LENGTH_, /*sbLibX::xhash_traits_t::max_data_size*/32)>( unencrypted, std::make_index_sequence<_LENGTH_>{} );
 }
 
 //	template<typename char_t, typename _HASH_TRAITS_, size_t _LENGTH_>
@@ -287,10 +430,7 @@ private:
 //	return os << encripted_string_view;
 //}
 #endif
-#endif
 
-// encrypted string view 
-#if 1
 ////
 	template<typename _HASH_TRAITS_>
 struct xhash_string_view
@@ -383,7 +523,6 @@ constexpr xhash_string_view_t operator "" _xhash64([[maybe_unused]] xhash_traits
 	return xhash_string_view_t{ typename xhash_string_view_t::value_t(string, length) };
 }
 #endif
-
 }} // namespace SB::LibX
 namespace sbLibX = SB::LibX;
-#endif
+

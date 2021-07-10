@@ -1,29 +1,31 @@
 #pragma once
 
+#if defined(_MSC_VER) && defined( _M_X64 )
+#define SB_TARGET_X64_MSC 1
 ///////////////////////////////////////////////////////////////////////////////
 //
-//SBCOMPILE_MESSAGE( " " )
-//SBCOMPILE_MESSAGE( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
+//SBCOMPILE_INFO( " " )
+//SBCOMPILE_INFO( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(UNICODE) && !defined(_NATIVE_WCHAR_T_DEFINED)
-	SBCOMPILE_MESSAGE(" ********************************")
-	SBCOMPILE_MESSAGE(" * SB WARNING:                  *")
-	SBCOMPILE_MESSAGE(" * Type wchar_t is not defined. *")
-	SBCOMPILE_MESSAGE(" * Using __int16 instead        *")
-	SBCOMPILE_MESSAGE(" ********************************")
-	typedef __int16 wchar_t;
+	SBCOMPILE_INFO(" ********************************")
+	SBCOMPILE_INFO(" * SB WARNING:                  *")
+	SBCOMPILE_INFO(" * Type wchar_t is not defined. *")
+	SBCOMPILE_INFO(" * Using char16_t instead       *")
+	SBCOMPILE_INFO(" ********************************")
+	typedef char16_t wchar_t;
 #endif
 
 #if defined( _WINDLL )
 #define SB_TARGET_TYPE_BASE	SB_TARGET_TYPE_DYNAMIC
-SBCOMPILE_MESSAGE(" * Building dll *")
+SBCOMPILE_INFO(" * Building dll *")
 #else
 #define SB_TARGET_TYPE_BASE	SB_TARGET_TYPE_STATIC
-SBCOMPILE_MESSAGE(" * Building static binaries *")
+SBCOMPILE_INFO(" * Building static binaries *")
 #endif
 #if defined( SBSTANDALONE )
 #define SB_TARGET_TYPE	( SB_TARGET_TYPE_STANDALONE | SB_TARGET_TYPE_BASE )
-SBCOMPILE_MESSAGE( " * Using standalone binaries *" )
+SBCOMPILE_INFO( " * Using standalone binaries *" )
 #else
 #define SB_TARGET_TYPE	( SB_TARGET_TYPE_BASE )
 #endif
@@ -46,18 +48,18 @@ SBCOMPILE_MESSAGE( " * Using standalone binaries *" )
 	#endif
 
 
-//SBCOMPILE_MESSAGE( "  " SBLIB_VISUALCSPECIFIC_H )
-//SBCOMPILE_MESSAGE( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
-SBCOMPILE_MESSAGE( "| " )
-SBCOMPILE_MESSAGE( "| *** Microsoft compiler version " CSTR(_MSC_VER) )
-SBCOMPILE_MESSAGE( "| *** " CSTR(_INTEGRAL_MAX_BITS) "-bits architecture support" )
-SBCOMPILE_MESSAGE( "| *** C++ std version: " CSTR(_MSVC_LANG) )
-SBCOMPILE_MESSAGE( "| " )
+//SBCOMPILE_INFO( "  " SBLIB_VISUALCSPECIFIC_H )
+//SBCOMPILE_INFO( " --- SBLib © " __DATE__ " (" __TIME__ ") ---" )
+SBCOMPILE_INFO( "| " )
+SBCOMPILE_INFO( "| *** Microsoft compiler version " CSTR(_MSC_VER) )
+SBCOMPILE_INFO( "| *** " CSTR(_INTEGRAL_MAX_BITS) "-bits architecture support" )
+SBCOMPILE_INFO( "| *** C++ std version: " CSTR(_MSVC_LANG) )
+SBCOMPILE_INFO( "| " )
 
 ///////////////////////////////////////////////////////////////////////////////
 // dynamic/run-time C++ support
 #ifdef _CPPUNWIND
-	SBCOMPILE_MESSAGE( "| \x7 Exception support enabled." )
+	SBCOMPILE_INFO( "| \x7 Exception support enabled." )
 	#define SBEXCEPTIONS
 
 	#if defined(_HAS_EXCEPTIONS)
@@ -68,25 +70,15 @@ SBCOMPILE_MESSAGE( "| " )
 	#if defined(_SECURE_SCL_THROWS)
 		#undef _SECURE_SCL_THROWS
 	#endif
-	#if (_MSC_VER == 1500)
-		// Visual Studio 2008 bug (only fixed in VC 2010)
-		// This is a quick-fix for MS not releasing a hotfix.
-		void _Xran()
-		{	// report an out_of_range error
-			throw("invalid checked_array_iterator<T> subscript");
-		}
-	#endif
-	#if (_MSC_VER <= 1500)
-		// _SECURE_SCL_THROWS is deprecated in VS2010
-		#define _SECURE_SCL_THROWS 1
-	#endif
 
+	#if defined(SB_SECURE_VALIDATION)
 	#if defined(_SECURE_SCL)
 		#undef _SECURE_SCL
 	#endif
 	#define _SECURE_SCL        1
 	#if !defined(_SCL_SECURE_NO_WARNINGS)
 		#define _SCL_SECURE_NO_WARNINGS
+	#endif
 	#endif
 #else // !_CPPUNWIND
 	#if defined(_HAS_EXCEPTIONS)
@@ -105,7 +97,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#define _SECURE_SCL        0
 #endif
 #ifdef _CPPRTTI
-	SBCOMPILE_MESSAGE( "| \x7 Run-time type information (RTTI) enabled." )
+	SBCOMPILE_INFO( "| \x7 Run-time type information (RTTI) enabled." )
 	#define SBRUNTIME
 #endif
 
@@ -113,7 +105,7 @@ SBCOMPILE_MESSAGE( "| " )
 ///////////////////////////////////////////////////////////////////////////////
 //	Debug / Release compilation
 #ifdef _DEBUG
-	SBCOMPILE_MESSAGE( "| \x7 Compiling DEBUG code." )
+	SBCOMPILE_INFO( "| \x7 Compiling DEBUG code." )
 	#ifdef SBRELEASE
 		#error "Release and Debug mode are incompatible. Please select only one..."
 	#endif
@@ -122,7 +114,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#endif
 #endif
 #ifdef _NDEBUG
-	SBCOMPILE_MESSAGE( "| \x7 Compiling RELEASE code." )
+	SBCOMPILE_INFO( "| \x7 Compiling RELEASE code." )
 	#ifdef SBDEBUG
 		#error "Release and Debug mode are incompatible. Please select only one..."
 	#endif
@@ -134,32 +126,32 @@ SBCOMPILE_MESSAGE( "| " )
 ///////////////////////////////////////////////////////////////////////////////
 // Multithreading support
 #ifdef _MT
-	SBCOMPILE_MESSAGE( "| \x7 Multithreaded CRT support." )
+	SBCOMPILE_INFO( "| \x7 Multithreaded CRT support." )
 	#define SBMULTITHREADEDCRT
 #endif
 #ifdef _OPENMP
-	SBCOMPILE_MESSAGE( "| \x7 OpenMP extended pragma support." )
+	SBCOMPILE_INFO( "| \x7 OpenMP extended pragma support." )
 	#define SBOPENMP
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Runtime library
 #if defined(_DLL)
-	SBCOMPILE_MESSAGE( "| \x7 Dynamic (.dll) runtime library." )
+	SBCOMPILE_INFO( "| \x7 Dynamic (.dll) runtime library." )
 	#define SBDLLRUNTIME
 #else
-	SBCOMPILE_MESSAGE( "| \x7 Static runtime library." )
+	SBCOMPILE_INFO( "| \x7 Static runtime library." )
 	#define SBSTATICRUNTIME
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // MS Windows-specific
 #ifdef _WIN32
-	SBCOMPILE_MESSAGE( "| \x7 May use Win32-specific definitions." )
+	SBCOMPILE_INFO( "| \x7 May use Win32-specific definitions." )
 	#define SBLIB32
 #endif
 #ifdef _WIN64
-	SBCOMPILE_MESSAGE( "| \x7 May use Win64-specific definitions." )
+	SBCOMPILE_INFO( "| \x7 May use Win64-specific definitions." )
 	#define SBLIB64
 #endif
 
@@ -178,7 +170,7 @@ SBCOMPILE_MESSAGE( "| " )
 #endif
 
 #if !defined(_NATIVE_WCHAR_T_DEFINED)
-	SBCOMPILE_MESSAGE("| \x7 wchar_t emulated")
+	SBCOMPILE_INFO("| \x7 wchar_t emulated")
 #endif
 #ifdef _ATL_VER
 	#error "Not tested with ATL"
@@ -190,7 +182,7 @@ SBCOMPILE_MESSAGE( "| " )
 	#error "Not tested with MFC"
 #endif
 #ifdef _MSC_EXTENSIONS
-	SBCOMPILE_MESSAGE("| \x7 Using MSC extensions")
+	SBCOMPILE_INFO("| \x7 Using MSC extensions")
 #endif
 /*
 	List of unstandard definition that may be defined by MS Visual C++ compiler
@@ -208,13 +200,13 @@ _VC_NODEFAULTLIB
 _Wp64
 */
 #ifdef _DLL
-	SBCOMPILE_MESSAGE("| \x7 Building DLL")
+	SBCOMPILE_INFO("| \x7 Building DLL")
 #endif
 #ifdef __MSVC_RUNTIME_CHECKS
-	SBCOMPILE_MESSAGE("| \x7 Using runtime checks")
+	SBCOMPILE_INFO("| \x7 Using runtime checks")
 #endif
 #ifdef _CPPLIB_VER
-	SBCOMPILE_MESSAGE("| \x7 C++ lib compiler version: " CSTR(_CPPLIB_VER) )
+	SBCOMPILE_INFO("| \x7 C++ lib compiler version: " CSTR(_CPPLIB_VER) )
 #endif
 
 namespace SB { namespace LibX {
@@ -224,3 +216,4 @@ namespace SB { namespace LibX {
 }} // namespace SBLib
 
 ///////////////////////////////////////////////////////////////////////////////
+#endif
