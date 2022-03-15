@@ -111,7 +111,12 @@ auto FilterInstanceExtensions( sbVulkan::InstanceConfiguration& config, const vu
 			ALLOWED_EXTENSION( VK_EXT_debug_report, requiresDebugReport );
 			ALLOWED_EXTENSION( VK_EXT_debug_utils, requiresDebugUtils );
 			ALLOWED_EXTENSION( VK_EXT_validation_features, requiresValidationFeature );
-			default: __debugbreak();
+
+			default:
+			{
+				std::cout << "Unrecognized extension: " << extension_property.extensionName << "\n";
+				//__debugbreak();
+			}
 		}
 	}
 	#undef ALLOWED_EXTENSION

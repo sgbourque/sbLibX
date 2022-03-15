@@ -75,7 +75,11 @@ SBCOMPILE_INFO( "| " )
 	#if defined(_SECURE_SCL)
 		#undef _SECURE_SCL
 	#endif
-	#define _SECURE_SCL        1
+	#if defined(SBDEBUG)
+		#define _SECURE_SCL        1
+	#else
+		#define _SECURE_SCL        0
+	#endif
 	#if !defined(_SCL_SECURE_NO_WARNINGS)
 		#define _SCL_SECURE_NO_WARNINGS
 	#endif
