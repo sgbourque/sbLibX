@@ -11,5 +11,5 @@ SB_ASIO_ERROR(NoMemory, -1000 + 6, "not enough memory for completing the request
 
 #undef SB_ASIO_ERROR
 #else
-#error "SB_ASIO_ERROR(enumName, value, desc) is not defined""
+#error "SB_ASIO_ERROR(enumName, value, desc) is not defined"
 #endif

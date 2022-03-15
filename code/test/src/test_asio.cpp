@@ -5,6 +5,8 @@
 #include <functional>
 #include <iostream>
 
+#include <cassert>
+
 
 #if 1
 namespace SB { namespace LibX { namespace ASIO
@@ -16,12 +18,6 @@ auto CreateDevices( adapter_array_t& adapters )
 	for( const auto& adapter : adapters )
 	{
 		auto device_desc = GetDeviceDesc( adapter );
-//		std::clog << device_info.name << " : " << std::endl;
-//		//auto device_extensions = enumerate<device_extension::properties_t>( adapter );
-//		//for( const auto& extension_properties : device_extensions )
-//		//{
-//		//	std::clog << "\t" << extension_properties.extensionName << std::endl;
-//		//}
 		devices.emplace_back( std::make_tuple( unique_device( adapter ), device_desc ) );
 	}
 	return devices;
@@ -31,63 +27,22 @@ struct DeviceInfo
 {
 	enum SampleRateIndex
 	{
-		SampleRateIndex__44_1_kHz,
-		SampleRateIndex__48_0_kHz,
-		SampleRateIndex__88_2_kHz,
-		SampleRateIndex__96_0_kHz,
-		SampleRateIndex_176_4_kHz,
-		SampleRateIndex_192_0_kHz,
-
+		#define SB_ASIO_SAMPLERATE( name, desc ) SampleRateIndex##name,
+		#include <common/include/internal/asio/interface_asio_samplerate.hpp>
 		SampleRateCount,
 	};
 	enum class SampleRateFlags : uint32_t
 	{
-		SampleRate_invalid   = 0,
-		SampleRate__44_1_kHz = ( 1 << SampleRateIndex__44_1_kHz ),
-		SampleRate__48_1_kHz = ( 1 << SampleRateIndex__48_0_kHz ),
-		SampleRate__88_2_kHz = ( 1 << SampleRateIndex__88_2_kHz ),
-		SampleRate__96_0_kHz = ( 1 << SampleRateIndex__96_0_kHz ),
-		SampleRate_176_4_kHz = ( 1 << SampleRateIndex_176_4_kHz ),
-		SampleRate_192_9_kHz = ( 1 << SampleRateIndex_192_0_kHz ),
+		SampleRate_invalid = 0,
+		#define SB_ASIO_SAMPLERATE( name, desc ) SampleRate##name = ( 1 << SampleRateIndex##name ),
+		#include <common/include/internal/asio/interface_asio_samplerate.hpp>
 	};
-	static inline constexpr sbLibASIO::SampleRate sample_rate_value[] = 
+	static inline constexpr sbASIO::SampleRate sample_rate_value[] = 
 	{
-		 44100.0,
-		 48000.0,
-		 88200.0,
-		 96000.0,
-		176400.0,
-		192000.0,
+		#define SB_ASIO_SAMPLERATE( name, desc ) desc,
+		#include <common/include/internal/asio/interface_asio_samplerate.hpp>
 	};
 	static_assert( sizeof(sample_rate_value)/sizeof(*sample_rate_value) == SampleRateCount );
-	//#define SB_SAMPLETYPE_FLAG( sample_type, byte_count ) sample_type = ( 1ull << size_t(SampleType::sample_type) ),
-	//enum class SampleTypeFlags : size_t
-	//{
-	//	SB_SAMPLETYPE_FLAG( Int16_MSB  , 16 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int24_MSB  , 24 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_MSB  , 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Float32_MSB, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Float64_MSB, 64 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_MSB16, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_MSB18, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_MSB20, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_MSB24, 32 / CHAR_BIT )
-
-	//	SB_SAMPLETYPE_FLAG( Int16_LSB  , 16 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int24_LSB  , 24 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_LSB  , 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Float32_LSB, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Float64_LSB, 64 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_LSB16, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_LSB18, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_LSB20, 32 / CHAR_BIT )
-	//	SB_SAMPLETYPE_FLAG( Int32_LSB24, 32 / CHAR_BIT )
-
-	//	SB_SAMPLETYPE_FLAG( DSD_Int8_LSB1, 8 / CHAR_BIT )		// DSD 1 bit data, 8 samples per byte. First sample in Least significant bit.
-	//	SB_SAMPLETYPE_FLAG( DSD_Int8_MSB1, 8 / CHAR_BIT )		// DSD 1 bit data, 8 samples per byte. First sample in Most significant bit.
-	//	SB_SAMPLETYPE_FLAG( DSD_Int8_NER8, 8 / CHAR_BIT )		// DSD 8 bit data, 1 sample per byte. No Endianness required.
-	//};
-	//#undef SB_SAMPLETYPE_FLAG
 	SampleRate      default_sample_rate_Hz{};
 	SampleRateFlags sample_rate{};
 
@@ -97,10 +52,21 @@ struct DeviceInfo
 };
 sb_enum_class_flags( DeviceInfo::SampleRateFlags );
 
-}}} // sbLibASIO
+static inline constexpr size_t GetBufferBytesSize( SampleType type, size_t sampleCount )
+{
+	switch ( type )
+	{
+	#define SB_ASIO_SAMPLETYPE( name, index, type_name, bit_per_pack, bit_per_sample, sample_per_pack, endian, align_bits, container_type ) \
+		case SampleType::name: return div_align_up<size_t, size_t>( sampleCount, sample_per_pack ) * bit_per_pack / CHAR_BIT;
+	#include <common/include/internal/asio/interface_asio_sampletype.hpp>
+	default: assert(false); return 0;
+	}
+}
+
+}}} // sbASIO
 
 
-//std::vector<sbLibASIO::ChannelControls>
+//std::vector<sbASIO::ChannelControls>
 //struct ChannelInfo
 //{
 //	int32_t          channel;     	// on input, channel index
@@ -118,12 +84,13 @@ sb_enum_class_flags( DeviceInfo::SampleRateFlags );
 //};
 
 
-sbLibASIO::DeviceInfo getDeviceInfo( sbLibASIO::DeviceHandle device )
+sbASIO::DeviceInfo getDeviceInfo( sbASIO::DeviceHandle device )
 {
-	using namespace sbLibASIO;
+	using namespace sbASIO;
 	DeviceInfo deviceInfo{};
 	{
-		SampleRate sample_rates[] ={
+		using SampleRateFlags = DeviceInfo::SampleRateFlags;
+		constexpr SampleRate sample_rates[] ={
 			 44100.0, // SampleRate__44_1_kHz
 			 48000.0, // SampleRate__48_1_kHz
 			 88200.0, // SampleRate__88_2_kHz
@@ -131,8 +98,7 @@ sbLibASIO::DeviceInfo getDeviceInfo( sbLibASIO::DeviceHandle device )
 			176400.0, // SampleRate_176_4_kHz
 			192000.0, // SampleRate_192_9_kHz
 		};
-		using SampleRateFlags = DeviceInfo::SampleRateFlags;
-		static_assert( std::underlying_type_t<SampleRateFlags>(SampleRateFlags::SampleRate_192_9_kHz) == (1 << 5) );
+		static_assert( std::underlying_type_t<SampleRateFlags>( SampleRateFlags::SampleRate_192_0_kHz ) == (1 << 5) );
 		for( size_t index = 0; index < DeviceInfo::SampleRateCount; ++index )
 		{
 			if( succeeded( device->canSampleRate( sample_rates[index] ) ) )
@@ -149,11 +115,11 @@ sbLibASIO::DeviceInfo getDeviceInfo( sbLibASIO::DeviceHandle device )
 	return deviceInfo;
 }
 
-bool printInfo( sbLibASIO::DeviceHandle device, const sbLibASIO::DeviceDesc& deviceDesc )
+bool printInfo( sbASIO::DeviceHandle device, const sbASIO::DeviceDesc& deviceDesc )
 {
-	using namespace sbLibASIO;
+	using namespace sbASIO;
 	std::cout << "'" << deviceDesc.name << "':\n";
-	sbLibASIO::DeviceInfo deviceInfo = getDeviceInfo( device );
+	sbASIO::DeviceInfo deviceInfo = getDeviceInfo( device );
 
 	{
 		char driverName[32]{};
@@ -317,7 +283,7 @@ bool printInfo( sbLibASIO::DeviceHandle device, const sbLibASIO::DeviceDesc& dev
 		std::cout << "\tinput latency = " << input_latency_ms << "ms\n";
 		std::cout << "\tbuffer latency = " << buffer_latency_ms << "ms\n";
 		std::cout << "\toutput latency = " << output_latency_ms << "ms\n";
-		std::cout << "\ttotal latency = " << total_latency_ms << "ms (~" << total_latency_ms * (340.0/1000.0) << "m at ~340m/s)\n";
+		std::cout << "\ttotal latency = " << total_latency_ms << "ms (~" << total_latency_ms * (340.0/1000.0) << "m at ~340m/s sound velocity)\n";
 		std::cout << "----\n";
 
 		const double low_latency_limit = 5.0;
@@ -329,9 +295,11 @@ bool printInfo( sbLibASIO::DeviceHandle device, const sbLibASIO::DeviceDesc& dev
 }
 
 
-//#if ( (SB_TARGET_TYPE & SB_TARGET_TYPE_STANDALONE) != 0 )
-//#define asio main
-//#endif
+#if 0//( (SB_TARGET_TYPE & SB_TARGET_TYPE_STANDALONE) != 0 )
+#define asio main
+#else
+#define asio test_asio
+#endif
 SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
 #if ( (SB_TARGET_TYPE & SB_TARGET_TYPE_STATIC) != 0 )
@@ -339,75 +307,72 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 	sb_scope_exit( []() { CoUninitialize(); } );
 #endif
 
-	using namespace sbLibASIO;
+	using namespace sbASIO;
 
-	auto adapterArray = EnumerateAdapters();
+	InstanceHandle instanceHandle = CreateInstance();
+	auto adapterArray = EnumerateAdapters( instanceHandle );
 	auto deviceArray = CreateDevices( adapterArray );
 	for( auto& device : deviceArray )
 	{
-		// stupid lazy hack coz I dont want to pump win32 messages yet so just pop control panels of "real" low latency devices...
-		bool is_low_latency = false;
 		auto deviceDesc = std::get<DeviceDesc>( device );
-		//auto handle = std::get<unique_device>( device ); // should not compile (Constructor for struct 'SB::LibX::ASIO::unique_device' is declared 'explicit')
-		const auto& handle = std::get<unique_device>( device ); // valid
-		//DeviceHandle handle = std::get<unique_device>( device ); // valid
-		if( handle )
+		DeviceHandle deviceHandle = std::get<unique_device>( device );
+		if( deviceHandle )
 		{
-			is_low_latency = printInfo( handle, deviceDesc );
-			//std::unique_ptr<AsioCallbacks*> callbacks = GenerateASIOBuffers( device, inputChannelCount, outputChannelCount, preferredSize );
-	//		//if( preferredSize > 0 )
-	//		//{
-	//		//	auto& buffers = ( *callbacks )->data();
-	//		//	info.reserve( inputChannelCount + outputChannelCount );
-	//		//
-	//		//	for( int32_t channel = 0; channel < inputChannelCount; ++channel )
-	//		//	{
-	//		//		info.emplace_back( sbLibASIO::BufferInfo{
-	//		//			/*StreamDirection*/  sbLibASIO::StreamDirection::Input,
-	//		//			/*int32_t        */  channel,
-	//		//			/*void*          */ { buffers[0][channel].data(), buffers[1][channel].data() },
-	//		//			} );
-	//		//	}
-	//		//	for( int32_t channel = 0; channel < outputChannelCount; ++channel )
-	//		//	{
-	//		//		info.emplace_back( sbLibASIO::BufferInfo{
-	//		//			/*StreamDirection*/  sbLibASIO::StreamDirection::Output,
-	//		//			/*int32_t        */  channel,
-	//		//			/*void*          */ { buffers[0][channel].data(), buffers[1][inputChannelCount + channel].data() },
-	//		//			} );
-	//		//	}
-	//		//}
-	//		//
-	//		//__debugbreak(); // d'oh ! should use buffers from the ASIO driver before the explicit buffers for private use!
-	//		//result = device->createBuffers( info.data(), inputChannelCount + outputChannelCount, preferredSize, *callbacks );
-	//		//if( !succeeded( result ) )
-	//		//{
-	//		//	device.Release();
-	//		//	std::cerr << "error: '" << deviceDesc.name << "' failed to create buffers: " << sbLibASIO::to_cstring( result ) << std::endl;
-	//		//	continue;
-	//		//}
-	//		//
-	//		//std::cout << "ASIO driver '" << deviceDesc.name << "' is available." << std::endl;
-	//		//result = device->start();
-	//		//if( !succeeded( result ) )
-	//		//{
-	//		//	device.Release();
-	//		//	std::cerr << "error: '" << deviceDesc.name << "' failed to start: "<< sbLibASIO::to_cstring( result ) << std::endl;
-	//		//	continue;
-	//		//}
-	//		//
+			printInfo( deviceHandle, deviceDesc );
+	//		//std::unique_ptr<AsioCallbacks*> callbacks = GenerateASIOBuffers( device, inputChannelCount, outputChannelCount, preferredSize );
+	////		//if( preferredSize > 0 )
+	////		//{
+	////		//	auto& buffers = ( *callbacks )->data();
+	////		//	info.reserve( inputChannelCount + outputChannelCount );
+	////		//
+	////		//	for( int32_t channel = 0; channel < inputChannelCount; ++channel )
+	////		//	{
+	////		//		info.emplace_back( sbASIO::BufferInfo{
+	////		//			/*StreamDirection*/  sbASIO::StreamDirection::Input,
+	////		//			/*int32_t        */  channel,
+	////		//			/*void*          */ { buffers[0][channel].data(), buffers[1][channel].data() },
+	////		//			} );
+	////		//	}
+	////		//	for( int32_t channel = 0; channel < outputChannelCount; ++channel )
+	////		//	{
+	////		//		info.emplace_back( sbASIO::BufferInfo{
+	////		//			/*StreamDirection*/  sbASIO::StreamDirection::Output,
+	////		//			/*int32_t        */  channel,
+	////		//			/*void*          */ { buffers[0][channel].data(), buffers[1][inputChannelCount + channel].data() },
+	////		//			} );
+	////		//	}
+	////		//}
+	////		//
+	////		//__debugbreak(); // d'oh ! should use buffers from the ASIO driver before the explicit buffers for private use!
+	////		//result = device->createBuffers( info.data(), inputChannelCount + outputChannelCount, preferredSize, *callbacks );
+	////		//if( !succeeded( result ) )
+	////		//{
+	////		//	device.Release();
+	////		//	std::cerr << "error: '" << deviceDesc.name << "' failed to create buffers: " << sbASIO::to_cstring( result ) << std::endl;
+	////		//	continue;
+	////		//}
+	////		//
+	////		//std::cout << "ASIO driver '" << deviceDesc.name << "' is available." << std::endl;
+	////		//result = device->start();
+	////		//if( !succeeded( result ) )
+	////		//{
+	////		//	device.Release();
+	////		//	std::cerr << "error: '" << deviceDesc.name << "' failed to start: "<< sbASIO::to_cstring( result ) << std::endl;
+	////		//	continue;
+	////		//}
+	////		//
 		}
 		else
 		{
 			std::cout << "Could not initialize '" << deviceDesc.name
-				<< "': " << sbLibASIO::to_cstring( sbLibASIO::ErrorType::NotPresent ) << std::endl;
+				<< "': " << sbASIO::to_cstring( sbASIO::ErrorType::NotPresent ) << std::endl;
 		}
-		if( handle && is_low_latency )
-			handle->controlPanel();
+	//	//if( handle && is_low_latency )
+	//	//	handle->controlPanel();
 	}
 
-	std::cout << "press 'Enter' to continue\n";
-	std::cin.get();
+	//std::cout << "press 'Enter' to continue\n";
+	//std::cin.get();
 
 	for( auto& device : deviceArray )
 	{
@@ -420,7 +385,7 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 		}
 	}
 
-	deviceArray.clear();
+	//deviceArray.clear(); // optionnal
 	return 0;
 }
 
@@ -436,7 +401,7 @@ struct cpu_buffers_accessor
 //	virtual size_t in_size() const = 0;
 //	virtual size_t out_size() const = 0;
 };
-//struct AsioCallbacks : sbLibASIO::Callbacks, cpu_buffers_accessor
+//struct AsioCallbacks : sbASIO::Callbacks, cpu_buffers_accessor
 #include <span>
 
 #error "fuck... need ChannelInfo to actually get SampleType and deduce sample size...""
@@ -444,8 +409,8 @@ struct cpu_buffers_accessor
 struct AsioCpuBuffers
 {
 	static inline constexpr size_t buffer_count = 2;
-	using callback_t = sbLibASIO::Callbacks;
-	using desc_t = std::vector<sbLibASIO::BufferInfo>;
+	using callback_t = sbASIO::Callbacks;
+	using desc_t = std::vector<sbASIO::BufferInfo>;
 	// TODO:
 	//		- split for gpu upload via copy-queue and gpu readback buffers
 	//		- add fence information for gpu buffer synchronisation
@@ -465,16 +430,16 @@ struct AsioCpuBuffers
 		buffer_desc.reserve( channel_count );
 		for( int32_t channel = 0; channel < output_count; ++channel )
 		{
-			buffer_desc.emplace_back( sbLibASIO::BufferInfo{
-				/*StreamDirection*/  sbLibASIO::StreamDirection::Output,
+			buffer_desc.emplace_back( sbASIO::BufferInfo{
+				/*StreamDirection*/  sbASIO::StreamDirection::Output,
 				/*int32_t        */  channel,
 				/*void*          */  {},
 				} );
 		}
 		for( int32_t channel = 0; channel < input_count; ++channel )
 		{
-			buffer_desc.emplace_back( sbLibASIO::BufferInfo{
-				/*StreamDirection*/  sbLibASIO::StreamDirection::Input,
+			buffer_desc.emplace_back( sbASIO::BufferInfo{
+				/*StreamDirection*/  sbASIO::StreamDirection::Input,
 				/*int32_t        */  channel,
 				/*void*          */  {},
 				} );
@@ -484,26 +449,26 @@ struct AsioCpuBuffers
 		scratch_buffer[1].resize( channel_count * buffer_size * buffer_count );
 	}
 
-	std::span<data_t> get_data( int32_t channel, sbLibASIO::StreamDirection direction, int32_t buffer_index )
+	std::span<data_t> get_data( int32_t channel, sbASIO::StreamDirection direction, int32_t buffer_index )
 	{
 		const size_t channel_count = ( input_count + output_count );
-		const size_t channel_offset = buffer_index * channel_count + ( direction == sbLibASIO::StreamDirection::Input ? output_count : 0 ) + channel;
+		const size_t channel_offset = buffer_index * channel_count + ( direction == sbASIO::StreamDirection::Input ? output_count : 0 ) + channel;
 
 		std::span<data_t> channel_data{};
-		const size_t channel_strip_size = ( direction == sbLibASIO::StreamDirection::Input ? input_count : output_count );
+		const size_t channel_strip_size = ( direction == sbASIO::StreamDirection::Input ? input_count : output_count );
 		if( channel < channel_strip_size )
 		{
 			channel_data = std::span<data_t>{ scratch_buffer[buffer_index].data() + channel_offset * buffer_size, buffer_size };
 		}
 		return channel_data;
 	}
-	std::span<data_t> get_asio_buffer( int32_t channel, sbLibASIO::StreamDirection direction, int32_t buffer_index )
+	std::span<data_t> get_asio_buffer( int32_t channel, sbASIO::StreamDirection direction, int32_t buffer_index )
 	{
 		const size_t channel_count = ( input_count + output_count );
-		const size_t channel_offset = buffer_index * channel_count + ( direction == sbLibASIO::StreamDirection::Input ? output_count : 0 ) + channel;
+		const size_t channel_offset = buffer_index * channel_count + ( direction == sbASIO::StreamDirection::Input ? output_count : 0 ) + channel;
 
 		std::span<data_t> asio_data{};
-		const size_t channel_strip_size = ( direction == sbLibASIO::StreamDirection::Input ? input_count : output_count );
+		const size_t channel_strip_size = ( direction == sbASIO::StreamDirection::Input ? input_count : output_count );
 		if( channel < channel_strip_size )
 		{
 			asio_data = std::span<data_t>{ scratch_buffer[buffer_index].data() + channel_offset * buffer_size, buffer_size };
@@ -534,11 +499,11 @@ struct cpu_buffers_accessor
 	virtual size_t out_size() const = 0;
 };
 
-struct AsioCallbacks : sbLibASIO::Callbacks, cpu_buffers_accessor
+struct AsioCallbacks : sbASIO::Callbacks, cpu_buffers_accessor
 {
 		template< typename... Types >
 	AsioCallbacks( Types... types )
-		: sbLibASIO::Callbacks{ std::forward<Types>( types )... }
+		: sbASIO::Callbacks{ std::forward<Types>( types )... }
 	{
 	}
 };
@@ -546,7 +511,7 @@ struct AsioCallbacks : sbLibASIO::Callbacks, cpu_buffers_accessor
 	template<size_t instance_index>
 struct AsioCallbacks_impl : AsioCallbacks
 {
-	AsioCallbacks_impl( sbLibASIO::Device* _device, size_t _in_buffer_count, size_t _out_buffer_count, size_t buffer_size )
+	AsioCallbacks_impl( sbASIO::Device* _device, size_t _in_buffer_count, size_t _out_buffer_count, size_t buffer_size )
 		: AsioCallbacks{
 			  bufferSwitch_impl
 			, sampleRateDidChange_impl
@@ -574,10 +539,10 @@ struct AsioCallbacks_impl : AsioCallbacks
 	virtual size_t in_size() const { return in_buffer_count; }
 	virtual size_t out_size() const { return out_buffer_count; }
 
-	using Bool = sbLibASIO::Bool;
-	using SampleRate = sbLibASIO::SampleRate;
-	using MessageSelector = sbLibASIO::MessageSelector;
-	using Time = sbLibASIO::Time;
+	using Bool = sbASIO::Bool;
+	using SampleRate = sbASIO::SampleRate;
+	using MessageSelector = sbASIO::MessageSelector;
+	using Time = sbASIO::Time;
 
 	static void bufferSwitch_impl( [[maybe_unused]] int32_t doubleBufferIndex, [[maybe_unused]] Bool directProcess )
 	{
@@ -614,13 +579,13 @@ struct AsioCallbacks_impl : AsioCallbacks
 		return params;
 	};
 
-	static sbLibASIO::Device* device;
+	static sbASIO::Device* device;
 	static size_t in_buffer_count;
 	static size_t out_buffer_count;
 	static data_t data_impl;
 };
 	template<size_t instance_index>
-sbLibASIO::Device* AsioCallbacks_impl<instance_index>::device{};
+sbASIO::Device* AsioCallbacks_impl<instance_index>::device{};
 	template<size_t instance_index>
 size_t AsioCallbacks_impl<instance_index>::in_buffer_count{};
 	template<size_t instance_index>
@@ -629,7 +594,7 @@ size_t AsioCallbacks_impl<instance_index>::out_buffer_count{};
 typename AsioCallbacks_impl<instance_index>::data_t AsioCallbacks_impl<instance_index>::data_impl{};
 
 static size_t current_asio_count = 0;
-std::unique_ptr<AsioCallbacks*> GenerateASIOBuffers( sbLibASIO::Device* device, size_t in_buffer_count, size_t out_buffer_count, size_t buffer_size )
+std::unique_ptr<AsioCallbacks*> GenerateASIOBuffers( sbASIO::Device* device, size_t in_buffer_count, size_t out_buffer_count, size_t buffer_size )
 {
 	#define ASIO_BUFFER( n ) case n: return std::make_unique<AsioCallbacks*>( new AsioCallbacks_impl<n>( device, in_buffer_count, out_buffer_count, buffer_size ) )
 	switch( current_asio_count++ )
@@ -654,21 +619,21 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 	sb_scope_exit( []() { CoUninitialize(); } );
 #endif
 	
-	sbLibASIO::adapter_array_t adapterArray{};
+	sbASIO::adapter_array_t adapterArray{};
 	{
 		// make sure adapterArray is alright passed instanceHandle being released
-		auto instanceHandle = sbLibASIO::CreateInstance();
+		auto instanceHandle = sbASIO::CreateInstance();
 		adapterArray = EnumerateAdapters( instanceHandle );
 	}
-	std::vector<sbLibASIO_device> deviceArray;
+	std::vector<sbASIO_device> deviceArray;
 	deviceArray.reserve( adapterArray.size() );
 	for( auto adapter : adapterArray )
 	{
-		sbLibASIO::DeviceDesc deviceDesc;
+		sbASIO::DeviceDesc deviceDesc;
 		adapter->GetDeviceDesc( &deviceDesc );
 		std::cout << "Testing '" << deviceDesc.name << "'\n";
 
-		sbLibASIO_device device( adapter );
+		sbASIO_device device( adapter );
 		if( device )
 		{
 			int32_t inputChannelCount{-1}, outputChannelCount{-1};
@@ -678,7 +643,7 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 			if( !succeeded( result ) )
 			{
 				device.Release();
-				std::cerr << "error: '" << deviceDesc.name << "': " << sbLibASIO::to_cstring( result ) << std::endl;
+				std::cerr << "error: '" << deviceDesc.name << "': " << sbASIO::to_cstring( result ) << std::endl;
 				continue;
 			}
 
@@ -689,17 +654,17 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 			if( !succeeded( result ) )
 			{
 				device.Release();
-				std::cerr << "error: '" << deviceDesc.name << "': " << sbLibASIO::to_cstring( result ) << std::endl;
+				std::cerr << "error: '" << deviceDesc.name << "': " << sbASIO::to_cstring( result ) << std::endl;
 				continue;
 			}
 
-			sbLibASIO::SampleRate sampleRate{};
+			sbASIO::SampleRate sampleRate{};
 			result = device->getSampleRate( &sampleRate );
 			std::cout << "sample rate: "<< sampleRate << "\n";
 			if( !succeeded( result ) )
 			{
 				device.Release();
-				std::cerr << "error: '" << deviceDesc.name << "': " << sbLibASIO::to_cstring( result ) << std::endl;
+				std::cerr << "error: '" << deviceDesc.name << "': " << sbASIO::to_cstring( result ) << std::endl;
 				continue;
 			}
 
@@ -712,16 +677,16 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 
 				for( int32_t channel = 0; channel < inputChannelCount; ++channel )
 				{
-					info.emplace_back( sbLibASIO::BufferInfo{
-						/*StreamDirection*/  sbLibASIO::StreamDirection::Input,
+					info.emplace_back( sbASIO::BufferInfo{
+						/*StreamDirection*/  sbASIO::StreamDirection::Input,
 						/*int32_t        */  channel,
 						/*void*          */ { buffers[0][channel].data(), buffers[1][channel].data() },
 					} );
 				}
 				for( int32_t channel = 0; channel < outputChannelCount; ++channel )
 				{
-					info.emplace_back( sbLibASIO::BufferInfo{
-						/*StreamDirection*/  sbLibASIO::StreamDirection::Output,
+					info.emplace_back( sbASIO::BufferInfo{
+						/*StreamDirection*/  sbASIO::StreamDirection::Output,
 						/*int32_t        */  channel,
 						/*void*          */ { buffers[0][channel].data(), buffers[1][inputChannelCount + channel].data() },
 					} );
@@ -733,7 +698,7 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 			if( !succeeded( result ) )
 			{
 				device.Release();
-				std::cerr << "error: '" << deviceDesc.name << "' failed to create buffers: " << sbLibASIO::to_cstring( result ) << std::endl;
+				std::cerr << "error: '" << deviceDesc.name << "' failed to create buffers: " << sbASIO::to_cstring( result ) << std::endl;
 				continue;
 			}
 
@@ -742,7 +707,7 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 			if( !succeeded( result ) )
 			{
 				device.Release();
-				std::cerr << "error: '" << deviceDesc.name << "' failed to start: "<< sbLibASIO::to_cstring( result ) << std::endl;
+				std::cerr << "error: '" << deviceDesc.name << "' failed to start: "<< sbASIO::to_cstring( result ) << std::endl;
 				continue;
 			}
 
@@ -769,7 +734,7 @@ SB_EXPORT_TYPE int SB_STDCALL asio( [[maybe_unused]] int argc, [[maybe_unused]] 
 		}
 		else
 		{
-			std::cout << "ASIO driver '" << deviceDesc.name << "': " << sbLibASIO::to_cstring( sbLibASIO::ErrorType::NotPresent ) << std::endl;
+			std::cout << "ASIO driver '" << deviceDesc.name << "': " << sbASIO::to_cstring( sbASIO::ErrorType::NotPresent ) << std::endl;
 		}
 		deviceArray.emplace_back( std::move( device ) );
 	}

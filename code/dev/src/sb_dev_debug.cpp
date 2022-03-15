@@ -296,7 +296,7 @@ namespace SB { namespace LibX { namespace Debug
 		const auto begin = std::basic_stringbuf<char_type, char_traits>::pbase();
 		const auto end = std::basic_stringbuf<char_type, char_traits>::pptr();
 		const size_t diff = std::distance(begin, end);
-		const bool full = diff >= rdbuf.size();
+		[[maybe_unused]] const bool full = diff >= rdbuf.size();
 		WriteDebugOutput<redirect_output>(begin, end);
 		std::basic_stringbuf<char_type, char_traits>::setp(rdbuf.data(), rdbuf.data(), rdbuf.data() + rdbuf.size());
 		return 0;

@@ -196,6 +196,7 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 	}
 	void shutdown()
 	{
+		asioAdapters.clear();
 #if SB_TARGET_TYPE == SB_TARGET_TYPE_STATIC
 		CoUninitialize();
 #endif
@@ -203,6 +204,8 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 
 	AdapterHandle AllocateAdapter( CLSID deviceId, std::wstring_view keyname )
 	{
+		//(void)deviceId, keyname;
+		//return AdapterHandle{};
 		auto it = asioAdapters.emplace( std::make_pair( deviceId, AdapterImpl1{ deviceId, keyname } ) );
 		return &it.first->second;
 	}

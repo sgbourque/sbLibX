@@ -1,167 +1,185 @@
-﻿
-#include <unordered_map>
+﻿#include <common/include/sb_common.h>
 
+#include <common/include/sbwin.h>
+#include <common/include/win32/sbwin_result.h>
+
+//#include <unordered_map>
+
+
+#include "common/include/sb_utilities.h"
 namespace SB { namespace LibX {
-namespace Win32 {
+namespace Windows  {
 
-enum class message_t : uint32_t
-{
-#include "common/include/internal/win32/win32_messages.h"
-};
-
-enum class result_facility_t : uint32_t
-{
-#define SB_WIN32_FACILITY( name, wm_facility, value ) name = value,
-#include "common/include/internal/win32/win32_results.h"
-};
-enum class result_severity_t : uint32_t
-{
-#define SB_WIN32_SEVERITY( name, wm_severity, value ) name = value,
-#include "common/include/internal/win32/win32_results.h"
-};
-enum class result_code_t : uint32_t
-{
-#define SB_WIN32_RESULT_CODE( name, wm_error_code, value ) name = value,
-#define SB_WIN32_RESULT_CODE_ALIAS( name, wm_error_code, value ) name = value,
-#include "common/include/internal/win32/win32_result_codes.h"
-};
-enum class error_t : uint32_t
-{
-#define SB_WIN32_ERROR( name, wm_error_code, value ) name = value,
-#define SB_WIN32_ERROR_ALIAS( name, wm_error_code, value ) name = value,
-#include "common/include/internal/win32/win32_errors.h"
-};
-
-struct result_t
-{
-	using type_t = std::underlying_type_t<error_t>;
-	static_assert( std::is_same_v<type_t, uint32_t> );
-
-	// low word
-	result_code_t     code              : 16;
-	// high word
-	result_facility_t facility          : 12;
-	type_t            reserved          : 1;
-	type_t            application_error : 1;
-	result_severity_t severity          : 2;
-
-	constexpr result_t( type_t value = 0 )
-		: code             ( result_code_t    ((value >>  0u) & ((1u << 16u) - 1u)) )
-		, facility         ( result_facility_t((value >> 16u) & ((1u << 12u) - 1u)) )
-		, reserved         (                  ((value >> 28u) & ((1u <<  1u) - 1u)) ) 
-		, application_error(                  ((value >> 29u) & ((1u <<  1u) - 1u)) ) 
-		, severity         ( result_severity_t((value >> 30u) & ((1u <<  2u) - 1u)) ) 
-	{
-	}
-	constexpr result_t( error_t value ) : result_t( static_cast<type_t>(value) ) {}
-	constexpr result_t( result_code_t value )     : result_t{} { code = value; }
-	constexpr result_t( result_facility_t value ) : result_t{} { facility = value; }
-	constexpr result_t( result_severity_t value ) : result_t{} { severity = value; }
-
-	constexpr type_t value() const
-	{
-		return (uint32_t(severity) << 30u) | (uint32_t(application_error) << 29u) | (uint32_t(reserved) << 28u) | (uint32_t(facility) << 16u) | (uint32_t(code) << 0u);
-	}
-};
-static_assert( sizeof( result_t ) == sizeof( uint32_t ) );
-//static_assert(
-//	   result_t( 0x77654321u ).value()  == 0x77654321u
-//	&& result_t( 0x87654321u ).code     == result_code_t(0x4321u)
-//	&& result_t( 0x87654321u ).facility == result_facility_t(0x765u)
-//	&& result_t( 0x87654321u ).severity == result_severity_t::Error
-//);
-
-
+// TODO
 //S_OK
 //DXGI_ERROR_DEVICE_HUNG
 
+
 struct Win32_impl
 {
-	using handle_t = void *;
+	using handle_t = handle<Win32_impl>;
 	using message_id = std::underlying_type_t<message_t>;
 	using word_param_t = uintptr_t;
 	using long_param_t = intptr_t;
 	using long_result_t = int32_t;
 	using callback_t = long_result_t (*)( handle_t hwnd, message_id msg, word_param_t wparam, long_param_t lparam );
-
-	std::unordered_map< message_id, callback_t > message_map;
+	//std::unordered_map< message_id, callback_t > message_map;
 };
 
-} // win32
+
+class window
+{
+public:
+	using style = WindowClass::style;
+	using system_char_t = SB::system_char_t;
+	using system_string_t = system_char_t*;
+	using const_system_string_t = const system_char_t*;
+	window(
+		const const_system_string_t class_name,
+		win_proc process_callback,
+		style style_flags = { style::vertical_redraw | style::horizontal_redraw },
+		icon_handle icon = nullptr,
+		cursor_handle cursor = nullptr,
+		brush_handle brush = nullptr,
+		const const_system_string_t menu_name = nullptr,
+		icon_handle small_icon = nullptr
+	)
+	{
+		[[maybe_unused]] instance_handle instance = sbWindows::get_module_handle();
+		if( !icon )
+		{
+			icon = load_icon(icon_resource::WinLogo);
+		}
+		if (!cursor)
+		{
+			cursor = load_cursor(cursor_resource::Cross);
+		}
+		//wcx.hbrBackground = (HBRUSH)GetStockObject(
+		//	DKGRAY_BRUSH);                   // dark grey background brush 
+		//wcx.hIconSm = (HICON)LoadImage(hinstance,  // small class icon 
+		//	MAKEINTRESOURCE(5),
+		//	IMAGE_ICON,
+		//	GetSystemMetrics(SM_CXSMICON),
+		//	GetSystemMetrics(SM_CYSMICON),
+		//	LR_DEFAULTCOLOR);
+
+		WindowClass window_class{
+			/*uint32_t           */	.size              = sizeof( WindowClass ),
+			/*style              */	.style_flags       = style_flags,
+			/*win_proc           */	.process_callback  = process_callback,
+			/*int32_t	         */	.class_extra_bytes = 0,
+			/*int32_t	         */	.window_extra      = 0,
+			/*instance_handle    */	.instance          = instance,
+			/*icon_handle        */	.icon              = icon,
+			/*cursor_handle      */	.cursor            = cursor,
+			/*brush_handle       */	.brush             = brush,
+			/*const_system_string*/	.menu_name         = menu_name,
+			/*const_system_string*/	.class_name        = class_name,
+			/*icon_handle        */	.small_icon        = small_icon,
+		};
+	}
+};
+
+} // Windows
 }} // sbLibX
-namespace sbLibWin32 = SB::LibX::Win32;
+namespace sbWindows = SB::LibX::Windows;
+
 
 #include <string>
 #include <iostream>
 
-SB_EXPORT_TYPE const char* get_result_name( sbLibWin32::result_t result )
+
+#if 0
+const auto className = L"SBMainWinClass";
+HINSTANCE hinstance = GetModuleHandleW(nullptr);
+
+WNDCLASSEXW wcx;
+
+// Fill in the window class structure with parameters 
+// that describe the main window. 
+
+wcx.cbSize = sizeof(wcx);          // size of structure 
+wcx.style = CS_HREDRAW | CS_VREDRAW; // redraw if size changes 
+wcx.lpfnWndProc = MainWndProc;       // points to window procedure 
+wcx.cbClsExtra = 0;                  // no extra class memory 
+wcx.cbWndExtra = 0;                  // no extra window memory 
+wcx.hInstance = hinstance;           // handle to instance 
+wcx.hIcon = LoadIcon(nullptr,
+	IDI_WINLOGO);               // predefined app. icon 
+wcx.hCursor = LoadCursor(nullptr,
+	IDC_CROSS);                     // predefined arrow 
+wcx.hbrBackground = (HBRUSH)GetStockObject(
+	DKGRAY_BRUSH);                   // dark grey background brush 
+wcx.lpszMenuName = nullptr;       // name of menu resource 
+wcx.lpszClassName = className;    // name of window class 
+wcx.hIconSm = (HICON)LoadImage(hinstance,  // small class icon 
+	MAKEINTRESOURCE(5),
+	IMAGE_ICON,
+	GetSystemMetrics(SM_CXSMICON),
+	GetSystemMetrics(SM_CYSMICON),
+	LR_DEFAULTCOLOR);
+
+if (!RegisterClassExW(&wcx))
 {
-	switch( result.value() )
-	{
-	#define SB_WIN32_ERROR( name, wm_error_code, value ) case value: return "" # name "(" # wm_error_code ")";
-	#include "common/include/internal/win32/win32_errors.h"
-	default: return "(unkown)";
-	}
-}
-SB_EXPORT_TYPE const char* get_severity_name( sbLibWin32::result_t result )
-{
-	switch( sbLibWin32::result_t::type_t(result.severity) )
-	{
-	#define SB_WIN32_SEVERITY( name, wm_severity, value ) case value: return "" # name;
-	#include "common/include/internal/win32/win32_results.h"
-	default: return "(unknown)";
-	}
-}
-SB_EXPORT_TYPE const char* get_facility_name( sbLibWin32::result_t result )
-{
-	switch( sbLibWin32::result_t::type_t(result.facility) )
-	{
-	#define SB_WIN32_FACILITY( name, wm_facility, value ) case value: return "" # name;
-	#include "common/include/internal/win32/win32_results.h"
-	default: return "(unknown)";
-	}
-}
-SB_EXPORT_TYPE const char* get_code_name( sbLibWin32::result_t result )
-{
-	switch( sbLibWin32::result_t::type_t(result.code) )
-	{
-	#define SB_WIN32_RESULT_CODE( name, wm_code, value ) case value: return "" # name;
-	#include "common/include/internal/win32/win32_result_codes.h"
-	default: return "(unknown)";
-	}
+	if (GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
+		return -1;
 }
 
+static volatile bool forComposition = true;
+uint32_t creationFlagsEx = forComposition ? WS_EX_NOREDIRECTIONBITMAP : WS_EX_OVERLAPPEDWINDOW;
 
-#include <algorithm>
+static volatile bool visible = true;
+uint32_t creationFlags = visible ? WS_VISIBLE : 0;
+
+[[maybe_unused]] HWND hwnd = CreateWindowExW(
+	creationFlagsEx,
+	className, L"SBLibX Test Win32",
+	creationFlags /*WS_POPUP*/ | WS_VISIBLE,
+	CW_USEDEFAULT, CW_USEDEFAULT,
+	CW_USEDEFAULT, CW_USEDEFAULT,
+	nullptr, nullptr, hinstance, nullptr);
+#endif
+
+
+
+sbWindows::result_t ProcessWindow(sbWindows::window_handle, uint32_t, uintptr_t, int64_t)
+{
+	return sbWindows::result_code_t::No_Error;
+}
+
+//#include <algorithm>
 
 //LibX::Debug::Console debugConsole;
 SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
-	using namespace sbLibWin32;
+	sbWindows::window test( SB_SYSTEM_STRING( "sbMainWindowClass" ), ProcessWindow );
 
-	uint32_t first = 0x887A0000;
-	uint32_t second = 0x887A0037;
-	std::cin >> first;
-	std::cin >> second;
-	uint32_t begin = std::min( first, second );
-	uint32_t end = std::max( first, second ) + 1;
+///
+	//using namespace sbWindows;
 
-	for( uint32_t test_raw = begin; test_raw < end; ++test_raw )
-	{
-		result_t test_value = test_raw;
-		std::string error_desc = get_result_name( test_value );
+	//uint32_t first = 0x887A0000;
+	//uint32_t second = 0x887A0037;
+	//std::cin >> first;
+	//std::cin >> second;
+	//uint32_t begin = std::min( first, second );
+	//uint32_t end = std::max( first, second ) + 1;
 
-		error_desc += "\n\tSeverity: ";
-		error_desc += get_severity_name( test_value );
+	//for( uint32_t test_raw = begin; test_raw < end; ++test_raw )
+	//{
+	//	result_t test_value = test_raw;
+	//	std::string error_desc = get_result_name( test_value );
 
-		error_desc += "\n\tFacility: ";
-		error_desc += get_facility_name( test_value );
+	//	error_desc += "\n\tSeverity: ";
+	//	error_desc += get_severity_name( test_value );
 
-		error_desc += "\n\tCode: ";
-		error_desc += get_code_name( test_value );
+	//	error_desc += "\n\tFacility: ";
+	//	error_desc += get_facility_name( test_value );
 
-		std::cout << error_desc << std::endl;
-	}
+	//	error_desc += "\n\tCode: ";
+	//	error_desc += get_code_name( test_value );
+
+	//	std::cout << error_desc << std::endl;
+	//}
 	return 0;
 }
 

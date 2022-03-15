@@ -1,3 +1,5 @@
+#include <common/include/sbwin.h>
+
 #include <common/include/sb_hash.h>
 //#include <common/include/sb_interface.h>
 #include <common/include/sb_structured_buffer.h>
@@ -14,10 +16,29 @@
 #include <cassert>
 #endif
 
-namespace SB { namespace LibX
-{
-namespace Windows
-{
+
+//SB_IMPORT_LIB HICON LoadIconW(_In_opt_ HINSTANCE hInstance, _In_ LPCWSTR lpIconName);
+
+namespace SB { namespace LibX {
+namespace Windows  {
+
+SB_EXPORT_LIB get_module_handle_t get_module_instance_handle = reinterpret_cast<get_module_handle_t>( &GetModuleHandleW );
+static_assert( sizeof( get_module_instance_handle ) == sizeof( &GetModuleHandleW ) );
+static_assert( sizeof( get_module_instance_handle(nullptr) ) == sizeof( GetModuleHandleW(nullptr) ) );
+
+SB_EXPORT_LIB load_icon_t load_icon_handle = reinterpret_cast<load_icon_t>(&LoadIconW);
+static_assert(sizeof(load_icon_handle) == sizeof(&LoadIconW));
+static_assert(sizeof(load_icon_handle(nullptr,nullptr)) == sizeof(LoadIconW(nullptr,nullptr)));
+
+SB_EXPORT_LIB load_cursor_t load_cursor_handle = reinterpret_cast<load_cursor_t>(&LoadCursorW);
+static_assert(sizeof(load_cursor_handle) == sizeof(&LoadCursorW));
+static_assert(sizeof(load_cursor_handle(nullptr, nullptr)) == sizeof(LoadCursorW(nullptr, nullptr)));
+
+
+
+
+/// random tests (WIP at a random point in time)...
+
 SB_STRUCT_BEGIN(ApplicationConfiguration, 1)
 	SB_STRUCT_MEMBER(system_char_t[128], name) = STR("sbApplication (anonymous)");
 	SB_STRUCT_MEMBER(system_char_t[128], className) = STR("sbGenericWindow");
@@ -175,7 +196,7 @@ template<typename return_type, typename _implementation_> constexpr return_type 
 #endif
 
 }} // namespace SB::LibX
-namespace sbWinX = SB::LibX::Windows;
+namespace sbWindows = SB::LibX::Windows;
 //using namespace SB::LibX;
 
 #include <dev/include/sb_dev_debug.h>

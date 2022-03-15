@@ -4,11 +4,18 @@
     <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-    <LocalDebuggerCommandArguments>
-    </LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/win32</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
+    <RemoteDebuggerAttach>true</RemoteDebuggerAttach>
+    <DeploymentDirectory>\\Weyl-Audio\remote_debugging_workspace\$(SolutionName)</DeploymentDirectory>
+    <AdditionalFiles>$(SolutionDir)\data;$(SolutionDir)bin\$(Platform)\*.dll</AdditionalFiles>
+    <RemoteDebuggerServerName>Weyl-Audio</RemoteDebuggerServerName>
+    <RemoteDebuggerWorkingDirectory>\\Weyl-Audio\remote_debugging_workspace\sbLibX</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerCommand>\\Weyl-Audio\remote_debugging_workspace\$(SolutionName)\$(TargetFileName)</RemoteDebuggerCommand>
+    <RemoteDebuggerDeployCppRuntime>false</RemoteDebuggerDeployCppRuntime>
+    <RemoteDebuggerCommandArguments>run test/win32</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
     <LocalDebuggerCommandArguments>

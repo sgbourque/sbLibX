@@ -94,7 +94,7 @@ static inline constexpr std::common_type_t<dataSize_t, align_t> div_align_up( da
 	template< typename dataSize_t, typename align_t >
 static inline constexpr std::common_type_t<dataSize_t, align_t> align_down( dataSize_t size, align_t align ) { return div_align_down( size, align ) * align; }
 	template< typename dataSize_t, typename align_t >
-static inline constexpr std::common_type_t<dataSize_t, align_t> align_up( dataSize_t size, align_t align ) { return div_align_up( size, align ) * align;; }
+static inline constexpr std::common_type_t<dataSize_t, align_t> align_up( dataSize_t size, align_t align ) { return div_align_up( size, align ) * align; }
 
 ////
 template<typename _KEY_TYPE_, typename _VALUE_TYPE_>

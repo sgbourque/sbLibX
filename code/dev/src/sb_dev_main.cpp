@@ -327,7 +327,7 @@ int WinMain(
 								}
 								debugSettings.checkpoint();
 								return_code = unsafe_entry(local_main)(local_argc, local_argv);
-								assert( !debugSettings.dump() );
+								assert( !debugSettings.dump() && "Leak detected in threaded function.");
 							}
 							catch (std::exception except)
 							{

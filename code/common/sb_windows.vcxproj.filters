@@ -16,6 +16,9 @@
     <Filter Include="include\internal">
       <UniqueIdentifier>{c801ac61-3b6d-4bd0-b806-b83194f28b8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\win32">
+      <UniqueIdentifier>{f09a1a87-c16b-45ff-a00f-6a922ab5af55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sbWindows_precompile.h">
@@ -35,6 +38,12 @@
     </ClInclude>
     <ClInclude Include="include\internal\win32\win32_messages.h">
       <Filter>include\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\win32\sbwin_result.h">
+      <Filter>include\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sbwin.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

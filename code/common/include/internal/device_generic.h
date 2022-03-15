@@ -15,7 +15,7 @@ using adapter_array_t = std::vector<AdapterHandle>;
 #undef SBLIB_ADAPTER_ARRAY_TYPE
 using adapter_array_t = SBLIB_CUSTOM_ADAPTER_ARRAY;
 #endif
-SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance = CreateInstance(), size_t maxCount = ~0u );
+SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
 
 #ifndef SBLIB_DEVICE_INFO_TYPE
 struct DeviceDesc
@@ -43,7 +43,7 @@ struct unique_instance
 	{
 		handle = CreateInstance(config);
 	}
-	explicit unique_instance(unique_instance&& other)
+	explicit unique_instance(unique_instance&& other) noexcept
 	{
 		handle = other.Detach();
 	}
@@ -83,7 +83,7 @@ public:
 struct unique_device
 {
 	explicit unique_device(AdapterHandle adapter = {}, const Configuration* config = nullptr) { if( adapter ) handle = CreateDevice(adapter, config); }
-	explicit unique_device(unique_device&& other) { handle = other.handle; other.Detach(); }
+	explicit unique_device(unique_device&& other) noexcept { handle = other.handle; other.Detach(); }
 	explicit unique_device(const unique_device& other) = delete;
 	~unique_device() { Release(); }
 

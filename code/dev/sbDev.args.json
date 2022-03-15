@@ -4,7 +4,7 @@
   "Items": [
     {
       "Id": "8bcf36e0-bd9b-4dbd-9594-ffc098cb4e6e",
-      "Command": "run test/asio"
+      "Command": "run test/win32"
     }
   ]
 }

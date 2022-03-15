@@ -117,7 +117,7 @@
 	#define U16STR(_X) SB_U16STRING_WRAPPER(_X)
 #if defined(UNICODE)
 	#define SB_SYSTEM_STRING   U16STR
-	namespace SB { using system_char_t = char16_t; }
+	namespace SB { using system_char_t = char16_t; using const_system_string_t = const system_char_t*; }
 #else
 	#define SB_SYSTEM_STRING   CSTR
 	#if _MSVC_LANG >= 201705

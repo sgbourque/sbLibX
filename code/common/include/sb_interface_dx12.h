@@ -176,6 +176,6 @@ using dx12_instance = dx12::unique_instance;
 using dx12_device = dx12::unique_device;
 
 }}
-namespace sbLibDX12 = SB::LibX::dx12;
+namespace sbDX12 = SB::LibX::dx12;
 
 SB_PLATFORM_DEPENDS

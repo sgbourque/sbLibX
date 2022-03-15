@@ -9,6 +9,9 @@
       <UniqueIdentifier>{90BCCA72-A35E-45C1-BF73-5C380AD9A2E8}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="src\shaders">
+      <UniqueIdentifier>{eb0f94bc-60d7-45b4-986f-c2c3c3223d50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test_main.cpp">
@@ -63,5 +66,10 @@
     <None Include="include\private_generated_512.key">
       <Filter>include</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\shaders\test_demo_shader.hlsl">
+      <Filter>src\shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

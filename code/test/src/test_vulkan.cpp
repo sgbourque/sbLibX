@@ -10,7 +10,7 @@
 
 void PrintLayerExtensions( const char* layerName )
 {
-	using namespace sbLibVulkan;
+	using namespace sbVulkan;
 	auto vulkan_layers_extensions = enumerate<instance_extension_traits::properties_t>( layerName );
 	if( !vulkan_layers_extensions.empty() )
 	{
@@ -21,10 +21,10 @@ void PrintLayerExtensions( const char* layerName )
 	}
 }
 
-using vulkan_instance_layer_array_t = decltype( sbLibVulkan::enumerate<sbLibVulkan::instance_layer_traits::properties_t>() );
+using vulkan_instance_layer_array_t = decltype( sbVulkan::enumerate<sbVulkan::instance_layer_traits::properties_t>() );
 void PrintInstanceLayers( const vulkan_instance_layer_array_t& vulkan_instance_layers )
 {
-	using namespace sbLibVulkan;
+	using namespace sbVulkan;
 	std::clog << "/////////////////////////////////////////////" << std::endl;
 	std::clog << "Enumerating vulkan instance layers" << std::endl;
 	std::clog << "/////////////////////////////////////////////" << std::endl;
@@ -37,7 +37,7 @@ void PrintInstanceLayers( const vulkan_instance_layer_array_t& vulkan_instance_l
 }
 
 
-using vulkan_instance_extension_array_t = decltype( sbLibVulkan::enumerate<sbLibVulkan::instance_extension_traits::properties_t>() );
+using vulkan_instance_extension_array_t = decltype( sbVulkan::enumerate<sbVulkan::instance_extension_traits::properties_t>() );
 auto PrintInstanceExtensions( const vulkan_instance_extension_array_t& vulkan_instance_extensions )
 {
 	using namespace sbLibX;
@@ -50,10 +50,10 @@ auto PrintInstanceExtensions( const vulkan_instance_extension_array_t& vulkan_in
 	}
 }
 
-auto FilterInstanceLayers( sbLibVulkan::InstanceConfiguration& config, const vulkan_instance_layer_array_t& vulkan_instance_layers )
+auto FilterInstanceLayers( sbVulkan::InstanceConfiguration& config, const vulkan_instance_layer_array_t& vulkan_instance_layers )
 {
 	using namespace sbLibX;
-	using instance_layer_t =  sbLibVulkan::instance_layer_t;
+	using instance_layer_t =  sbVulkan::instance_layer_t;
 	for( const auto& layer_property : vulkan_instance_layers )
 	{
 		switch( xhash_string_view_t{ layer_property.layerName }.get_key() )
@@ -68,10 +68,10 @@ auto FilterInstanceLayers( sbLibVulkan::InstanceConfiguration& config, const vul
 	}
 }
 
-auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const vulkan_instance_extension_array_t& vulkan_instance_extensions )
+auto FilterInstanceExtensions( sbVulkan::InstanceConfiguration& config, const vulkan_instance_extension_array_t& vulkan_instance_extensions )
 {
 	using namespace sbLibX;
-	using namespace sbLibVulkan;
+	using namespace sbVulkan;
 	auto requestedExtension = [&config]( xhash_string_view_t feature ) -> bool {
 		auto found = std::find_if( config.requested_layers.cbegin(), config.requested_layers.cend(), [feature]( xhash_string_view_t layer ) -> bool {
 			auto vulkan_layers_extensions = enumerate<instance_extension_traits::properties_t>( layer.get_value().data() );
@@ -117,7 +117,7 @@ auto FilterInstanceExtensions( sbLibVulkan::InstanceConfiguration& config, const
 	#undef ALLOWED_EXTENSION
 }
 
-void SortAdapters( sbLibVulkan::adapter_array_t& vulkan_adapters )
+void SortAdapters( sbVulkan::adapter_array_t& vulkan_adapters )
 {
 	using namespace sbLibX;
 	auto vendor_order = []( uint32_t vendor ) -> uint32_t
@@ -153,7 +153,7 @@ void SortAdapters( sbLibVulkan::adapter_array_t& vulkan_adapters )
 }
 
 
-auto CreateDevices( const sbLibVulkan::adapter_array_t& adapters )
+auto CreateDevices( const sbVulkan::adapter_array_t& adapters )
 {
 	using namespace sbLibX;
 	using namespace vulkan;

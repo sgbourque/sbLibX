@@ -4,7 +4,7 @@ namespace SB { namespace LibX {
 struct Configuration;
 }}
 
-#include <common/include/internal/interface_asio_base.h>
+#include <common/include/internal/asio/interface_asio_base.h>
 #include <common/include/internal/ref_ptr.h>
 
 #include <vector>
@@ -50,7 +50,7 @@ using asio_instance = ASIO::unique_instance;
 using asio_device = ASIO::unique_device;
 
 }}
-namespace sbLibASIO = SB::LibX::ASIO;
+namespace sbASIO = SB::LibX::ASIO;
 
 SB_EXPORT_TYPE void SB_STDCALL SB_ASIO_COINIT_APARTMENTTHREADED() {}
 SB_PLATFORM_DEPENDS

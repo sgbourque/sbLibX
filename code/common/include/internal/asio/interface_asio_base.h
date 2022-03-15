@@ -10,26 +10,29 @@ namespace ASIO
 // Please refer to official Steinberg ASIO documentation
 /////////////////////////////////////////////////////////
 
-#define SB_ASIO_ERROR( code, value, name ) code = value,
 enum class ErrorType : int32_t
 {
-	#include <common/include/internal/interface_asio_error.hpp>
+	#define SB_ASIO_ERROR( code, value, name ) \
+		code = value,
+	#include <common/include/internal/asio/interface_asio_error.hpp>
 };
-#define SB_ASIO_ERROR( code, value, name ) case ErrorType::code: return name;
 constexpr static inline const char* to_cstring( ErrorType error )
 {
 	switch (error)
 	{
-	#include <common/include/internal/interface_asio_error.hpp>
+	#define SB_ASIO_ERROR( code, value, name ) \
+		case ErrorType::code: return name;
+	#include <common/include/internal/asio/interface_asio_error.hpp>
 	default: return "unknown";
 	}
 }
-#define SB_ASIO_ERROR( code, value, name ) case ErrorType::code: return L ## name;
 constexpr static inline const wchar_t* to_wstring( ErrorType error )
 {
 	switch (error)
 	{
-	#include <common/include/internal/interface_asio_error.hpp>
+	#define SB_ASIO_ERROR( code, value, name ) \
+		case ErrorType::code: return L ## name;
+	#include <common/include/internal/asio/interface_asio_error.hpp>
 	default: return L"unknown";
 	}
 }
@@ -45,58 +48,9 @@ enum Bool : int32_t
 };
 enum class SampleType : int32_t
 {
-	Int16_MSB   = 0,
-	Int24_MSB   = 1,  		// used for 20 bits as well
-	Int32_MSB   = 2,
-	Float32_MSB = 3,		// IEEE 754 32 bit float
-	Float64_MSB = 4,		// IEEE 754 64 bit double float
-
-	// these are used for 32 bit data buffer, with different alignment of the data inside
-	// 32 bit PCI bus systems can be more easily used with these
-	Int32_MSB16 = 8, 		// 32 bit data with 16 bit alignment
-	Int32_MSB18 = 9, 		// 32 bit data with 18 bit alignment
-	Int32_MSB20 = 10,		// 32 bit data with 20 bit alignment
-	Int32_MSB24 = 11,		// 32 bit data with 24 bit alignment
-
-	Int16_LSB   = 16,
-	Int24_LSB   = 17, 		// used for 20 bits as well
-	Int32_LSB   = 18,
-	Float32_LSB = 19,		// IEEE 754 32 bit float, as found on Intel x86 architecture
-	Float64_LSB = 20, 		// IEEE 754 64 bit double float, as found on Intel x86 architecture
-
-	// these are used for 32 bit data buffer, with different alignment of the data inside
-	// 32 bit PCI bus systems can more easily used with these
-	Int32_LSB16 = 24,		// 32 bit data with 16 bit alignment
-	Int32_LSB18 = 25,		// 32 bit data with 18 bit alignment
-	Int32_LSB20 = 26,		// 32 bit data with 20 bit alignment
-	Int32_LSB24 = 27,		// 32 bit data with 24 bit alignment
-
-	//	ASIO DSD format.
-	/*
-	// DSD support
-	//	Some notes on how to use ASIOIoFormatType.
-	//
-	//	The caller will fill the format with the request types.
-	//	If the board can do the request then it will leave the
-	//	values unchanged. If the board does not support the
-	//	request then it will change that entry to Invalid (-1)
-	//
-	//	So to request DSD then
-	//
-	//	ASIOIoFormat NeedThis={kASIODSDFormat};
-	//
-	//	if(ASE_SUCCESS != ASIOFuture(kAsioSetIoFormat,&NeedThis) ){
-	//		// If the board did not accept one of the parameters then the
-	//		// whole call will fail and the failing parameter will
-	//		// have had its value changes to -1.
-	//	}
-	//
-	// Note: Switching between the formats need to be done before the "prepared"
-	// state (see ASIO 2 documentation) is entered.
-	*/
-	DSD_Int8_LSB1 = 32,		// DSD 1 bit data, 8 samples per byte. First sample in Least significant bit.
-	DSD_Int8_MSB1 = 33,		// DSD 1 bit data, 8 samples per byte. First sample in Most significant bit.
-	DSD_Int8_NER8 = 40,		// DSD 8 bit data, 1 sample per byte. No Endianness required.
+	#define SB_ASIO_SAMPLETYPE( name, index, type_name, bit_per_pack, bit_per_sample, sample_per_pack, endian, align_bits, container_type ) \
+		name = index,
+	#include <common/include/internal/asio/interface_asio_sampletype.hpp>
 };
 
 

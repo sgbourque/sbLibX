@@ -50,10 +50,10 @@ struct ref_ptr
 
 	ref_ptr(type_t* ptr = nullptr) : raw(ptr) { if (raw) raw->AddRef(); }
 	ref_ptr(const ref_ptr& ptr) : raw(ptr.raw) { if (raw) raw->AddRef(); }
-	ref_ptr(ref_ptr&& ptr) : raw(ptr.raw) { ptr.raw = nullptr; }
+	ref_ptr(ref_ptr&& ptr)  noexcept : raw(ptr.raw) { ptr.raw = nullptr; }
 
 	const ref_ptr& operator =(type_t* ptr) { if (raw) raw->Release(); raw = ptr; if (raw) raw->AddRef(); return *this; }
-	ref_ptr& operator =(ref_ptr&& refPtr) { raw = refPtr.raw; refPtr.raw = nullptr; return *this; }
+	ref_ptr& operator =(ref_ptr&& refPtr) noexcept { raw = refPtr.raw; refPtr.raw = nullptr; return *this; }
 	ref_ptr& operator =(const ref_ptr& refPtr) { if (raw) raw->Release(); raw = refPtr.Get(); if (raw) raw->AddRef(); return *this; }
 
 	~ref_ptr() { if (raw) raw->Release(); raw = nullptr; }

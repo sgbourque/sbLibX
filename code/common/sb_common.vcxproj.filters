@@ -25,6 +25,9 @@
     <Filter Include="include\internal\vulkan">
       <UniqueIdentifier>{f2c3b1b1-46dd-4eec-bd75-3ab284b36109}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\internal\asio">
+      <UniqueIdentifier>{050a618f-1576-406b-9995-b2b8ffdccce9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\sb_interface.h">
@@ -44,12 +47,6 @@
     </ClInclude>
     <ClInclude Include="include\sb_range.h">
       <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\interface_asio_error.hpp">
-      <Filter>include\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\interface_asio_base.h">
-      <Filter>include\internal</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\ref_ptr.h">
       <Filter>include\internal</Filter>
@@ -125,6 +122,18 @@
     </ClInclude>
     <ClInclude Include="include\sb_encrypted_data.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\asio\interface_asio_samplerate.hpp">
+      <Filter>include\internal\asio</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\asio\interface_asio_base.h">
+      <Filter>include\internal\asio</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\asio\interface_asio_error.hpp">
+      <Filter>include\internal\asio</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\asio\interface_asio_sampletype.hpp">
+      <Filter>include\internal\asio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -108,6 +108,6 @@ using vulkan_instance = vulkan::unique_instance;
 using vulkan_device = vulkan::unique_device;
 
 }}
-namespace sbLibVulkan = SB::LibX::vulkan;
+namespace sbVulkan = SB::LibX::vulkan;
 
 SB_PLATFORM_DEPENDS
