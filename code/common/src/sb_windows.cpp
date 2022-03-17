@@ -11,10 +11,17 @@
 
 #define NOMINMAX
 #include <windows.h>
+// for GetStockObject
+#include <wingdi.h>
+#pragma comment( lib, "Gdi32.lib" )
+// for LoadImage
+#include <winuser.h>
+#pragma comment( lib, "User32.lib" )
 
 #ifndef assert
 #include <cassert>
 #endif
+
 
 
 //SB_IMPORT_LIB HICON LoadIconW(_In_opt_ HINSTANCE hInstance, _In_ LPCWSTR lpIconName);
@@ -22,21 +29,48 @@
 namespace SB { namespace LibX {
 namespace Windows  {
 
-SB_EXPORT_LIB get_module_handle_t get_module_instance_handle = reinterpret_cast<get_module_handle_t>( &GetModuleHandleW );
-static_assert( sizeof( get_module_instance_handle ) == sizeof( &GetModuleHandleW ) );
-static_assert( sizeof( get_module_instance_handle(nullptr) ) == sizeof( GetModuleHandleW(nullptr) ) );
-
-SB_EXPORT_LIB load_icon_t load_icon_handle = reinterpret_cast<load_icon_t>(&LoadIconW);
-static_assert(sizeof(load_icon_handle) == sizeof(&LoadIconW));
-static_assert(sizeof(load_icon_handle(nullptr,nullptr)) == sizeof(LoadIconW(nullptr,nullptr)));
-
-SB_EXPORT_LIB load_cursor_t load_cursor_handle = reinterpret_cast<load_cursor_t>(&LoadCursorW);
-static_assert(sizeof(load_cursor_handle) == sizeof(&LoadCursorW));
-static_assert(sizeof(load_cursor_handle(nullptr, nullptr)) == sizeof(LoadCursorW(nullptr, nullptr)));
+#define SB_EXPORT_WIN_FUNCTION( type, name, function, first_ops, second_ops ) \
+	SB_EXPORT_LIB type name = reinterpret_cast<type>( &function ); \
+	static_assert( sizeof( name ) == sizeof( &function ) ); \
+	static_assert( sizeof( name first_ops ) == sizeof( function second_ops ) )
 
 
+SB_EXPORT_WIN_FUNCTION(get_module_handle_t, get_module_instance_handle, ::GetModuleHandleW, (nullptr), (nullptr) );
+SB_EXPORT_WIN_FUNCTION(win_proc, default_win_proc, ::DefWindowProcW, (nullptr, 0,0,0), (nullptr, 0,0,0));
+SB_EXPORT_WIN_FUNCTION(load_icon_t, load_icon_handle, ::LoadIconW, (nullptr,nullptr), (nullptr,nullptr));
+SB_EXPORT_WIN_FUNCTION(load_cursor_t, load_cursor_handle, ::LoadCursorW, (nullptr, nullptr), (nullptr, nullptr));
+SB_EXPORT_WIN_FUNCTION(get_stock_object_t, get_stock_object_handle, ::GetStockObject, (stock_object_resource{}), (underlying(stock_object_resource{})));
+SB_EXPORT_WIN_FUNCTION(load_image_t, load_image_handle, ::LoadImageW, (nullptr, resource_handle_type{}, image_type{}, 0, 0, image_load_flags{}), (nullptr, (LPCWSTR)resource_handle_type{}, underlying(image_type{}), 0, 0, underlying(image_load_flags{})));
+SB_EXPORT_WIN_FUNCTION(get_system_metric_t, get_system_metric, ::GetSystemMetrics, (system_metric{}), (underlying(system_metric{})));
+SB_EXPORT_WIN_FUNCTION(register_class_t, register_class, ::RegisterClassExW, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(get_last_error_t, get_last_error, ::GetLastError, (), ());
+SB_EXPORT_WIN_FUNCTION(create_window_t, create_window, ::CreateWindowExW, (window_style_flags_ex{}, const_system_string_t{}, const_system_string_t{}, window_style_flags{}, 0, 0, 0, 0, window_handle{}, menu_handle{}, instance_handle{}, nullptr), (underlying(window_style_flags_ex{}), (LPCWSTR)const_system_string_t {}, (LPCWSTR)const_system_string_t {}, underlying(window_style_flags{}), 0, 0, 0, 0, (HWND)window_handle {}, (HMENU)menu_handle {}, (HINSTANCE)instance_handle {}, nullptr));
 
+//SB_WIN_EXPORT result_t window::register_class() const
+//{
+//	HRESULT result = S_OK;
+//	if ( !::RegisterClassExW( reinterpret_cast<const WNDCLASSEXW*>( &window_class ) ) )
+//	{
+//		result = GetLastError();
+//	}
+//	return result;
+//}
 
+//SB_WIN_EXPORT window_handle window::create_window(const_system_string_t window_name, window_style style)
+//{
+//	HWND hwnd = ::CreateWindowExW(
+//		underlying( style.flags_ex ),
+//		reinterpret_cast<LPCWSTR>( window_class.class_name ), reinterpret_cast<LPCWSTR>( window_name ),
+//		underlying( style.flags ),
+//		CW_USEDEFAULT, CW_USEDEFAULT,
+//		CW_USEDEFAULT, CW_USEDEFAULT,
+//		nullptr, nullptr, reinterpret_cast<HINSTANCE>( window_class.instance ), nullptr);
+//	return reinterpret_cast<window_handle>( hwnd );
+//}
+
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
 /// random tests (WIP at a random point in time)...
 
 SB_STRUCT_BEGIN(ApplicationConfiguration, 1)

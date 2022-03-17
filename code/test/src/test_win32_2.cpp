@@ -26,60 +26,6 @@ struct Win32_impl
 	//std::unordered_map< message_id, callback_t > message_map;
 };
 
-
-class window
-{
-public:
-	using style = WindowClass::style;
-	using system_char_t = SB::system_char_t;
-	using system_string_t = system_char_t*;
-	using const_system_string_t = const system_char_t*;
-	window(
-		const const_system_string_t class_name,
-		win_proc process_callback,
-		style style_flags = { style::vertical_redraw | style::horizontal_redraw },
-		icon_handle icon = nullptr,
-		cursor_handle cursor = nullptr,
-		brush_handle brush = nullptr,
-		const const_system_string_t menu_name = nullptr,
-		icon_handle small_icon = nullptr
-	)
-	{
-		[[maybe_unused]] instance_handle instance = sbWindows::get_module_handle();
-		if( !icon )
-		{
-			icon = load_icon(icon_resource::WinLogo);
-		}
-		if (!cursor)
-		{
-			cursor = load_cursor(cursor_resource::Cross);
-		}
-		//wcx.hbrBackground = (HBRUSH)GetStockObject(
-		//	DKGRAY_BRUSH);                   // dark grey background brush 
-		//wcx.hIconSm = (HICON)LoadImage(hinstance,  // small class icon 
-		//	MAKEINTRESOURCE(5),
-		//	IMAGE_ICON,
-		//	GetSystemMetrics(SM_CXSMICON),
-		//	GetSystemMetrics(SM_CYSMICON),
-		//	LR_DEFAULTCOLOR);
-
-		WindowClass window_class{
-			/*uint32_t           */	.size              = sizeof( WindowClass ),
-			/*style              */	.style_flags       = style_flags,
-			/*win_proc           */	.process_callback  = process_callback,
-			/*int32_t	         */	.class_extra_bytes = 0,
-			/*int32_t	         */	.window_extra      = 0,
-			/*instance_handle    */	.instance          = instance,
-			/*icon_handle        */	.icon              = icon,
-			/*cursor_handle      */	.cursor            = cursor,
-			/*brush_handle       */	.brush             = brush,
-			/*const_system_string*/	.menu_name         = menu_name,
-			/*const_system_string*/	.class_name        = class_name,
-			/*icon_handle        */	.small_icon        = small_icon,
-		};
-	}
-};
-
 } // Windows
 }} // sbLibX
 namespace sbWindows = SB::LibX::Windows;
@@ -89,97 +35,41 @@ namespace sbWindows = SB::LibX::Windows;
 #include <iostream>
 
 
-#if 0
-const auto className = L"SBMainWinClass";
-HINSTANCE hinstance = GetModuleHandleW(nullptr);
-
-WNDCLASSEXW wcx;
-
-// Fill in the window class structure with parameters 
-// that describe the main window. 
-
-wcx.cbSize = sizeof(wcx);          // size of structure 
-wcx.style = CS_HREDRAW | CS_VREDRAW; // redraw if size changes 
-wcx.lpfnWndProc = MainWndProc;       // points to window procedure 
-wcx.cbClsExtra = 0;                  // no extra class memory 
-wcx.cbWndExtra = 0;                  // no extra window memory 
-wcx.hInstance = hinstance;           // handle to instance 
-wcx.hIcon = LoadIcon(nullptr,
-	IDI_WINLOGO);               // predefined app. icon 
-wcx.hCursor = LoadCursor(nullptr,
-	IDC_CROSS);                     // predefined arrow 
-wcx.hbrBackground = (HBRUSH)GetStockObject(
-	DKGRAY_BRUSH);                   // dark grey background brush 
-wcx.lpszMenuName = nullptr;       // name of menu resource 
-wcx.lpszClassName = className;    // name of window class 
-wcx.hIconSm = (HICON)LoadImage(hinstance,  // small class icon 
-	MAKEINTRESOURCE(5),
-	IMAGE_ICON,
-	GetSystemMetrics(SM_CXSMICON),
-	GetSystemMetrics(SM_CYSMICON),
-	LR_DEFAULTCOLOR);
-
-if (!RegisterClassExW(&wcx))
+int64_t ProcessWindow( sbWindows::window_handle handle, uint32_t message, uintptr_t message_data1, intptr_t message_data2 )
 {
-	if (GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
-		return -1;
+	return sbWindows::default_win_proc( handle, message, message_data1, message_data2 );
 }
 
-static volatile bool forComposition = true;
-uint32_t creationFlagsEx = forComposition ? WS_EX_NOREDIRECTIONBITMAP : WS_EX_OVERLAPPEDWINDOW;
-
-static volatile bool visible = true;
-uint32_t creationFlags = visible ? WS_VISIBLE : 0;
-
-[[maybe_unused]] HWND hwnd = CreateWindowExW(
-	creationFlagsEx,
-	className, L"SBLibX Test Win32",
-	creationFlags /*WS_POPUP*/ | WS_VISIBLE,
-	CW_USEDEFAULT, CW_USEDEFAULT,
-	CW_USEDEFAULT, CW_USEDEFAULT,
-	nullptr, nullptr, hinstance, nullptr);
-#endif
-
-
-
-sbWindows::result_t ProcessWindow(sbWindows::window_handle, uint32_t, uintptr_t, int64_t)
-{
-	return sbWindows::result_code_t::No_Error;
-}
-
-//#include <algorithm>
-
-//LibX::Debug::Console debugConsole;
 SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
 	sbWindows::window test( SB_SYSTEM_STRING( "sbMainWindowClass" ), ProcessWindow );
+	[[maybe_unused]] sbWindows::result_t result = test.register_class();
 
-///
-	//using namespace sbWindows;
+	//////////////////////////////////////////////////////////////////////////
+	// temp ugly stuff
+	using window_style_flags = sbWindows::window_style_flags;
+	window_style_flags creationFlags = window_style_flags::OVERLAPPED;
+	if (argc > 4)
+	{
+		bool isVisible = argv[1][0] > '0'; // temp
+		creationFlags = ( creationFlags & ~window_style_flags::VISIBLE ) | ( isVisible ? window_style_flags::VISIBLE : window_style_flags::OVERLAPPED);
+	}
+	if (argc > 5)
+	{
+		bool isPopup = argv[2][0] > '0'; // temp
+		creationFlags = ( creationFlags & ~window_style_flags::POPUP ) | ( isPopup ? window_style_flags::POPUP : window_style_flags::OVERLAPPED );
+	}
 
-	//uint32_t first = 0x887A0000;
-	//uint32_t second = 0x887A0037;
-	//std::cin >> first;
-	//std::cin >> second;
-	//uint32_t begin = std::min( first, second );
-	//uint32_t end = std::max( first, second ) + 1;
+	using window_style_flags_ex = sbWindows::window_style_flags_ex;
+	window_style_flags_ex creationFlagsEx{};
+	if ( argc > 3 )
+	{
+		bool forComposition = argv[0][0] > '0'; // temp
+		creationFlagsEx = ( creationFlagsEx & ~(window_style_flags_ex::NOREDIRECTIONBITMAP | window_style_flags_ex::OVERLAPPEDWINDOW) ) | ( forComposition ? window_style_flags_ex::NOREDIRECTIONBITMAP : window_style_flags_ex::OVERLAPPEDWINDOW );
+	}
 
-	//for( uint32_t test_raw = begin; test_raw < end; ++test_raw )
-	//{
-	//	result_t test_value = test_raw;
-	//	std::string error_desc = get_result_name( test_value );
-
-	//	error_desc += "\n\tSeverity: ";
-	//	error_desc += get_severity_name( test_value );
-
-	//	error_desc += "\n\tFacility: ";
-	//	error_desc += get_facility_name( test_value );
-
-	//	error_desc += "\n\tCode: ";
-	//	error_desc += get_code_name( test_value );
-
-	//	std::cout << error_desc << std::endl;
-	//}
+	test.create_window(SB_SYSTEM_STRING("test/win32 - main"), { creationFlags, creationFlagsEx });
+	//////////////////////////////////////////////////////////////////////////
 	return 0;
 }
 

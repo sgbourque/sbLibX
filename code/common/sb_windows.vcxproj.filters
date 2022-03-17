@@ -45,6 +45,9 @@
     <ClInclude Include="include\sbwin.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\win32\sbwin_enums.h">
+      <Filter>include\win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sb_windows.cpp">

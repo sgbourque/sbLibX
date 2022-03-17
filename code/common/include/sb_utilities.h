@@ -57,6 +57,13 @@ static inline constexpr ENUM_CLASS firstbit( ENUM_CLASS a ) { using type_t = std
 static_assert( firstbit( ENUM_CLASS{} ) == ENUM_CLASS{}, "enum class default should be empty" ); \
 clang_pop_ignore()
 
+	template< typename T >
+static inline constexpr std::underlying_type_t<T> underlying( T enum_value )
+{
+	using underlying_type = std::underlying_type_t<T>;
+	return static_cast<underlying_type>( enum_value );
+}
+
 
 	template< typename T >
 static inline constexpr size_t array_count( const T& _array );
