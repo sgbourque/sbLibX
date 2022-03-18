@@ -51,12 +51,12 @@ SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unu
 	window_style_flags creationFlags = window_style_flags::OVERLAPPED;
 	if (argc > 4)
 	{
-		bool isVisible = argv[1][0] > '0'; // temp
+		bool isVisible = argv[4][0] > '0'; // temp
 		creationFlags = ( creationFlags & ~window_style_flags::VISIBLE ) | ( isVisible ? window_style_flags::VISIBLE : window_style_flags::OVERLAPPED);
 	}
 	if (argc > 5)
 	{
-		bool isPopup = argv[2][0] > '0'; // temp
+		bool isPopup = argv[5][0] > '0'; // temp
 		creationFlags = ( creationFlags & ~window_style_flags::POPUP ) | ( isPopup ? window_style_flags::POPUP : window_style_flags::OVERLAPPED );
 	}
 
@@ -64,7 +64,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unu
 	window_style_flags_ex creationFlagsEx{};
 	if ( argc > 3 )
 	{
-		bool forComposition = argv[0][0] > '0'; // temp
+		bool forComposition = argv[3][0] > '0'; // temp
 		creationFlagsEx = ( creationFlagsEx & ~(window_style_flags_ex::NOREDIRECTIONBITMAP | window_style_flags_ex::OVERLAPPEDWINDOW) ) | ( forComposition ? window_style_flags_ex::NOREDIRECTIONBITMAP : window_style_flags_ex::OVERLAPPEDWINDOW );
 	}
 
