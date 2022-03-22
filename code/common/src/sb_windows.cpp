@@ -43,8 +43,16 @@ SB_EXPORT_WIN_FUNCTION(get_stock_object_t, get_stock_object_handle, ::GetStockOb
 SB_EXPORT_WIN_FUNCTION(load_image_t, load_image_handle, ::LoadImageW, (nullptr, resource_handle_type{}, image_type{}, 0, 0, image_load_flags{}), (nullptr, (LPCWSTR)resource_handle_type{}, underlying(image_type{}), 0, 0, underlying(image_load_flags{})));
 SB_EXPORT_WIN_FUNCTION(get_system_metric_t, get_system_metric, ::GetSystemMetrics, (system_metric{}), (underlying(system_metric{})));
 SB_EXPORT_WIN_FUNCTION(register_class_t, register_class, ::RegisterClassExW, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(unregister_class_t, unregister_class, ::UnregisterClassW, (nullptr, nullptr), (nullptr, nullptr));
 SB_EXPORT_WIN_FUNCTION(get_last_error_t, get_last_error, ::GetLastError, (), ());
 SB_EXPORT_WIN_FUNCTION(create_window_t, create_window, ::CreateWindowExW, (window_style_flags_ex{}, const_system_string_t{}, const_system_string_t{}, window_style_flags{}, 0, 0, 0, 0, window_handle{}, menu_handle{}, instance_handle{}, nullptr), (underlying(window_style_flags_ex{}), (LPCWSTR)const_system_string_t {}, (LPCWSTR)const_system_string_t {}, underlying(window_style_flags{}), 0, 0, 0, 0, (HWND)window_handle {}, (HMENU)menu_handle {}, (HINSTANCE)instance_handle {}, nullptr));
+SB_EXPORT_WIN_FUNCTION(show_window_t, show_window, ::ShowWindow, (window_handle{}, int{}), (nullptr, 0));
+SB_EXPORT_WIN_FUNCTION(update_window_t, update_window, ::UpdateWindow, (window_handle{}), (nullptr));
+SB_EXPORT_WIN_FUNCTION(destroy_window_t, destroy_window, ::DestroyWindow, (window_handle{}), (nullptr));
+
+SB_EXPORT_WIN_FUNCTION(get_message_t, get_message, ::GetMessage, (nullptr, nullptr, 0,0), (nullptr, nullptr, 0, 0));
+SB_EXPORT_WIN_FUNCTION(translate_message_t, translate_message, ::TranslateMessage, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(dispatch_message_t, dispatch_message, ::DispatchMessage, (nullptr), (nullptr));
 
 //SB_WIN_EXPORT result_t window::register_class() const
 //{
@@ -68,6 +76,8 @@ SB_EXPORT_WIN_FUNCTION(create_window_t, create_window, ::CreateWindowExW, (windo
 //	return reinterpret_cast<window_handle>( hwnd );
 //}
 
+
+#if 1
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -306,3 +316,4 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 	std::cout << std::endl;
 	return 0;
 }
+#endif

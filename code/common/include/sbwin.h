@@ -75,10 +75,18 @@ SB_DECLARE_WIN_EXPORT( get_system_metric_t, int, (*)(system_metric metric), get_
 	GetSystemMetrics, (system_metric metric), ( metric ) )
 SB_DECLARE_WIN_EXPORT( register_class_t, uint16_t, (*)(const WindowClass* window_class), register_class,
 	RegisterClass, (const WindowClass* window_class), (window_class) )
+SB_DECLARE_WIN_EXPORT( unregister_class_t, uint32_t, (*)(const_system_string_t class_name, instance_handle instance), unregister_class,
+	UnregisterClass, (const_system_string_t window_name, instance_handle instance), (window_name, instance) )
 SB_DECLARE_WIN_EXPORT( create_window_t, window_handle, (*)(window_style_flags_ex flags_ex, const_system_string_t class_name, const_system_string_t window_name, window_style_flags flags, int pos_x, int pos_y, int width, int height, window_handle parent, menu_handle menu, instance_handle instance, void* user_data), create_window,
 	CreateWindow, (window_style_flags_ex flags_ex, const_system_string_t class_name, const_system_string_t window_name, window_style_flags flags, int pos_x, int pos_y, int width, int height, window_handle parent, menu_handle menu, instance_handle instance, void* user_data), (flags_ex, class_name, window_name, flags, pos_x, pos_y, width, height, parent, menu, instance, user_data))
 SB_DECLARE_WIN_EXPORT(get_last_error_t, result_t, (*)(), get_last_error,
 	GetLastError, (), ())
+SB_DECLARE_WIN_EXPORT(show_window_t, uint32_t, (*)(window_handle window, int properties), show_window,
+	ShowWindow, (window_handle window, int properties), (window, properties))
+SB_DECLARE_WIN_EXPORT(update_window_t, uint32_t, (*)(window_handle window), update_window,
+	UpdateWindow, (window_handle window), (window))
+SB_DECLARE_WIN_EXPORT(destroy_window_t, uint32_t, (*)(window_handle window), destroy_window,
+	DestroyWindow, (window_handle window), (window))
 
 
 	template<typename resource_type>
@@ -155,30 +163,71 @@ public:
 			/*icon_handle        */	SB_STRUCT_SET( .small_icon        = ) small_icon,
 		};
 	}
-
-	inline constexpr result_t register_class() const
+	~window()
 	{
-		uint16_t classId = RegisterClass( &window_class );
+		unregister_class();
+	}
+
+	inline constexpr result_t register_class()
+	{
+		classId = RegisterClass( &window_class );
 		return ( classId != 0 ) ? result_t{} : GetLastError();
+	}
+	inline constexpr result_t unregister_class()
+	{
+		result_t result{};
+		if (classId && !UnregisterClass(window_class.class_name, window_class.instance) )
+		{
+			result = GetLastError();
+		}
+		return result;
 	}
 	inline constexpr window_handle create_window(const_system_string_t window_name, window_style style)
 	{
-		constexpr int default_pos = 0x80000000; // TODO
-		window_handle hwnd = CreateWindow(
+		constexpr int default_pos = 0x80000000; // TODO: CW_USEDEFAULT
+		handle = CreateWindow(
 			style.flags_ex,
 			window_class.class_name, window_name,
 			style.flags,
 			default_pos, default_pos,
 			default_pos, default_pos,
 			nullptr, nullptr, window_class.instance, nullptr);
-		return hwnd;
+		return handle;
 	}
 	inline constexpr window_handle get_handle() const { return handle; }
+	inline constexpr operator window_handle() const { return get_handle(); }
 
 private:
 	WindowClass window_class{};
+	uint16_t classId{};
+	//uint16_t pad0;
+	//uint32_t pad1;
 	window_handle handle{};
 };
+
+//////////////////////////////////////////////////////////////////////////
+struct POINT
+{
+	int32_t	x;
+	int32_t	y;
+};
+struct MSG
+{
+	window_handle	hwnd;
+	uint32_t     	message;
+	uintptr_t    	wParam;
+	intptr_t     	lParam;
+	uint16_t     	time;
+	POINT        	point;
+};
+
+SB_DECLARE_WIN_EXPORT(get_message_t, int32_t, (*)(MSG* msg, window_handle hwnd, uint32_t messageFirst, uint32_t messageLast), get_message,
+	GetMessage, (MSG* msg, window_handle hwnd = nullptr , uint32_t messageFirst = 0, uint32_t messageLast = 0), (msg, hwnd, messageFirst, messageLast))
+SB_DECLARE_WIN_EXPORT(translate_message_t, int32_t, (*)(const MSG* msg), translate_message,
+	TranslateMessage, (const MSG* msg), (msg))
+SB_DECLARE_WIN_EXPORT(dispatch_message_t, intptr_t, (*)(const MSG* msg), dispatch_message,
+	DispatchMessage, (const MSG* msg), (msg))
+
 
 } // Windows
 }} // sbLibX

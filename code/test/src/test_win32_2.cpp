@@ -37,6 +37,18 @@ namespace sbWindows = SB::LibX::Windows;
 
 int64_t ProcessWindow( sbWindows::window_handle handle, uint32_t message, uintptr_t message_data1, intptr_t message_data2 )
 {
+	// yuk : tmp
+//#define WM_DESTROY                      0x0002
+//	if (message == WM_DESTROY || message == WM_CLOSE)
+//	{
+//		return 0;
+//	}
+#define WM_CLOSE                        0x0010
+	if ( message == WM_CLOSE )
+	{
+		DestroyWindow( handle );
+		return 0;
+	}
 	return sbWindows::default_win_proc( handle, message, message_data1, message_data2 );
 }
 
@@ -69,7 +81,43 @@ SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unu
 	}
 
 	test.create_window(SB_SYSTEM_STRING("test/win32 - main"), { creationFlags, creationFlagsEx });
-	//////////////////////////////////////////////////////////////////////////
+
+
+	// yuk : tmp
+#define SW_HIDE             0
+#define SW_SHOWNORMAL       1
+#define SW_NORMAL           1
+#define SW_SHOWMINIMIZED    2
+#define SW_SHOWMAXIMIZED    3
+#define SW_MAXIMIZE         3
+#define SW_SHOWNOACTIVATE   4
+#define SW_SHOW             5
+#define SW_MINIMIZE         6
+#define SW_SHOWMINNOACTIVE  7
+#define SW_SHOWNA           8
+#define SW_RESTORE          9
+#define SW_SHOWDEFAULT      10
+#define SW_FORCEMINIMIZE    11
+#define SW_MAX              11
+	if (!ShowWindow(test, SW_SHOW))
+	{
+		result = sbWindows::GetLastError();
+	}
+	if (!UpdateWindow(test))
+	{
+		result = sbWindows::GetLastError();
+	}
+
+	sbWindows::MSG msg;
+	int32_t gotMessage;
+	while ((gotMessage = GetMessage(&msg, test)) != 0 && gotMessage != -1)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+		//if (callback.empty())
+		//	break;
+	}
+	////////////////////////////////////////////////////////////////////////
 	return 0;
 }
 
