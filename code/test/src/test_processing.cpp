@@ -22,32 +22,13 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 	// Trying to create both vulkan & DirectX devices on every adapters available
 	using namespace SB::LibX;
 
-	auto vendor_order = [](uint32_t vendor) -> uint32_t
-	{
-		enum vendor_t
-		{
-			NVIDIA    = 0x10DE,
-			AMD       = 0x1002,
-			Intel     = 0x8086,
-			Microsoft = 0x1414,
-		};
-		switch( static_cast<vendor_t>(vendor) )
-		{
-		case vendor_t::NVIDIA:    return 0x00000100;
-		case vendor_t::AMD:       return 0x00000200;
-		case vendor_t::Intel:     return 0x00000400;
-		// Microsoft is usually a software (possibly hardware accelerated) device, so considered as debug-only
-		case vendor_t::Microsoft: return 0x80000000;
-		}
-		return vendor;
-	};
-	constexpr uint32_t kDebugDeviceStart = 0x00010000;
+	constexpr uint32_t kDebugDeviceStart = 0xF0000000;
 
 	vulkan_instance test_vulkan{};
 	std::vector<std::tuple<vulkan_device, vulkan::DeviceDesc>> vulkan_devices{};
-	int vulkanActiveDeviceCount = 0;
+	[[maybe_unused]] int vulkanActiveDeviceCount = 0;
 	{
-		auto vulkan_adapter_sort_predicate = [&vendor_order](const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second) -> bool
+		auto vulkan_adapter_sort_predicate = [](const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second) -> bool
 		{
 			vulkan::DeviceDesc device1_desc = vulkan::GetDeviceDesc(first);
 			vulkan::DeviceDesc device2_desc = vulkan::GetDeviceDesc(second);
@@ -84,7 +65,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_processing([[maybe_unused]] int argc, [[maybe
 	std::vector<std::tuple<dx12::DeviceHandle, dx12::DeviceDesc>> dx12_devices;
 	size_t dx12ActiveDeviceCount = 0;
 	{
-		auto dx12_adapter_sort_predicate = [&vendor_order](const dx12::AdapterHandle& first, const dx12::AdapterHandle& second) -> bool
+		auto dx12_adapter_sort_predicate = [](const dx12::AdapterHandle& first, const dx12::AdapterHandle& second) -> bool
 		{
 			dx12::DeviceDesc device1_desc = dx12::GetDeviceDesc(first);
 			dx12::DeviceDesc device2_desc = dx12::GetDeviceDesc(second);

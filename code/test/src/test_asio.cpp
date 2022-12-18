@@ -52,7 +52,7 @@ struct DeviceInfo
 };
 sb_enum_class_flags( DeviceInfo::SampleRateFlags );
 
-static inline constexpr size_t GetBufferBytesSize( SampleType type, size_t sampleCount )
+[[maybe_unused]] static inline constexpr size_t GetBufferBytesSize( SampleType type, size_t sampleCount )
 {
 	switch ( type )
 	{
@@ -294,6 +294,9 @@ bool printInfo( sbASIO::DeviceHandle device, const sbASIO::DeviceDesc& deviceDes
 	return is_low_latency;
 }
 
+#if ( (SB_TARGET_TYPE & SB_TARGET_TYPE_STATIC) != 0 )
+#include <windows.h>
+#endif
 
 #if 0//( (SB_TARGET_TYPE & SB_TARGET_TYPE_STANDALONE) != 0 )
 #define asio main

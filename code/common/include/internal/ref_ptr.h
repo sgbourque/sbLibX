@@ -21,6 +21,16 @@ struct IUnknown
 	virtual int32_t  SB_STDCALL Release() = 0;
 };
 
+	template<typename Type>
+Type* query_interface( IUnknown* base )
+{
+	Type* result{};
+	if( base && base->QueryInterface( Type::iid, reinterpret_cast<void**>( &result ) ) < 0 )
+	{
+		//failed
+	}
+	return result;
+};
 // This is kind of half of a ComPtr (without the QueryInterface casting).
 // If needing the interface casting, a new com_ptr template shall be inheriting from ref_ptr, completing the remaining half of ComPtr.
 // However, the preferred approach for interface queries would be to create adaptor templates like:

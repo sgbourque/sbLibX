@@ -135,6 +135,9 @@
     <ClInclude Include="include\internal\asio\interface_asio_sampletype.hpp">
       <Filter>include\internal\asio</Filter>
     </ClInclude>
+    <ClInclude Include="include\sb_math_base.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sbLibX_main.cpp">

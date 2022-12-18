@@ -4,18 +4,25 @@
     <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-    <LocalDebuggerCommandArguments>run test/win32</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/encrypt2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
-    <RemoteDebuggerCommandArguments>run test/win32</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test/encrypt2</RemoteDebuggerCommandArguments>
+    <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
+    <RemoteDebuggerCommand>\\$(ComputerName)\$(SolutionName)\bin\$(Platform)\$(TargetName)$(TargetExt)</RemoteDebuggerCommand>
+    <RemoteDebuggerWorkingDirectory>\\$(ComputerName)\$(SolutionName)</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerServerName>Weyl-Audio</RemoteDebuggerServerName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='final|x64'">
-    <LocalDebuggerCommandArguments>
-    </LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test/encrypt2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
+    <RemoteDebuggerCommand>\\$(ComputerName)\$(SolutionName)\bin\$(Platform)\$(TargetName)$(TargetExt)</RemoteDebuggerCommand>
+    <RemoteDebuggerWorkingDirectory>\\$(ComputerName)\$(SolutionName)</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerServerName>Weyl-Audio</RemoteDebuggerServerName>
+    <RemoteDebuggerCommandArguments>run test/encrypt2</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <LocalDebuggerCommandArguments>run test/asio</LocalDebuggerCommandArguments>
@@ -23,5 +30,8 @@
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <RemoteDebuggerCommandArguments />
+    <RemoteDebuggerCommand>\\$(ComputerName)\$(SolutionName)\bin\$(Platform)\$(TargetName)$(TargetExt)</RemoteDebuggerCommand>
+    <RemoteDebuggerWorkingDirectory>\\$(ComputerName)\$(SolutionName)</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerServerName>Weyl-Audio</RemoteDebuggerServerName>
   </PropertyGroup>
 </Project>

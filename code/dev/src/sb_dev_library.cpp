@@ -20,10 +20,10 @@
 static constexpr const char* const inverse_ordered_configuration_tokens[] = {
 	"_" SB_TARGET_CONFIGURATION,
 	"_" SB_TARGET_PLATFORM,
-	"_" SB_CLANG_PREFIX_TARGET SB_TARGET_PLATFORM
+	"_" SB_TARGET_PLATFORM "-" SB_CLANG_SUFFIX_TARGET
 #if SBLIB_SUPPORT_EXE
 	"_" SB_TARGET_PLATFORM "-exec.exe",
-	"_" SB_CLANG_PREFIX_TARGET SB_TARGET_PLATFORM "-exec.exe",
+	"_" SB_TARGET_PLATFORM "-" SB_CLANG_SUFFIX_TARGET "-exec.exe",
 #endif
 };
 
@@ -75,7 +75,7 @@ std::string sbDynLib_alias_to_clang_name(std::string name)
 {
 	name = sbDynLib_name_to_alias(name);
 	name += std::string("_" SB_TARGET_PLATFORM);
-	name += std::string("_" SB_CLANG_PREFIX_TARGET SB_TARGET_CONFIGURATION);
+	name += std::string("_" SB_TARGET_CONFIGURATION "-" SB_CLANG_SUFFIX_TARGET);
 	return name;
 }
 

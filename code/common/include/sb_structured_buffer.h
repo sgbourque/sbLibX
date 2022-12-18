@@ -126,10 +126,10 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::data_info_array
 			using data_traits = typename key_traits::data_traits_t;
 			return range_t<BEGIN, END - 1>::get_data_info(
 				data_info_t{
-					SB_STRUCT_SET(.offset    =) data_traits::offset, // TODO: what to do with static data & members? (might have to deal with more tables)
-					SB_STRUCT_SET(.size      =) sizeof(typename data_traits::type_t),
-					SB_STRUCT_SET(.align     =) alignof(typename data_traits::type_t),
-					SB_STRUCT_SET(.key_index =) find_key_index(END - 1),
+					SB_STRUCT_SET( .offset   , =,  data_traits::offset ), // TODO: what to do with static data & members? (might have to deal with more tables)
+					SB_STRUCT_SET( .size     , =,  sizeof(typename data_traits::type_t) ),
+					SB_STRUCT_SET( .align    , =,  alignof(typename data_traits::type_t) ),
+					SB_STRUCT_SET( .key_index, =,  find_key_index(END - 1) ),
 				},
 				data_info... );
 		}
@@ -183,9 +183,9 @@ struct build_helper<_IMPLEMENTATION_, typename _IMPLEMENTATION_::key_info_array_
 			return range_t<BEGIN + 1, END, HASH_VALUES..., key_traits::name_hash>::get_key_info(
 				keys...,
 				key_info_t{
-					SB_STRUCT_SET(.name_hash  =) key_traits::name_hash,
-					SB_STRUCT_SET(.type_hash  =) type_hash,
-					SB_STRUCT_SET(.data_index =) BEGIN,
+					SB_STRUCT_SET( .name_hash , =,  key_traits::name_hash ),
+					SB_STRUCT_SET( .type_hash , =,  type_hash ),
+					SB_STRUCT_SET( .data_index, =,  BEGIN ),
 				});
 		}
 	};

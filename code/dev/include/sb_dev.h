@@ -1,7 +1,7 @@
 #pragma once
 #include <common/include/sb_common.h>
 
-#define SB_CLANG_PREFIX_TARGET		"clang-"
+#define SB_CLANG_SUFFIX_TARGET		"clang"
 #if defined(SBDEBUG)
 #define SB_TARGET_CONFIGURATION		"debug"
 #elif defined(SBRELEASE)

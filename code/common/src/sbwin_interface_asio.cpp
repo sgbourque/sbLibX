@@ -211,7 +211,7 @@ struct InstanceImpl1 : RefClassImpl<InstanceImpl1, Instance>
 	}
 
 public:
-	static inline GUID clsid = { 0x029ABF3D, 0x8B08, 0x4A4D, { 0x9F,0x0E,0xF5,0x41,0x72,0xB0,0x71,0x44, } };
+	static inline GUID clsid = { 0x742c4fc, 0x3541, 0x428d, { 0x82, 0x34, 0x27, 0x4, 0xc1, 0xe3, 0x56, 0xf1, } };
 
 	friend SB_WIN_EXPORT InstanceHandle CreateInstance([[maybe_unused]] const Configuration* config);
 	friend SB_WIN_EXPORT bool DestroyInstance([[maybe_unused]] InstanceHandle instance, [[maybe_unused]] const Configuration* config);

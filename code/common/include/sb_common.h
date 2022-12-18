@@ -107,10 +107,10 @@
 	#define SB_UNEVAL(...) __VA_ARGS__
 	#define SB_CONCAT(A, B) SB_UNEVAL(A) ## SB_UNEVAL(B)
 ////
-	#define SB_CSTRING_WRAPPER(_X)  #_X
-	#define SB_WSTRING_WRAPPER(_X) L#_X
-	#define SB_U8STRING_WRAPPER(_X) u8#_X
-	#define SB_U16STRING_WRAPPER(_X) u#_X
+	#define SB_CSTRING_WRAPPER(_X) "" #_X
+	#define SB_WSTRING_WRAPPER(_X) L"" #_X
+	#define SB_U8STRING_WRAPPER(_X) u8"" #_X
+	#define SB_U16STRING_WRAPPER(_X) u"" #_X
 	#define CSTR(_X) SB_CSTRING_WRAPPER(_X)
 	#define WSTR(_X) SB_WSTRING_WRAPPER(_X)
 	#define U8STR(_X) SB_U8STRING_WRAPPER(_X)

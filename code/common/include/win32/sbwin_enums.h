@@ -403,6 +403,57 @@ enum class window_class_style : uint32_t {
 };
 sb_enum_class_flags(window_class_style);
 
+
+enum class show_window_properties
+{
+	HIDE             = 0,
+	SHOWNORMAL       = 1,
+	NORMAL           = 1,
+	SHOWMINIMIZED    = 2,
+	SHOWMAXIMIZED    = 3,
+	MAXIMIZE         = 3,
+	SHOWNOACTIVATE   = 4,
+	SHOW             = 5,
+	MINIMIZE         = 6,
+	SHOWMINNOACTIVE  = 7,
+	SHOWNA           = 8,
+	RESTORE          = 9,
+	SHOWDEFAULT      = 10,
+	FORCEMINIMIZE    = 11,
+	MAX              = 11,
+};
+sb_enum_class_flags(show_window_properties);
+
+
+// DWM
+enum class dwm_window_attribute {
+	NCRENDERING_ENABLED,
+	NCRENDERING_POLICY,
+	TRANSITIONS_FORCEDISABLED,
+	ALLOW_NCPAINT,
+	CAPTION_BUTTON_BOUNDS,
+	NONCLIENT_RTL_LAYOUT,
+	FORCE_ICONIC_REPRESENTATION,
+	FLIP3D_POLICY,
+	EXTENDED_FRAME_BOUNDS,
+	HAS_ICONIC_BITMAP,
+	DISALLOW_PEEK,
+	EXCLUDED_FROM_PEEK,
+	CLOAK,
+	CLOAKED,
+	FREEZE_REPRESENTATION,
+	PASSIVE_UPDATE_MODE,
+	USE_HOSTBACKDROPBRUSH,
+	USE_IMMERSIVE_DARK_MODE_LEGACY = 19,
+	USE_IMMERSIVE_DARK_MODE = 20, // since 20H1
+	WINDOW_CORNER_PREFERENCE = 33,
+	BORDER_COLOR,
+	CAPTION_COLOR,
+	TEXT_COLOR,
+	VISIBLE_FRAME_BORDER_THICKNESS,
+	LAST
+};
+
 } // Windows
 }} // sbLibX
 namespace sbWindows = SB::LibX::Windows;

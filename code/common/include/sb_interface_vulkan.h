@@ -103,6 +103,19 @@ struct InstanceConfiguration : Configuration
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
 
+static inline constexpr uint32_t vendor_order( vendor_t vendor )
+{
+	switch (vendor)
+	{
+	case vendor_t::NVIDIA:    return ( static_cast<uint32_t>( vendor_t::NVIDIA    ) | 0x01000000 );
+	case vendor_t::AMD:       return ( static_cast<uint32_t>( vendor_t::AMD       ) | 0x02000000 );
+	case vendor_t::Intel:     return ( static_cast<uint32_t>( vendor_t::Intel     ) | 0x04000000 );
+		// Microsoft is usually a software (possibly hardware accelerated) device, so considered as debug-only
+	case vendor_t::Microsoft: return ( static_cast<uint32_t>( vendor_t::Microsoft ) | 0xFFFF0000 );
+	}
+	return static_cast<uint32_t>( vendor );
+};
+
 }
 using vulkan_instance = vulkan::unique_instance;
 using vulkan_device = vulkan::unique_device;

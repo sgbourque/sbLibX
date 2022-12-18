@@ -64,7 +64,7 @@ public:
 	function_helper( const void* address ) : function_address( address ) {}
 
 		template< typename fct_type/*, typename = std::enable_if_t<std::is_function_v<fct_type>>*/ >
-	operator fct_type() const { return reinterpret_cast<fct_type>( function_address ); }
+	operator fct_type() const { return reinterpret_cast<fct_type>( const_cast<void*>( function_address ) ); }
 protected:
 	const void* function_address;
 };

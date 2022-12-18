@@ -1,12 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-    <LocalDebuggerCommandArguments>run test/test_int_type</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test_x64_debug/test_encrypt3</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_$(Configuration).exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
-    <RemoteDebuggerCommandArguments>run test/test_int_type</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test_x64_debug/test_encrypt3</RemoteDebuggerCommandArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">
+    <LocalDebuggerCommandArguments>run test_x64_debug-clang/test_encrypt3</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_debug.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
+    <RemoteDebuggerCommandArguments>run test_x64_debug-clang/test_encrypt3</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -24,8 +32,10 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
-    <LocalDebuggerCommandArguments>run test/asio</LocalDebuggerCommandArguments>
-    <RemoteDebuggerCommandArguments>run test/asio</RemoteDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>
+    </RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <LocalDebuggerCommandArguments>run test/test_int_type</LocalDebuggerCommandArguments>
@@ -35,20 +45,15 @@
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
     <RemoteDebuggerCommandArguments>run test/test_int_type</RemoteDebuggerCommandArguments>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
-    <LocalDebuggerCommandArguments>run test/test_win32</LocalDebuggerCommandArguments>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'">
+    <LocalDebuggerCommandArguments>run test_x64_release-clang/test_encrypt3</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_release.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
-    <RemoteDebuggerCommandArguments>run test/test_win32</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test_x64_release-clang/test_encrypt3</RemoteDebuggerCommandArguments>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>

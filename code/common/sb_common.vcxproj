@@ -220,6 +220,7 @@
     <ClInclude Include="include\sb_interface_dx12.h" />
     <ClInclude Include="include\sb_interface_vst.h" />
     <ClInclude Include="include\sb_library.h" />
+    <ClInclude Include="include\sb_math_base.h" />
     <ClInclude Include="include\sb_range.h" />
     <ClInclude Include="include\sb_structured_buffer.h" />
     <ClInclude Include="include\sb_type_hash.h" />

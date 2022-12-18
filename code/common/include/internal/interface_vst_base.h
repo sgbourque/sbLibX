@@ -61,26 +61,26 @@ struct ClassInfo
 	char category[kCategorySize];  ///< class category, host uses this to categorize interfaces
 	char name[kNameSize];          ///< class name, visible to the user
 };
-// To keep POD as POD, no inheritance should be used on info structs
-union ClassInfo2
-{
-	ClassInfo info1;
-	struct ClassInfo2_t
-	{
-		ClassInfo::CLSID       cid;
-		ClassInfo::Cardinality cardinality;
-		char category[ClassInfo::kCategorySize];
-		char name[ClassInfo::kNameSize];
-	};
-};
+//// To keep POD as POD, no inheritance should be used on info structs
+//union ClassInfo2
+//{
+//	ClassInfo info1;
+//	struct ClassInfo2_t
+//	{
+//		ClassInfo::CLSID       cid;
+//		ClassInfo::Cardinality cardinality;
+//		char category[ClassInfo::kCategorySize];
+//		char name[ClassInfo::kNameSize];
+//	};
+//};
 
 class IPluginFactory : public IUnknown
 {
 public:
-	virtual result_t SB_STDCALL getFactoryInfo (FactoryInfo* info) = 0;
+	virtual result_t SB_STDCALL getFactoryInfo (FactoryInfo* info) const = 0;
 
-	virtual int32_t SB_STDCALL countClasses () = 0;
-	virtual result_t SB_STDCALL getClassInfo (int32_t index, ClassInfo* info) = 0;
+	virtual int32_t SB_STDCALL countClasses () const = 0;
+	virtual result_t SB_STDCALL getClassInfo (int32_t index, ClassInfo* info) const = 0;
 	virtual result_t SB_STDCALL createInstance (const char cid[], const char _iid[], void** obj) = 0;
 
 public:

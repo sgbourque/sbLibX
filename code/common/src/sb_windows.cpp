@@ -17,42 +17,65 @@
 // for LoadImage
 #include <winuser.h>
 #pragma comment( lib, "User32.lib" )
+// for DesktopWindowManager
+#include <dwmapi.h>
+#pragma comment( lib, "Dwmapi.lib" )
+#include <processthreadsapi.h>
 
 #ifndef assert
 #include <cassert>
 #endif
 
-
+#include <type_traits>
 
 //SB_IMPORT_LIB HICON LoadIconW(_In_opt_ HINSTANCE hInstance, _In_ LPCWSTR lpIconName);
 
 namespace SB { namespace LibX {
 namespace Windows  {
 
+template<typename T> struct size_of_t { static inline constexpr size_t value = sizeof(T); };
+template<> struct size_of_t<void> { static inline constexpr size_t value = 0; };
+#define size_of( type ) size_of_t<decltype(type)>::value
+
 #define SB_EXPORT_WIN_FUNCTION( type, name, function, first_ops, second_ops ) \
 	SB_EXPORT_LIB type name = reinterpret_cast<type>( &function ); \
-	static_assert( sizeof( name ) == sizeof( &function ) ); \
-	static_assert( sizeof( name first_ops ) == sizeof( function second_ops ) )
+	static_assert( size_of( name ) == size_of( &function ) ); \
+	static_assert( size_of( name first_ops ) == size_of( function second_ops ) )
 
 
-SB_EXPORT_WIN_FUNCTION(get_module_handle_t, get_module_instance_handle, ::GetModuleHandleW, (nullptr), (nullptr) );
-SB_EXPORT_WIN_FUNCTION(win_proc, default_win_proc, ::DefWindowProcW, (nullptr, 0,0,0), (nullptr, 0,0,0));
-SB_EXPORT_WIN_FUNCTION(load_icon_t, load_icon_handle, ::LoadIconW, (nullptr,nullptr), (nullptr,nullptr));
-SB_EXPORT_WIN_FUNCTION(load_cursor_t, load_cursor_handle, ::LoadCursorW, (nullptr, nullptr), (nullptr, nullptr));
-SB_EXPORT_WIN_FUNCTION(get_stock_object_t, get_stock_object_handle, ::GetStockObject, (stock_object_resource{}), (underlying(stock_object_resource{})));
-SB_EXPORT_WIN_FUNCTION(load_image_t, load_image_handle, ::LoadImageW, (nullptr, resource_handle_type{}, image_type{}, 0, 0, image_load_flags{}), (nullptr, (LPCWSTR)resource_handle_type{}, underlying(image_type{}), 0, 0, underlying(image_load_flags{})));
-SB_EXPORT_WIN_FUNCTION(get_system_metric_t, get_system_metric, ::GetSystemMetrics, (system_metric{}), (underlying(system_metric{})));
-SB_EXPORT_WIN_FUNCTION(register_class_t, register_class, ::RegisterClassExW, (nullptr), (nullptr));
-SB_EXPORT_WIN_FUNCTION(unregister_class_t, unregister_class, ::UnregisterClassW, (nullptr, nullptr), (nullptr, nullptr));
-SB_EXPORT_WIN_FUNCTION(get_last_error_t, get_last_error, ::GetLastError, (), ());
-SB_EXPORT_WIN_FUNCTION(create_window_t, create_window, ::CreateWindowExW, (window_style_flags_ex{}, const_system_string_t{}, const_system_string_t{}, window_style_flags{}, 0, 0, 0, 0, window_handle{}, menu_handle{}, instance_handle{}, nullptr), (underlying(window_style_flags_ex{}), (LPCWSTR)const_system_string_t {}, (LPCWSTR)const_system_string_t {}, underlying(window_style_flags{}), 0, 0, 0, 0, (HWND)window_handle {}, (HMENU)menu_handle {}, (HINSTANCE)instance_handle {}, nullptr));
-SB_EXPORT_WIN_FUNCTION(show_window_t, show_window, ::ShowWindow, (window_handle{}, int{}), (nullptr, 0));
-SB_EXPORT_WIN_FUNCTION(update_window_t, update_window, ::UpdateWindow, (window_handle{}), (nullptr));
-SB_EXPORT_WIN_FUNCTION(destroy_window_t, destroy_window, ::DestroyWindow, (window_handle{}), (nullptr));
+SB_EXPORT_WIN_FUNCTION(get_module_handle_proxy, get_module_handle, ::GetModuleHandleW, (nullptr), (nullptr) );
+SB_EXPORT_WIN_FUNCTION(win_proc, default_win_proc, ::DefWindowProcW, (nullptr, message_t{}, 0, 0 ), ( nullptr, 0, 0, 0 ));
+SB_EXPORT_WIN_FUNCTION(load_icon_proxy, load_icon, ::LoadIconW, (nullptr,nullptr), (nullptr,nullptr));
+SB_EXPORT_WIN_FUNCTION(create_icon_proxy, create_icon, ::CreateIcon, (instance_handle{}, 0, 0, uint8_t{}, uint8_t{}, nullptr, nullptr), (nullptr, 0, 0, uint8_t{}, uint8_t{}, nullptr, nullptr));
+SB_EXPORT_WIN_FUNCTION(load_cursor_proxy, load_cursor, ::LoadCursorW, (nullptr, nullptr), (nullptr, nullptr));
+SB_EXPORT_WIN_FUNCTION(get_stock_object_proxy, get_stock_object, ::GetStockObject, (stock_object_resource{}), (underlying(stock_object_resource{})));
+SB_EXPORT_WIN_FUNCTION(load_image_proxy, load_image, ::LoadImageW, (nullptr, resource_handle_type{}, image_type{}, 0, 0, image_load_flags{}), (nullptr, (LPCWSTR)resource_handle_type{}, underlying(image_type{}), 0, 0, underlying(image_load_flags{})));
+SB_EXPORT_WIN_FUNCTION(get_system_metric_proxy, get_system_metric, ::GetSystemMetrics, (system_metric{}), (underlying(system_metric{})));
+SB_EXPORT_WIN_FUNCTION(register_class_proxy, register_class, ::RegisterClassExW, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(unregister_class_proxy, unregister_class, ::UnregisterClassW, (nullptr, nullptr), (nullptr, nullptr));
+SB_EXPORT_WIN_FUNCTION(get_last_error_proxy, get_last_error, ::GetLastError, (), ());
+SB_EXPORT_WIN_FUNCTION(create_window_proxy, create_window, ::CreateWindowExW, (window_style_flags_ex{}, const_system_string_t{}, const_system_string_t{}, window_style_flags{}, 0, 0, 0, 0, window_handle{}, menu_handle{}, instance_handle{}, nullptr), (underlying(window_style_flags_ex{}), (LPCWSTR)const_system_string_t {}, (LPCWSTR)const_system_string_t {}, underlying(window_style_flags{}), 0, 0, 0, 0, (HWND)window_handle {}, (HMENU)menu_handle {}, (HINSTANCE)instance_handle {}, nullptr));
+SB_EXPORT_WIN_FUNCTION(show_window_proxy, show_window, ::ShowWindow, (window_handle{}, show_window_properties{}), (nullptr, 0));
+SB_EXPORT_WIN_FUNCTION(update_window_proxy, update_window, ::UpdateWindow, (window_handle{}), (nullptr));
+SB_EXPORT_WIN_FUNCTION(destroy_window_proxy, destroy_window, ::DestroyWindow, (window_handle{}), (nullptr));
+SB_EXPORT_WIN_FUNCTION(post_message_proxy, post_message, ::PostMessageW, (window_handle{}, message_t{}, 0u, 0 ), ( nullptr, 0, 0, 0 ));
+SB_EXPORT_WIN_FUNCTION(post_quit_message_proxy, post_quit_message, ::PostQuitMessage, (0), (0));
 
-SB_EXPORT_WIN_FUNCTION(get_message_t, get_message, ::GetMessage, (nullptr, nullptr, 0,0), (nullptr, nullptr, 0, 0));
-SB_EXPORT_WIN_FUNCTION(translate_message_t, translate_message, ::TranslateMessage, (nullptr), (nullptr));
-SB_EXPORT_WIN_FUNCTION(dispatch_message_t, dispatch_message, ::DispatchMessage, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(get_message_proxy, get_message, ::GetMessage, (nullptr, nullptr, 0,0), (nullptr, nullptr, 0, 0));
+SB_EXPORT_WIN_FUNCTION(peek_message_proxy, peek_message, ::PeekMessage, (nullptr, nullptr, 0,0,0), (nullptr, nullptr, 0, 0, 0));
+SB_EXPORT_WIN_FUNCTION(translate_message_proxy, translate_message, ::TranslateMessage, (nullptr), (nullptr));
+SB_EXPORT_WIN_FUNCTION(dispatch_message_proxy, dispatch_message, ::DispatchMessage, (nullptr), (nullptr));
+
+SB_EXPORT_WIN_FUNCTION(dwm_set_window_attribute_proxy, dwm_set_window_attribute, ::DwmSetWindowAttribute, (nullptr, {}, nullptr, 0), (nullptr, {}, nullptr, 0));
+
+SB_EXPORT_WIN_FUNCTION(create_thread_proxy, create_thread, ::CreateThread, ( nullptr, 0u, nullptr, nullptr, 0u, nullptr ), ( nullptr, 0u, nullptr, nullptr, 0u, nullptr ));
+SB_EXPORT_WIN_FUNCTION(wait_for_single_object_proxy, wait_for_single_object, ::WaitForSingleObject, ( nullptr, 0u ), ( nullptr, 0u ));
+SB_EXPORT_WIN_FUNCTION(sleep_proxy, sleep_ms, ::Sleep, ( 0u ), ( 0u ));
+
+
+	//SB_DECLARE_WIN_EXPORT( wait_for_single_object_proxy, result_t, ( * )( const void* objectHandle, uint32_t timeout_ms ), wait_for_single_object,
+	//	WaitForSingleObject, ( const void* objectHandle, uint32_t timeout_ms = ~0u ), ( objectHandle, timeout_ms ) )
+
 
 //SB_WIN_EXPORT result_t window::register_class() const
 //{
@@ -243,12 +266,15 @@ template<typename return_type, typename _implementation_> constexpr return_type 
 namespace sbWindows = SB::LibX::Windows;
 //using namespace SB::LibX;
 
+
+// This should really be moved to some SbLibTest projects.
+// Nothing should use sbDev from the common, it should be the other way around.
 #include <dev/include/sb_dev_debug.h>
 #include <iostream>
 #include <iomanip>
 #include <cstddef>
 
-std::ostream& operator << (std::ostream& os, const wchar_t* wstr)
+static std::ostream& operator << (std::ostream& os, const wchar_t* wstr)
 {
 	// poor-man's implementation...
 	while (wstr && *wstr)

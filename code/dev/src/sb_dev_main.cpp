@@ -97,6 +97,28 @@ function_exception_helper<fct_type> unsafe_entry([[maybe_unused]] fct_type _func
 	return function_exception_helper<fct_type>(_function);
 }
 
+bool parse_split_function( std::string& module_name, std::string& function_name )
+{
+	// load library & find entry function
+	if ( !module_name.empty() || !function_name.empty() )
+	{
+		auto module_separator = module_name.find_first_of( '/' );
+		if (module_separator != std::string::npos)
+		{
+			function_name = std::string_view( module_name.data() + module_separator + 1, module_name.length() - module_separator - 1 );
+			module_name = std::string_view( module_name.data(), module_separator );
+			return true;
+		}
+		auto function_separator = function_name.find_first_of( '/' );
+		if (function_separator != std::string::npos)
+		{
+			function_name = std::string_view( function_name.data() + function_separator + 1, function_name.length() - function_separator - 1 );
+			module_name = std::string_view( function_name.data(), function_separator );
+			return true;
+		}
+	}
+	return false;
+}
 
 #include <future>
 #include <thread>
@@ -137,7 +159,7 @@ int WinMain(
 		std::clog.flush();
 		std::clog << "---------------------------";
 		std::clog.flush();
-		std::wclog << L"\n- Welcome to SBLibX© - dev -";
+		std::wclog << L"\n- Welcome to SBLibX©[" __DATE__ "] - dev -";
 		std::wclog.flush();
 		std::clog << "\n---------------------------";
 		std::clog << std::endl;
@@ -172,7 +194,9 @@ int WinMain(
 		SB_COINIT_APARTMENTTHREADED = ( 1 << 0 ),
 	};
 	size_t flags{};
-	if (hInstance != 0) do
+
+		if (hInstance != 0)
+	do
 	{
 		constexpr size_t kMaxArgC = kMaxCommandline / 2; // with every argument got 1 char we can reach the the max argument count possible
 		const char* argv[kMaxArgC]{};
@@ -209,12 +233,17 @@ int WinMain(
 						module_name = argv[arg];
 					if (++arg < argc)
 						function_name = argv[arg];
+					if ( parse_split_function( module_name, function_name ) )
+						local_main = nullptr;
 					break;
 				}
 				else if (currentView == "load")
 				{
 					if (++arg < argc)
 						module_name = argv[arg];
+					if (parse_split_function( module_name, function_name ))
+						local_main = nullptr;
+					function_name = "";
 				}
 				else if (currentView == "entry")
 				{
@@ -234,17 +263,11 @@ int WinMain(
 				}
 			}
 
-			// load library & find entry function
+			if ( parse_split_function( module_name, function_name ) )
+				local_main = nullptr;
+
 			if (!module_name.empty())
 			{
-				auto module_separator = module_name.find_first_of('/');
-				if (module_separator != std::string::npos)
-				{
-					function_name = std::string_view(module_name.data() + module_separator + 1, module_name.length() - module_separator - 1);
-					module_name = std::string_view(module_name.data(), module_separator);
-					local_main = nullptr;
-				}
-
 				if (!main_module)
 				{
 					if (main_module.load(module_name.c_str()))
@@ -328,7 +351,14 @@ int WinMain(
 								}
 								debugSettings.checkpoint();
 								return_code = unsafe_entry(local_main)(local_argc, local_argv);
-								assert( !debugSettings.dump() && "Leak detected in threaded function.");
+							#if defined(SBDEBUG)
+								const bool leak = debugSettings.dump();
+								assert( !leak && "Leak detected in threaded function." );
+								if ( !leak )
+								{
+									std::clog << "Info: " << module_name << "/" << function_name << ": exit without leak" << std::endl;
+								}
+								#endif // 
 							}
 							catch (std::exception except)
 							{

@@ -9,6 +9,19 @@
 
 namespace SB { namespace LibX
 {
+
+#ifndef SB_NEW_HASH
+#define SB_NEW_HASH			SB_UNSUPPORTED
+#endif
+#ifndef SB_LEGACY_HASH
+#define SB_LEGACY_HASH		SB_SUPPORTED
+#endif
+
+#if SB_SUPPORTS( SB_NEW_HASH )
+SBCOMPILE_MESSAGE( "Not ready yet, that will break a lot of things..." );
+#endif // #if SB_SUPPORTS( SB_NEW_HASH )
+
+#if SB_SUPPORTS( SB_LEGACY_HASH )
 //	template<typename _CHAR_TYPE_, typename _HASH_T_, size_t _DEFAULT_LENGTH_ = 256, _HASH_T_ _PRIME_ = 0x9EF3455AD47C9E31ull, _HASH_T_ _COPRIME_ = 0x03519CFFA7F0F405ull>
 //struct xhash_traits
 
@@ -58,6 +71,8 @@ static inline constexpr auto hash( const _CHAR_T ( &string )[_LENGTH_] )
 {
 	return sbLibX::xhash_traits_base_t<_CHAR_T, _TYPE_T>::hash( string, _LENGTH_ );
 }
+#endif // #if SB_SUPPORTS( SB_LEGACY_HASH )
+
 
 }} // namespace SB::LibX
 namespace sbLibX = SB::LibX;

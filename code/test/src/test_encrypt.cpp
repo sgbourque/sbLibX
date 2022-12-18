@@ -1,4 +1,5 @@
 ﻿#include "common/include/sb_common.h"
+#include "common/include/sb_math_base.h"
 #include "common/include/sb_utilities.h"
 
 #include <array>
@@ -9,14 +10,14 @@
 
 
 
-#ifdef __clang__
-#define clang_pragma( ... ) __pragma( clang __VA_ARGS__ )
-#define SB_CLANG_MESSAGE( ... ) __pragma( message( __VA_ARGS__ ) )
-#else
-#define clang_pragma( ... )
-#define SB_CLANG_MESSAGE( ... )
-#endif
-SB_CLANG_MESSAGE( "non-type template parameter is not yet supported by clang" )
+//#ifdef __clang__
+//#define clang_pragma( ... ) __pragma( clang __VA_ARGS__ )
+//#define SB_CLANG_MESSAGE( ... ) __pragma( message( __VA_ARGS__ ) )
+//#else
+//#define clang_pragma( ... )
+//#define SB_CLANG_MESSAGE( ... )
+//#endif
+//SB_CLANG_MESSAGE( "non-type template parameter is not yet supported by clang" )
 
 
 //clang_pragma( diagnostic push )
@@ -51,7 +52,7 @@ clang_pragma( diagnostic ignored "-Wdate-time" )
 using SB_ENCODE_TYPE = default_encode_t;
 #endif
 #ifndef SB_ENCRYPT_BLOCK_COUNT
-static inline constexpr size_t SB_ENCRYPT_BLOCK_COUNT = sbLibX::div_align_up( 32 * sizeof( uint8_t ), sizeof( SB_ENCODE_TYPE ) );
+[[maybe_unused]] static inline constexpr size_t SB_ENCRYPT_BLOCK_COUNT = sbLibX::div_align_up( 32 * sizeof( uint8_t ), sizeof( SB_ENCODE_TYPE ) );
 #endif
 #ifndef SB_PRIME_0
 static inline constexpr SB_ENCODE_TYPE sb_prime_0_factor = hash<SB_ENCODE_TYPE, 0x9EF3455AD47C9E31ull, 0x03519CFFA7F0F405ull>( ""  __DATE__ __TIME__ );
@@ -76,7 +77,7 @@ const SB_ENCODE_TYPE SB_PRIME_4 = SB_ENCODE_TYPE{ 17179869209ull * ( 2 * sb_prim
 clang_pragma( diagnostic pop )
 
 
-static inline constexpr SB_ENCODE_TYPE SB_PRIME_A = SB_PRIME_0;
+[[maybe_unused]] static inline constexpr SB_ENCODE_TYPE SB_PRIME_A = SB_PRIME_0;
 static inline constexpr SB_ENCODE_TYPE SB_PRIME_B = sbLibX::gcd( SB_PRIME_0, SB_PRIME_1 ) == 1 ? SB_PRIME_1 : 
                                                     sbLibX::gcd( SB_PRIME_0, SB_PRIME_2 ) == 1 ? SB_PRIME_2 : 
                                                     sbLibX::gcd( SB_PRIME_0, SB_PRIME_3 ) == 1 ? SB_PRIME_3 : 

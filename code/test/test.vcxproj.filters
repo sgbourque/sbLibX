@@ -12,6 +12,9 @@
     <Filter Include="src\shaders">
       <UniqueIdentifier>{eb0f94bc-60d7-45b4-986f-c2c3c3223d50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{b35a4f89-4c15-45b1-92a8-1926749ad119}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test_main.cpp">
@@ -56,6 +59,15 @@
     <ClCompile Include="src\test_int_type.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\test_hash_2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_int_type2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_encrypt3.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\test_precompile.h">
@@ -71,5 +83,16 @@
     <FxCompile Include="src\shaders\test_demo_shader.hlsl">
       <Filter>src\shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\english3.txt">
+      <Filter>res</Filter>
+    </Text>
+    <Text Include="res\francais.txt">
+      <Filter>res</Filter>
+    </Text>
+    <Text Include="res\simple_lexicon.txt">
+      <Filter>res</Filter>
+    </Text>
   </ItemGroup>
 </Project>

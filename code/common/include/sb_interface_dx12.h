@@ -41,6 +41,10 @@ SB_LIB_EXPORT const _GUID& get_uuid( const T* );
 
 namespace dx12
 {
+//class ID3D12DeviceWrapper : public ID3D12Device
+//{
+//};
+
 using InstanceHandle = ref_ptr<IDXGIFactory>; // IDXGIFactory4
 using AdapterHandle = ref_ptr<IDXGIAdapter>; // IDXGIAdapter4
 using DeviceHandle = ref_ptr<ID3D12Device>; // ID3D12Device6
@@ -170,6 +174,19 @@ struct InstanceConfiguration : Configuration
 #define SBLIB_DECLARE_DEVICE_INTERNAL
 #include <common/include/internal/device_generic.h>
 #undef SBLIB_DECLARE_DEVICE_INTERNAL
+
+static inline constexpr uint32_t vendor_order( vendor_t vendor )
+{
+	switch (vendor)
+	{
+	case vendor_t::NVIDIA:    return ( static_cast<uint32_t>( vendor_t::NVIDIA    ) | 0x01000000 );
+	case vendor_t::AMD:       return ( static_cast<uint32_t>( vendor_t::AMD       ) | 0x02000000 );
+	case vendor_t::Intel:     return ( static_cast<uint32_t>( vendor_t::Intel     ) | 0x04000000 );
+		// Microsoft is usually a software (possibly hardware accelerated) device, so considered as debug-only
+	case vendor_t::Microsoft: return ( static_cast<uint32_t>( vendor_t::Microsoft ) | 0x80000000 );
+	}
+	return static_cast<uint32_t>( vendor );
+};
 
 }
 using dx12_instance = dx12::unique_instance;

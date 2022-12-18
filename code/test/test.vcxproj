@@ -1,12 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="clang-release-exec|x64">
-      <Configuration>clang-release-exec</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="clang-release|x64">
-      <Configuration>clang-release</Configuration>
+    <ProjectConfiguration Include="debug-clang|x64">
+      <Configuration>debug-clang</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="debug-exec|x64">
@@ -19,6 +15,10 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="final-exec|x64">
       <Configuration>final-exec</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release-clang|x64">
+      <Configuration>release-clang</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="release-exec|x64">
@@ -41,10 +41,15 @@
     <ClCompile Include="src\test_asio.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
       </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">
+      </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\test_encrypt.cpp" />
     <ClCompile Include="src\test_encrypt2.cpp" />
+    <ClCompile Include="src\test_encrypt3.cpp" />
+    <ClCompile Include="src\test_hash_2.cpp" />
     <ClCompile Include="src\test_int_type.cpp" />
+    <ClCompile Include="src\test_int_type2.cpp" />
     <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
@@ -62,14 +67,19 @@
   <ItemGroup>
     <FxCompile Include="src\shaders\test_demo_shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='final-exec|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='final|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\english3.txt" />
+    <Text Include="res\simple_lexicon.txt" />
+    <Text Include="res\francais.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -82,6 +92,12 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'" Label="Configuration">
@@ -111,24 +127,17 @@
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
-    <CLRSupport>false</CLRSupport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>ClangCL</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>ClangCL</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
@@ -138,6 +147,9 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'" Label="PropertySheets">
@@ -152,17 +164,23 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
@@ -213,7 +231,7 @@
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
@@ -224,27 +242,16 @@
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <UseMultiToolTask>true</UseMultiToolTask>
     <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath);$(VCClangInstallDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
-    <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)tmp\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
-    <UseMultiToolTask>true</UseMultiToolTask>
-    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <IncludePath>$(SolutionDir)code;$(VULKAN_SDK)\include;$(WindowsSDK_IncludePath);$(VCClangInstallDir)include;$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)bin\$(Platform);$(VULKAN_SDK)\include;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\lib;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <ClCompile>
@@ -263,9 +270,10 @@
       </WarningVersion>
       <CompileAsManaged>false</CompileAsManaged>
       <SupportJustMyCode>false</SupportJustMyCode>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <XMLDocumentationFileName>$(IntDir)vcDoc$(PlatformToolsetVersion).xml</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -274,6 +282,44 @@
       </EntryPointSymbol>
       <AdditionalDependencies>msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
       <ProfileGuidedDatabase />
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>true</MapExports>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>SBDEBUG;SBWIN64;DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
+      <MSExtensions>false</MSExtensions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:twoPhase- /FS %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>$(ProjectName)/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
+      <WarningVersion>
+      </WarningVersion>
+      <CompileAsManaged>false</CompileAsManaged>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <XMLDocumentationFileName>$(IntDir)vcDoc$(PlatformToolsetVersion).xml</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ShowProgress>LinkVerboseCLR</ShowProgress>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <AdditionalDependencies>msvcrtd.lib;vcruntimed.lib;ucrtd.lib;kernel32.lib;user32.lib</AdditionalDependencies>
+      <ProfileGuidedDatabase>
+      </ProfileGuidedDatabase>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
       <StripPrivateSymbols>
@@ -433,7 +479,7 @@
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release-clang|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
@@ -441,7 +487,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBSTANDALONE;SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>$(ProjectName)/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
       <MSExtensions>false</MSExtensions>
@@ -470,47 +516,9 @@
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release-exec|x64'">
     <ClCompile>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PreprocessorDefinitions>SBRELEASE;SBWIN64;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>$(ProjectName)/include/$(ProjectName)_precompile.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>$(ProjectName)/include/$(ProjectName)_precompile.h</ForcedIncludeFiles>
-      <MSExtensions>false</MSExtensions>
-      <EnablePREfast>false</EnablePREfast>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <WarningVersion>
-      </WarningVersion>
-      <CompileAsManaged>false</CompileAsManaged>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
-      <XMLDocumentationFileName>$(IntDir)vcDoc$(PlatformToolsetVersion).xml</XMLDocumentationFileName>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalOptions>-Wno-c++98-compat -Wno-global-constructors -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-missing-prototypes -Wno-c++98-compat-pedantic -Wno-switch-enum -Wno-missing-variable-declarations %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <ShowProgress>LinkVerboseCLR</ShowProgress>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <EntryPointSymbol>
-      </EntryPointSymbol>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
-      <MapExports>true</MapExports>
-      <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalDependencies>msvcrt.lib;vcruntime.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='clang-release-exec|x64'">
-    <ClCompile>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -522,13 +530,12 @@
       <MSExtensions>false</MSExtensions>
       <EnablePREfast>false</EnablePREfast>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:twoPhase- /FS %(AdditionalOptions)</AdditionalOptions>
       <WarningVersion>
       </WarningVersion>
       <CompileAsManaged>false</CompileAsManaged>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <XMLDocumentationFileName>$(IntDir)vcDoc$(PlatformToolsetVersion).xml</XMLDocumentationFileName>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalOptions>-Wno-c++98-compat -Wno-global-constructors -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-missing-prototypes -Wno-c++98-compat-pedantic -Wno-switch-enum -Wno-missing-variable-declarations %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

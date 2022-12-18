@@ -311,13 +311,13 @@ SB_WIN_EXPORT InstanceHandle CreateInstance( [[maybe_unused]] const Configuratio
 
 	
 	const VkApplicationInfo app = {
-		SB_STRUCT_SET( .sType              = ) VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		SB_STRUCT_SET( .pNext              = ) nullptr,
-		SB_STRUCT_SET( .pApplicationName   = ) instanceConfig->applicationName.get_value().data(),
-		SB_STRUCT_SET( .applicationVersion = ) instanceConfig->applicationVersion,
-		SB_STRUCT_SET( .pEngineName        = ) instanceConfig->engineName.get_value().data(),
-		SB_STRUCT_SET( .engineVersion      = ) instanceConfig->engineVersion,
-		SB_STRUCT_SET( .apiVersion         = ) requires1_1 ? VK_API_VERSION_1_1 : VK_API_VERSION_1_0,
+		SB_STRUCT_SET( .sType             , =,  VK_STRUCTURE_TYPE_APPLICATION_INFO ),
+		SB_STRUCT_SET( .pNext             , =,  nullptr ),
+		SB_STRUCT_SET( .pApplicationName  , =,  instanceConfig->applicationName.get_value().data() ),
+		SB_STRUCT_SET( .applicationVersion, =,  instanceConfig->applicationVersion ),
+		SB_STRUCT_SET( .pEngineName       , =,  instanceConfig->engineName.get_value().data() ),
+		SB_STRUCT_SET( .engineVersion     , =,  instanceConfig->engineVersion ),
+		SB_STRUCT_SET( .apiVersion        , =,  requires1_1 ? VK_API_VERSION_1_1 : VK_API_VERSION_1_0 ),
 	};
 
 	std::vector<const char*> requested_layers; requested_layers.reserve( instanceConfig->requested_layers.size() );
@@ -327,25 +327,25 @@ SB_WIN_EXPORT InstanceHandle CreateInstance( [[maybe_unused]] const Configuratio
 	for( const auto& hash : instanceConfig->requested_extensions )
 		requested_extensions.emplace_back( hash.get_value().data() );
 	VkInstanceCreateInfo inst_info = {
-		SB_STRUCT_SET( .sType                   = ) VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-		SB_STRUCT_SET( .pNext                   = ) nullptr,
-		SB_STRUCT_SET( .flags                   = ) 0, // VkInstanceCreateFlags is a bitmask type for setting a mask, but is currently reserved for future use.
-		SB_STRUCT_SET( .pApplicationInfo        = ) &app,
-		SB_STRUCT_SET( .enabledLayerCount       = ) static_cast<uint32_t>( requested_layers.size() & 0xFFFFFFFF ),
-		SB_STRUCT_SET( .ppEnabledLayerNames     = ) requested_layers.data(),
-		SB_STRUCT_SET( .enabledExtensionCount   = ) static_cast<uint32_t>( requested_extensions.size() & 0xFFFFFFFF ),
-		SB_STRUCT_SET( .ppEnabledExtensionNames = ) requested_extensions.data(),
+		SB_STRUCT_SET( .sType                  , =,  VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO ),
+		SB_STRUCT_SET( .pNext                  , =,  nullptr ),
+		SB_STRUCT_SET( .flags                  , =,  0 ), // VkInstanceCreateFlags is a bitmask type for setting a mask, but is currently reserved for future use.
+		SB_STRUCT_SET( .pApplicationInfo       , =,  &app ),
+		SB_STRUCT_SET( .enabledLayerCount      , =,  static_cast<uint32_t>( requested_layers.size() & 0xFFFFFFFF ) ),
+		SB_STRUCT_SET( .ppEnabledLayerNames    , =,  requested_layers.data() ),
+		SB_STRUCT_SET( .enabledExtensionCount  , =,  static_cast<uint32_t>( requested_extensions.size() & 0xFFFFFFFF ) ),
+		SB_STRUCT_SET( .ppEnabledExtensionNames, =,  requested_extensions.data() ),
 	};
 
 #if 1 // SB_DEVICE_DEBUG_LAYER
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info = {
-		SB_STRUCT_SET( .sType           = ) VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-		SB_STRUCT_SET( .pNext           = ) nullptr,
-		SB_STRUCT_SET( .flags           = ) 0,
-		SB_STRUCT_SET( .messageSeverity = ) VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-		SB_STRUCT_SET( .messageType     = ) VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-		SB_STRUCT_SET( .pfnUserCallback = ) &vulkanDebugCallback,
-		SB_STRUCT_SET( .pUserData       = ) nullptr,
+		SB_STRUCT_SET( .sType          , =,  VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT ),
+		SB_STRUCT_SET( .pNext          , =,  nullptr ),
+		SB_STRUCT_SET( .flags          , =,  0 ),
+		SB_STRUCT_SET( .messageSeverity, =,  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT ),
+		SB_STRUCT_SET( .messageType    , =,  VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT ),
+		SB_STRUCT_SET( .pfnUserCallback, =,  &vulkanDebugCallback ),
+		SB_STRUCT_SET( .pUserData      , =,  nullptr ),
 	};
 
 	//if ( sbUseDeviceDebugLayer )
@@ -386,12 +386,12 @@ SB_WIN_EXPORT DeviceDesc GetDeviceDesc( AdapterHandle adapter )
 	VkPhysicalDeviceProperties adapter_properties;
 	vkGetPhysicalDeviceProperties(adapter, &adapter_properties);
 	DeviceDesc device_desc = {
-		SB_STRUCT_SET( .name          = ) {},
-		SB_STRUCT_SET( .vendorID      = ) adapter_properties.vendorID,
-		SB_STRUCT_SET( .deviceID      = ) adapter_properties.deviceID,
-		SB_STRUCT_SET( .apiID         = ) adapter_properties.apiVersion,
-		SB_STRUCT_SET( .driverVersion = ) adapter_properties.driverVersion,
-		SB_STRUCT_SET( .uid           = ) {}
+		SB_STRUCT_SET( .name         , =,  {} ),
+		SB_STRUCT_SET( .vendorID     , =,  vendor_t{adapter_properties.vendorID} ),
+		SB_STRUCT_SET( .deviceID     , =,  adapter_properties.deviceID ),
+		SB_STRUCT_SET( .apiID        , =,  adapter_properties.apiVersion ),
+		SB_STRUCT_SET( .driverVersion, =,  adapter_properties.driverVersion ),
+		SB_STRUCT_SET( .uid          , =, {} ),
 	};
 	static_assert(sizeof(device_desc.uid) >= sizeof(adapter_properties.pipelineCacheUUID));
 	memcpy(device_desc.uid, adapter_properties.pipelineCacheUUID, sizeof(adapter_properties.pipelineCacheUUID));
@@ -454,26 +454,26 @@ SB_WIN_EXPORT DeviceHandle CreateDevice([[maybe_unused]] AdapterHandle adapter, 
 		if (queues_properties.queueFlags & VK_QUEUE_PROTECTED_BIT /*&& useProtectedQueue*/)
 			queueFlags = VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT;
 		queues_info[index] = VkDeviceQueueCreateInfo{
-			SB_STRUCT_SET( .sType            = ) VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-			SB_STRUCT_SET( .pNext            = ) nullptr,
-			SB_STRUCT_SET( .flags            = ) queueFlags,
-			SB_STRUCT_SET( .queueFamilyIndex = ) static_cast<uint32_t>(index),
-			SB_STRUCT_SET( .queueCount       = ) queues_properties.queueCount,
-			SB_STRUCT_SET( .pQueuePriorities = ) family_queues_priorities.data(),
+			SB_STRUCT_SET( .sType           , =,  VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO ),
+			SB_STRUCT_SET( .pNext           , =,  nullptr ),
+			SB_STRUCT_SET( .flags           , =,  queueFlags ),
+			SB_STRUCT_SET( .queueFamilyIndex, =,  static_cast<uint32_t>(index) ),
+			SB_STRUCT_SET( .queueCount      , =,  queues_properties.queueCount ),
+			SB_STRUCT_SET( .pQueuePriorities, =,  family_queues_priorities.data() ),
 		};
 	}
 
 	VkDeviceCreateInfo device_info = {
-		SB_STRUCT_SET( .sType                   = ) VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		SB_STRUCT_SET( .pNext                   = ) nullptr,
-		SB_STRUCT_SET( .flags                   = ) 0, // reserved for future use
-		SB_STRUCT_SET( .queueCreateInfoCount    = ) 1,
-		SB_STRUCT_SET( .pQueueCreateInfos       = ) queues_info.data(),
-		SB_STRUCT_SET( .enabledLayerCount       = ) 0,
-		SB_STRUCT_SET( .ppEnabledLayerNames     = ) nullptr,
-		SB_STRUCT_SET( .enabledExtensionCount   = ) 0,//TODO
-		SB_STRUCT_SET( .ppEnabledExtensionNames = ) nullptr,//TODO
-		SB_STRUCT_SET( .pEnabledFeatures        = ) nullptr,  // If specific features are desired, pass them in here
+		SB_STRUCT_SET( .sType                  , =,  VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO ),
+		SB_STRUCT_SET( .pNext                  , =,  nullptr ),
+		SB_STRUCT_SET( .flags                  , =,  0 ), // reserved for future use
+		SB_STRUCT_SET( .queueCreateInfoCount   , =,  1 ),
+		SB_STRUCT_SET( .pQueueCreateInfos      , =,  queues_info.data() ),
+		SB_STRUCT_SET( .enabledLayerCount      , =,  0 ),
+		SB_STRUCT_SET( .ppEnabledLayerNames    , =,  nullptr ),
+		SB_STRUCT_SET( .enabledExtensionCount  , =,  0 ),//TODO
+		SB_STRUCT_SET( .ppEnabledExtensionNames, =,  nullptr ),//TODO
+		SB_STRUCT_SET( .pEnabledFeatures       , =,  nullptr ),  // If specific features are desired, pass them in here
 	};
 
 	DeviceHandle device{};

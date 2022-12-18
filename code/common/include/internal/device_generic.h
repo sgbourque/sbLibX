@@ -18,12 +18,20 @@ using adapter_array_t = SBLIB_CUSTOM_ADAPTER_ARRAY;
 SB_LIB_EXPORT adapter_array_t EnumerateAdapters( InstanceHandle instance, size_t maxCount = ~0u );
 
 #ifndef SBLIB_DEVICE_INFO_TYPE
+enum class vendor_t : uint32_t
+{
+	NVIDIA    = 0x10DE,
+	AMD       = 0x1002,
+	Intel     = 0x8086,
+	Microsoft = 0x1414,
+};
+
 struct DeviceDesc
 {
 	static constexpr size_t kNameSize = 256;
 	static constexpr size_t kIIDSize = 16;
 	char     name[kNameSize];
-	uint32_t vendorID;
+	vendor_t vendorID;
 	uint32_t deviceID;
 	uint32_t apiID;
 	uint32_t driverVersion;

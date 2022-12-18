@@ -3,16 +3,40 @@
   "Id": "35a665b5-55f4-4ac5-b258-5574abbdc53c",
   "Items": [
     {
-      "Id": "5f264324-3188-402d-88a2-89d4d4061b0a",
-      "Command": "run $(ProjectName)/test_int_type"
+      "Id": "9210671d-aacc-4303-a9f2-f651e3b2e758",
+      "Command": "run",
+      "Items": [
+        {
+          "Id": "b2e6c09f-4dae-4202-8530-d85136a71ce8",
+          "Command": "run $(TargetName)/test_encrypt3"
+        },
+        {
+          "Id": "fc3d3e4a-884a-41e6-950a-7f13750913bf",
+          "Command": "run $(TargetName)/test_int_type2"
+        },
+        {
+          "Id": "205c88d7-8ff9-4d4c-8a92-81047445808e",
+          "Command": "run test/vst \"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
+        },
+        {
+          "Id": "5f264324-3188-402d-88a2-89d4d4061b0a",
+          "Command": "run $(ProjectName)/test_int_type"
+        }
+      ]
     },
     {
-      "Id": "2f51687d-50f5-4266-bbe1-5d49dd9ca2d4",
-      "Command": "data/src/UnicodeData.txt"
-    },
-    {
-      "Id": "85b6ed68-d51b-42f9-9867-8d8de00c830c",
-      "Command": "\"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
+      "Id": "391ecab2-00c3-454d-961a-5aab4ebfbf87",
+      "Command": "opt",
+      "Items": [
+        {
+          "Id": "2f51687d-50f5-4266-bbe1-5d49dd9ca2d4",
+          "Command": "data/src/UnicodeData.txt"
+        },
+        {
+          "Id": "85b6ed68-d51b-42f9-9867-8d8de00c830c",
+          "Command": "\"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
+        }
+      ]
     }
   ]
 }

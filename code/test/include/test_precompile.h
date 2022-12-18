@@ -1,15 +1,15 @@
 #if defined(SBWIN64) || defined(SBWIN32)
-	#pragma warning(disable: 4472)
-
-	#if !defined(SBDEBUG)
-	#pragma warning(disable:4668 5039 4339)
-	#define NOMINMAX
-	#include <windows.h>
-	#pragma warning(default:4668 5039)
-	#ifndef WINAPI
-		#define WINAPI SB_STDCALL
-	#endif
-	#endif
+//	//#pragma warning(disable: 4472)
+//	//#if !defined(SBDEBUG)
+//	//#pragma warning(disable:4668 5039 4339)
+//	//#define WIN32_LEAN_AND_MEAN
+//	//#define NOMINMAX
+//	//#include <windows.h>
+//	//#pragma warning(default:4668 5039)
+//	//#ifndef WINAPI
+//	//	#define WINAPI SB_STDCALL
+//	//#endif
+//	//#endif
 #endif
 
 #if !defined(SBDEBUG)
@@ -19,5 +19,6 @@
 #endif
 
 //extern int main(int _nArgs = 0,  const char* const pArgs[] = nullptr);
+#define SB_UNIT_TEST	SB_UNSUPPORTED
 
 #include <common/include/sb_common.h>

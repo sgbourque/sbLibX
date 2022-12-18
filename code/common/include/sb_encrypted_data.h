@@ -242,6 +242,10 @@ static inline constexpr auto encrypted_string_unsecured( const char_t( &unencryp
 //	return encrypted_string_unsecured<char_t, _HASH_TRAITS_, _LENGTH_>( unencrypted, max_length, std::make_index_sequence<_LENGTH_>{} );
 //}
 
+
+//
+// DOES NOT WORKS! depends on compiler's settings
+// 
 // While possibly wasting space with duplicates, at least this garantees that 'unencrypted' will never
 // be in the final binary data since it forces encrypted value evaluated as a constexpr.
 // TODO: Find a way to prevent data duplication while still enforcing constexpr evaluation

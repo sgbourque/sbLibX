@@ -1,5 +1,6 @@
 ﻿#include "common/include/sb_utilities.h"
 #include "common/include/sb_hash.h"
+#include "common/include/sb_math_base.h"
 
 //#if ( SBARCH_ID == SBARCHx64_ID )
 //#error "ok"
@@ -21,7 +22,7 @@
 // It seems like the compiler does not manage 8 and 16 bits multiplication with overflow as native
 // and will converts it into signed larger results, which would create a mess to work-around.
 // Instead, static assertion would trigger and multiple warnings would be emitted if trying to use uint8_t or uint16_t.
-	template< typename _TYPE_T = uint64_t, size_t _SPLIT_COUNT_ = 8 >
+	template< typename _TYPE_T = uint64_t, size_t _SPLIT_COUNT_ = 512 / ( sizeof( _TYPE_T ) * CHAR_BIT ) >
 struct encrypt_key_t
 {
 	using type_t = std::make_unsigned_t<_TYPE_T>;
@@ -60,6 +61,8 @@ static inline constexpr bool not_trivial( type_t value, size_t length )
 }
 #endif
 
+static_assert( 1 == sbLibX::modular_inverse( 6, 5 ) );
+
 
 	template< typename _CHAR_T, size_t _LENGTH_, typename _KEY_T >
 struct encrypted_data_traits
@@ -75,9 +78,9 @@ struct encrypted_data_traits
 		#define SBPRIVATE_KEY_FILE "test/include/private_generated_512.key"
 	#endif
 	static inline constexpr key_t private_key = {
-		#define KEY_PRIME(value) type_t((value ## ull) & type_t(-1)),
+		#define KEY_PRIME(value) type_t((value ## ull) & type_t(~0)),
 		#include SBPRIVATE_KEY_FILE
-		#define KEY_PRIME(value) sbLibX::modular_inverse(type_t((value ## ull) & type_t(-1))),
+		#define KEY_PRIME(value) sbLibX::modular_inverse(type_t((value ## ull) & type_t(~0))),
 		#include SBPRIVATE_KEY_FILE
 	};
 #if SB_SUPPORTS(SBENCRYPT_CHECK)
@@ -85,10 +88,10 @@ struct encrypted_data_traits
 	#define KEY_PRIME(value) static_assert( not_trivial( value ## ull, _LENGTH_ > 0 ? _LENGTH_ : 64 ));
 	#include SBPRIVATE_KEY_FILE
 #endif
-	static_assert( private_key.value[0] * private_key.value[4] == 1ull );
-	static_assert( private_key.value[1] * private_key.value[5] == 1ull );
-	static_assert( private_key.value[2] * private_key.value[6] == 1ull );
-	static_assert( private_key.value[3] * private_key.value[7] == 1ull );
+	static_assert( private_key.value[0] * private_key.value[0+key_t::split_count/2] == 1ull, "Was private key table properly initialized with the required encryption length?" );
+	static_assert( private_key.value[1] * private_key.value[1+key_t::split_count/2] == 1ull, "Was private key table properly initialized with the required encryption length?" );
+	static_assert( private_key.value[2] * private_key.value[2+key_t::split_count/2] == 1ull, "Was private key table properly initialized with the required encryption length?" );
+	static_assert( private_key.value[3] * private_key.value[3+key_t::split_count/2] == 1ull, "Was private key table properly initialized with the required encryption length?" );
 
 	static_assert( sizeof( type_t ) >= sizeof( char_t ) );
 	static inline constexpr size_t packed_size = sizeof( type_t ) / sizeof( char_t );
@@ -96,7 +99,7 @@ struct encrypted_data_traits
 	using data_t = std::array< type_t, size() >;
 
 	static inline constexpr size_t size( [[maybe_unused]] const data_t& data ) noexcept { return size(); }
-	static inline constexpr size_t size( const decrypted_t& data ) noexcept { return _LENGTH_; }
+	static inline constexpr size_t size( [[maybe_unused]] const decrypted_t& data ) noexcept { return _LENGTH_; }
 
 	static inline constexpr void resize_encrypted_data( [[maybe_unused]] data_t& data, [[maybe_unused]] size_t length )
 	{
@@ -135,7 +138,7 @@ struct encrypted_data_traits<_CHAR_T, 0, _KEY_T>
 	using data_t = std::vector< type_t >;
 
 	static inline constexpr size_t size( const data_t& data ) noexcept { return data.size(); }
-	static inline constexpr size_t size( const decrypted_t& data ) noexcept { return packed_size * encrypted_size; }
+	//static inline constexpr size_t size( [[maybe_unused]] const decrypted_t& data ) noexcept { return packed_size * encrypted_size; }
 
 	static inline constexpr void resize_encrypted_data( [[maybe_unused]] data_t& data, [[maybe_unused]] size_t length )
 	{
@@ -193,12 +196,13 @@ struct encrypted_data
 	using data_t = typename traits_t::data_t;
 	static inline constexpr key_t private_key = traits_t::private_key;
 
-	static inline constexpr type_t private_encrypt_key = private_key.value[(_LENGTH_ + 0 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 7 ) % key_t::split_count];
-	static inline constexpr type_t private_decrypt_key = private_key.value[(_LENGTH_ + 4 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 5 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 3 ) % key_t::split_count];
+	static_assert( key_t::split_count > 3, "Must use at least 512 bits encryption" );
+	static inline constexpr type_t private_encrypt_key = private_key.value[(_LENGTH_ + 0 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[(_LENGTH_ + key_t::split_count / 2 + 3 ) % key_t::split_count];
+	static inline constexpr type_t private_decrypt_key = private_key.value[(_LENGTH_ + key_t::split_count / 2 ) % key_t::split_count] * private_key.value[(_LENGTH_ + key_t::split_count / 2 + 1 ) % key_t::split_count] * private_key.value[(_LENGTH_ + 3 ) % key_t::split_count];
 	static_assert( private_encrypt_key * private_decrypt_key == 1 );
 
-	static inline constexpr type_t public_encrypt_key = private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[2] * private_key.value[(_LENGTH_ + 4 ) % key_t::split_count];
-	static inline constexpr type_t public_decrypt_key = private_key.value[(_LENGTH_ + 5 ) % key_t::split_count] * private_key.value[6] * private_key.value[(_LENGTH_ + 0 ) % key_t::split_count];
+	static inline constexpr type_t public_encrypt_key = private_key.value[(_LENGTH_ + 1 ) % key_t::split_count] * private_key.value[2] * private_key.value[(_LENGTH_ + key_t::split_count/2 ) % key_t::split_count];
+	static inline constexpr type_t public_decrypt_key = private_key.value[(_LENGTH_ + key_t::split_count/2 + 1 ) % key_t::split_count] * private_key.value[key_t::split_count/2 + 2] * private_key.value[(_LENGTH_ + 0 ) % key_t::split_count];
 	static_assert( public_encrypt_key * public_decrypt_key == 1 );
 
 
@@ -221,7 +225,7 @@ struct encrypted_data
 		traits_t::resize_decrypted_data( data, length );
 	}
 
-	constexpr encrypted_data( data_t&& _data, type_t _public_key ) noexcept : data( std::move( _data ) ), public_key( _public_key ) {}
+	constexpr encrypted_data( data_t&& _data, type_t _public_key ) noexcept : public_key( _public_key ), data( std::move( _data ) ) {}
 
 	constexpr auto begin() const { return data.begin(); }
 	constexpr auto end() const { return data.end(); }
@@ -238,7 +242,7 @@ static inline constexpr auto encrypt_internal( const _CHAR_T* string, size_t len
 	using encrypt_data_t = encrypted_data<char_t, _LENGTH_>;
 	using key_t = typename encrypt_data_t::key_t;
 	using type_t = typename key_t::type_t;
-	using data_t = encrypt_data_t::data_t;
+	using data_t = typename encrypt_data_t::data_t;
 
 	type_t public_key{};
 	data_t result{};
@@ -249,7 +253,7 @@ static inline constexpr auto encrypt_internal( const _CHAR_T* string, size_t len
 		constexpr size_t half_key_size = sizeof(default_public_key)/2 * CHAR_BIT;
 		constexpr type_t half_key_mask = ((type_t{1} << half_key_size) - 1);
 		const auto default_public_key_high = (default_public_key >> half_key_size);
-		public_key = { (default_public_key_high << half_key_size) ^ ( ~default_public_key_high & half_key_mask ) };
+		public_key = { (default_public_key_high << half_key_size) ^ ( ~default_public_key_high & half_key_mask ) }; // WTF??? 
 		//assert( ( public_key >> 32ull ) ^ ( public_key & 0xFFFFFFFFull) == 0 );
 		encrypt_data_t::resize_encrypted_data( result, length );
 	#if 1
@@ -294,7 +298,7 @@ static inline auto decrypt_internal( const encrypted_data<_CHAR_T, _LENGTH_>& da
 	using encrypt_data_t = encrypted_data<char_t, _LENGTH_>;
 	using key_t = typename encrypt_data_t::key_t;
 	using type_t = typename key_t::type_t;
-	using data_t = typename encrypt_data_t::data_t;
+	//using data_t = typename encrypt_data_t::data_t;
 	using decrypted_t = typename encrypt_data_t::decrypted_t;
 
 	constexpr size_t packed_size = sizeof( type_t ) / sizeof( char_t );
@@ -373,7 +377,7 @@ static inline auto decrypt( const encrypted_data<_CHAR_T, _LENGTH_>& data )
 }
 
 
-#if 1 // def __clang__
+#if 0 // def __clang__
 SB_CLANG_MESSAGE( "Warning: non-type template parameter is not yet supported by clang." )
 SBCOMPILE_MESSAGE( "Warning: compile-time encryption is disabled" )
 	template< typename _CHAR_T, size_t _LENGTH_ >

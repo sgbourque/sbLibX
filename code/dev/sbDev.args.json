@@ -3,8 +3,27 @@
   "Id": "12807a89-581b-4657-b794-a9a7f48f82d0",
   "Items": [
     {
-      "Id": "8bcf36e0-bd9b-4dbd-9594-ffc098cb4e6e",
-      "Command": "run test/win32"
+      "Id": "336d7f5e-1fbb-49ac-9ff2-fc7185f1f7a2",
+      "Command": "",
+      "ExclusiveMode": true,
+      "Items": [
+        {
+          "Id": "7d058611-c847-498d-90e4-d49d162ebb2a",
+          "Command": "run test/processing"
+        },
+        {
+          "Id": "185f9f0d-e82f-4cff-a100-79f7b49420bc",
+          "Command": "run test/win32"
+        },
+        {
+          "Id": "d684fc0f-a08b-438d-b43b-b2f37440f7b1",
+          "Command": "run test/encrypt2"
+        },
+        {
+          "Id": "8bcf36e0-bd9b-4dbd-9594-ffc098cb4e6e",
+          "Command": "run test/vst \"C:\\Program Files\\Steinberg\\VstPlugins\\dev\\Surge.vst3\""
+        }
+      ]
     }
   ]
 }

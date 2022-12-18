@@ -1,6 +1,11 @@
 // TODO : Get rid of this test file (should be moved to test project)
 // also TODO: clean up the test project...
 
+#include <common/include/sb_common.h>
+#define SB_LIB_UNIT_TEST	SB_SUPPORTED
+
+
+#if SB_SUPPORTS( SB_LIB_UNIT_TEST )
 #include <common/include/sb_interface.h>
 #include <string>
 #include <variant>
@@ -291,3 +296,7 @@ SB_EXPORT_TYPE int SB_STDCALL main([[maybe_unused]] int argc, [[maybe_unused]] c
 	//std::cout << "dyn_var = " << std::get<bool>(dyn_var) << "\n size = " << sizeof(dyn_var) << std::endl;
 #endif
 }
+
+#else // #if SB_SUPPORTS( SB_LIB_UNIT_TEST )
+SBCOMPILE_MESSAGE( "HASH REFACTOR : lib unit test DISABLED" )
+#endif

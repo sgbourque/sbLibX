@@ -101,6 +101,10 @@ namespace SB { namespace LibX { namespace Debug
 			Free();
 	}
 
+	static BOOL ControlHandler( [[maybe_unused]] _In_ DWORD CtrlType)
+	{
+		return TRUE;
+	}
 	bool Console::Allocate()
 	{
 		if ( consoleRawFlags != 0 )
@@ -110,6 +114,9 @@ namespace SB { namespace LibX { namespace Debug
 		consoleFlags.allocated = AllocConsole();
 		if (consoleRawFlags == 0)
 			Attach();
+
+		SetConsoleCtrlHandler( ControlHandler, TRUE );
+		SetConsoleCtrlHandler( nullptr, TRUE );
 
 		#if SB_SUPPORTS(SBCONSOLE_UNICODE)
 		originalCodePage = GetConsoleOutputCP();

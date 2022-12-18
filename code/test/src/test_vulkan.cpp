@@ -95,8 +95,12 @@ auto FilterInstanceExtensions( sbVulkan::InstanceConfiguration& config, const vu
 	{
 		switch( xhash_string_view_t{ extension_property.extensionName }.get_key() )
 		{
+			ALLOWED_EXTENSION( VK_KHR_display, true );
+			ALLOWED_EXTENSION( VK_KHR_get_display_properties2, true );
+
 			ALLOWED_EXTENSION( VK_KHR_surface, true );
 			ALLOWED_EXTENSION( VK_KHR_win32_surface, true );
+
 			ALLOWED_EXTENSION( VK_KHR_external_memory_capabilities, true );
 			ALLOWED_EXTENSION( VK_KHR_external_semaphore_capabilities, true );
 			ALLOWED_EXTENSION( VK_KHR_external_fence_capabilities, true );
@@ -125,28 +129,9 @@ auto FilterInstanceExtensions( sbVulkan::InstanceConfiguration& config, const vu
 void SortAdapters( sbVulkan::adapter_array_t& vulkan_adapters )
 {
 	using namespace sbLibX;
-	auto vendor_order = []( uint32_t vendor ) -> uint32_t
-	{
-		enum vendor_t
-		{
-			NVIDIA    = 0x10DE,
-			AMD       = 0x1002,
-			Intel     = 0x8086,
-			Microsoft = 0x1414,
-		};
-		switch( static_cast<vendor_t>( vendor ) )
-		{
-		case vendor_t::NVIDIA:    return 0x00000100;
-		case vendor_t::AMD:       return 0x00000200;
-		case vendor_t::Intel:     return 0x00000400;
-			// Microsoft is usually a software (possibly hardware accelerated) device, so considered as debug-only
-		case vendor_t::Microsoft: return 0x80000000;
-		}
-		return vendor;
-	};
 	[[maybe_unused]]
 	constexpr uint32_t kDebugDeviceStart = 0x00010000;
-	auto vulkan_adapter_sort_predicate = [&vendor_order]( const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second ) -> bool
+	auto vulkan_adapter_sort_predicate = []( const vulkan::AdapterHandle& first, const vulkan::AdapterHandle& second ) -> bool
 	{
 		vulkan::DeviceDesc device1_desc = vulkan::GetDeviceDesc( first );
 		vulkan::DeviceDesc device2_desc = vulkan::GetDeviceDesc( second );

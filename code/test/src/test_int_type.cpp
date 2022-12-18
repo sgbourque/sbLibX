@@ -1,5 +1,6 @@
 ﻿#include <common/include/sb_common.h>
 #include <common/include/sb_utilities.h>
+#include <common/include/sb_math_base.h>
 
 #if defined(_M_X64)
 #include <intrin.h>
@@ -35,103 +36,11 @@ __m256i _mm256_mul_epu32 : avx2
 //using unsigned_int256_t = __m256i;
 #endif
 
-
-namespace SB { namespace LibX {
-
-	template< typename _TYPE_T >
-static inline constexpr _TYPE_T integer_log2( _TYPE_T n ) { return n > 1 ? 1 + integer_log2( n >> 1 ) : n > 0 ? 0 : ~_TYPE_T{}; }
-static_assert( integer_log2( ~0ull ) == 63	&& integer_log2( 0 ) == -1	&& integer_log2( 1 ) == 0	&& integer_log2( 2 ) == 1	&& integer_log2( 3 ) == 1 && integer_log2( 4 ) == 2	&& integer_log2( 8 ) == 3	&& integer_log2( 16 ) == 4	&& integer_log2( 31 ) == 4	);
-
-	template< typename _TYPE_T >
-static inline constexpr _TYPE_T ceil_pow2( _TYPE_T n ) { return n > 1 ? (_TYPE_T(1) << integer_log2( _TYPE_T{2} * n - _TYPE_T{1} )) : n > 0 ? _TYPE_T{1} : ~_TYPE_T{}; }
-static_assert( ceil_pow2( 0 ) == -1	&& ceil_pow2( 1 ) == 1	&& ceil_pow2( 2 ) == 2	&& ceil_pow2( 3 ) == 4	&& ceil_pow2( 8 ) == 8	&& ceil_pow2( 16 ) == 16	&& ceil_pow2( 31 ) == 32 );
-
-
-//////////////////////////////////////////////////////////////////////////
-	template< typename _TYPE_T, typename _REF_TYPE_T >
-using make_signof_t = std::conditional_t< std::is_signed_v<_REF_TYPE_T>, std::make_signed_t<_TYPE_T>, std::make_unsigned_t<_TYPE_T> >;
-
-// type_mask can be called in two ways :
-//	1. type_mask<int_t, mask_t> -> mask_t(-1) -> int_t
-//	2. type_mask<int_t>(mask_t{}) : mask_t(-1) -> int_t
-// This is because type_mask<a,b>() might not be clear that it means a(b(-1)) and not b(a(-1)).
-// Hence, type_mask<a,b>() = type_mask<a>(b()) = type_mask<a>(b(-1)) means a(b(-1)) without sign extent.
-// 
-// Notes:
-// - type masks are always unsigned to prevent sign extent
-// - type_mask takes all bits from a type (so 0 or ~0 represents the same mask).
-//   This is because a type cannot have less that CHAR_BIT bits.
-//   If unused bits are required, 
-// - We could define a generic mask that might even sign extent
-//   or restricts some bits (similar to a sub-bitfield) mapped into type_t if required.
-	template< typename _TYPE_T, typename _TYPE_MASK_T = _TYPE_T >
-static inline constexpr std::make_unsigned_t<_TYPE_T> type_mask( [[maybe_unused]] _TYPE_MASK_T = _TYPE_MASK_T{} ) noexcept
-{
-	static_assert( std::is_integral_v<_TYPE_T> && std::is_integral_v<_TYPE_MASK_T> );
-	if constexpr ( sizeof( _TYPE_T ) >= sizeof( _TYPE_MASK_T ) )
-		return std::make_unsigned_t<_TYPE_MASK_T>(-1);
-	else
-		return std::make_unsigned_t<_TYPE_T>(-1);
-}
-static_assert( type_mask<int8_t>(uint64_t{}) == 0xFFull && std::is_same_v<uint8_t, decltype( type_mask<int8_t>(uint64_t{}) )> );
-static_assert( type_mask<int64_t>(uint8_t{}) == 0xFFull && std::is_same_v<uint64_t, decltype( type_mask<int64_t>(uint8_t{}) )> );
-
-
-//////////////////////////////////////////////////////////////////////////
-// half_bits_mask returns all first (log_shift + 1) bits sets :
-//	0 -> 0x1
-//	1 -> 0x3
-//	2 -> 0xF
-//	3 -> 0xFF
-//  4 -> 0xFFFF
-//  ...
-template<class _TYPE_T> static inline constexpr std::enable_if_t<std::is_unsigned_v<_TYPE_T>, _TYPE_T> half_bits_mask( _TYPE_T log_shift ) noexcept { return (_TYPE_T(1) << (_TYPE_T(1) << log_shift)) - _TYPE_T(1); }
-//////////////////////////////////////////////////////////////////////////
-// parallel_bits_mask returns
-// 0 -> 0x5...        = binary 01...
-// 1 -> 0x33...       = binary 0011...
-// 2 -> 0x0F...       = binary 00001111...
-// 3 -> 0x00FF...
-// 4 -> 0x0000FFFF...
-// 5 -> 0x00000000FFFFFFFF...
-// andconverges to _TYPE_T(-1) at log_shift >= log2( sizeof(_TYPE_T) * CHAR_BIT )
-template<class _TYPE_T> static inline constexpr _TYPE_T parallel_bits_mask( _TYPE_T log_shift ) noexcept
-{
-	static_assert( std::is_unsigned_v<_TYPE_T>, "bit mask must be unsigned" );
-	using type_t = _TYPE_T;
-	constexpr type_t all_bits = type_mask<type_t>();
-	constexpr size_t bit_count = sizeof(type_t) * CHAR_BIT;
-	const type_t next_hi_bit = type_t(type_t(1) << (log_shift + 1));
-	const type_t parallel_mask = next_hi_bit < bit_count ? type_t( all_bits / half_bits_mask(log_shift + 1) ) : type_t(1);
-	return half_bits_mask(log_shift) * parallel_mask;
-}
-	template<class _TYPE_T>
-static inline constexpr std::enable_if_t<std::is_unsigned_v<_TYPE_T>, _TYPE_T> parallel_bit_count(_TYPE_T mask, _TYPE_T log_shift) noexcept
-{
-	const auto parallel_mask = parallel_bits_mask(log_shift);
-	const auto low_mask = ((mask >> (_TYPE_T(0) << log_shift)) & parallel_mask);
-	const auto hi_mask = ((mask >> (_TYPE_T(1) << log_shift)) & parallel_mask);
-	return hi_mask + low_mask;
-}
-
-// bit_count is O(log(N))
-	template<class _TYPE_T>
-static inline constexpr auto bit_count( _TYPE_T mask ) noexcept -> std::make_unsigned_t<_TYPE_T>
-{
-	using type_t = std::make_unsigned_t<_TYPE_T>;
-	type_t bit_mask = static_cast<type_t>( mask );
-	constexpr type_t max_log_shift = integer_log2<type_t>( sizeof(type_t) * CHAR_BIT );
-	for ( type_t log_shift = 0; log_shift < max_log_shift; ++log_shift )
-		bit_mask = parallel_bit_count( bit_mask, log_shift );
-	return bit_mask;
-}
-
-}}
-static_assert( sbLibX::bit_count( 0 ) == 0 );
-static_assert( sbLibX::bit_count( 1 ) == 1 );
-static_assert( sbLibX::bit_count( 5 ) == 2 );
-static_assert( sbLibX::bit_count( 0xEEEEEEEEEEEEEEEEull ) == 16 * 3 );
-
+#ifdef __clang__
+#define clang_pragma( ... ) __pragma( clang __VA_ARGS__ )
+#define SB_CLANG_MESSAGE( ... ) __pragma( message( __VA_ARGS__ ) )
+SB_CLANG_MESSAGE( "TODO" )
+#else
 
 namespace SB { namespace LibX {
 
@@ -152,7 +61,7 @@ struct unsigned_aligned_integer_traits
 };
 
 #define SB_UNSIGNED_TYPE( _BIT_COUNT, _NATIVE_T ) template<> struct unsigned_aligned_integer_traits<_BIT_COUNT> { using unsigned_t = std::make_unsigned_t<_NATIVE_T>; }
-template<> struct unsigned_aligned_integer_traits<-1> { using unsigned_t = std::integral_constant<size_t, 0>; }; // -1 means dynamic range here so that 0 traps unexpected convergeance to 0
+template<> struct unsigned_aligned_integer_traits<~0ull> { using unsigned_t = std::integral_constant<size_t, 0>; }; // -1 means dynamic range here so that 0 traps unexpected convergeance to 0
 template<> struct unsigned_aligned_integer_traits<0> {}; // undefined 0-length integer type (trivial field or the infinite range?)
 SB_UNSIGNED_TYPE( 1,  uint8_t );
 SB_UNSIGNED_TYPE( 8,  uint8_t );
@@ -168,7 +77,7 @@ SB_UNSIGNED_TYPE( 256, __m256i; );
 
 	template< size_t _BIT_COUNT  >
 using unsigned_int_t = typename unsigned_aligned_integer_traits<ceil_pow2(_BIT_COUNT)>::unsigned_t;
-static_assert( ceil_pow2(-1) == -1 );
+static_assert( ceil_pow2(-1) == 0 );
 
 }}
 static_assert( std::is_same_v<sbLibX::unsigned_int_t<1>,    uint8_t> );
@@ -176,12 +85,12 @@ static_assert( std::is_same_v<sbLibX::unsigned_int_t<16>,   uint16_t> );
 static_assert( std::is_same_v<sbLibX::unsigned_int_t<31>,   uint32_t> );
 static_assert( std::is_same_v<sbLibX::unsigned_int_t<63>,   uint64_t> );
 #if SB_SUPPORTS( SB_INT128 )
-static_assert( std::is_same_v<sbLibX::unsigned_int_t<65>,   __m128i> );
+static_assert( std::is_same_v<sbLibX::unsigned_int_t<65>,   unsigned __m128i> );
 #else
 static_assert( std::is_same_v<sbLibX::unsigned_int_t<65>, uint64_t> );
 #endif
 #if SB_SUPPORTS( SB_INT256 )
-static_assert( std::is_same_v<sbLibX::unsigned_int_t<1024>, __m256i> );
+static_assert( std::is_same_v<sbLibX::unsigned_int_t<1024>, unsigned __m256i> );
 #else
 static_assert( std::is_same_v<sbLibX::unsigned_int_t<1024>, sbLibX::unsigned_int_t<255>> );
 #endif
@@ -211,7 +120,7 @@ static inline constexpr size_t size( const typename _TRAITS::data_t& value ) noe
 	return value.size();
 }
 	template< typename _TRAITS, std::enable_if_t< _TRAITS::element_count == 1, size_t > element_count = _TRAITS::element_count >
-static inline constexpr size_t size( const typename _TRAITS::data_t& value ) noexcept
+static inline constexpr size_t size( [[maybe_unused]] const typename _TRAITS::data_t& value ) noexcept
 {
 	return 1;
 }
@@ -387,7 +296,7 @@ private:
 // TODO : support digital basis of characteristic N through trait.
 // This will introduce a carry step in load, which should still be of linear complexity.
 	template< size_t _BIT_COUNT = 0
-	        , typename _NATIVE_T = std::conditional_t<_BIT_COUNT == 0, unsigned_int_t<-1>, unsigned_int_t<_BIT_COUNT>>
+	        , typename _NATIVE_T = std::conditional_t<_BIT_COUNT == 0, unsigned_int_t<~0ull>, unsigned_int_t<_BIT_COUNT>>
 	        , typename _INTEGER_TRAITS = unsigned_raw_array_traits< _NATIVE_T, _BIT_COUNT > >
 struct raw_integer
 {
@@ -425,7 +334,7 @@ struct raw_integer
 		: value{ load( _other.data(), _other.size() ) } {}
 
 		template< size_t _OTHER_BIT_COUNT = 0, typename _OTHER_NATIVE_T >
-	constexpr raw_integer( typename const raw_integer<_OTHER_BIT_COUNT, _OTHER_NATIVE_T>::data_t& _other )
+	constexpr raw_integer( const typename raw_integer<_OTHER_BIT_COUNT, _OTHER_NATIVE_T>::data_t& _other )
 		: value{ load( _other.data(), _other.size() ) } {}
 
 	constexpr size_t size() const noexcept { return sbLibX::size<traits_t>( value ); }
@@ -762,7 +671,7 @@ std::enable_if_t<std::is_signed_v<_NATIVE_T>, std::ostream&> operator << ( std::
 #include <common/include/sb_common.h>
 SB_EXPORT_TYPE int SB_STDCALL test_int_type( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
-#if 1
+#if 0
 	using int_t = integer<int64_t, 4>;
 	int_t a0{{ 0x00000001,0x00000000,0x00000000,0x00000008 }};
 	int_t b0{{ 0x00000001 }};
@@ -846,3 +755,4 @@ SB_EXPORT_TYPE int SB_STDCALL test_int_type( [[maybe_unused]] int argc, [[maybe_
 
 	return 0;
 }
+#endif // #ifdef __clang__

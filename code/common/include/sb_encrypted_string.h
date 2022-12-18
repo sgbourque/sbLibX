@@ -1,6 +1,7 @@
 #pragma once
 #include <common/include/sb_hash.h> // sb_hash and sb_encrypted_string are to be used together but won't use each other directly (only through traits)
 #include <common/include/sb_utilities.h>
+#include <common/include/sb_math_base.h>
 
 #include <cstdint>
 #include <array>

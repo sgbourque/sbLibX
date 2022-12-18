@@ -1,10 +1,14 @@
-﻿#include <common/include/sb_common.h>
+﻿#ifdef _WINDOWS_
+#error "WTF are you doing?"
+#endif
+#include <common/include/sb_common.h>
 
 #include <common/include/sbwin.h>
 #include <common/include/win32/sbwin_result.h>
 
-//#include <unordered_map>
-
+// yuk
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include "common/include/sb_utilities.h"
 namespace SB { namespace LibX {
@@ -15,16 +19,21 @@ namespace Windows  {
 //DXGI_ERROR_DEVICE_HUNG
 
 
-struct Win32_impl
-{
-	using handle_t = handle<Win32_impl>;
-	using message_id = std::underlying_type_t<message_t>;
-	using word_param_t = uintptr_t;
-	using long_param_t = intptr_t;
-	using long_result_t = int32_t;
-	using callback_t = long_result_t (*)( handle_t hwnd, message_id msg, word_param_t wparam, long_param_t lparam );
-	//std::unordered_map< message_id, callback_t > message_map;
-};
+//struct Win32_impl
+//{
+//	using handle_t = handle<Win32_impl>;
+//	using message_id = std::underlying_type_t<message_t>;
+//	using word_param_t = uintptr_t;
+//	using long_param_t = intptr_t;
+//	using long_result_t = int32_t;
+//	using callback_t = long_result_t (*)( handle_t hwnd, message_id msg, word_param_t wparam, long_param_t lparam );
+//	//std::unordered_map< message_id, callback_t > message_map;
+//};
+//
+//struct WindowProcHandler
+//{
+//	message;
+//};
 
 } // Windows
 }} // sbLibX
@@ -34,8 +43,8 @@ namespace sbWindows = SB::LibX::Windows;
 #include <string>
 #include <iostream>
 
-
-int64_t ProcessWindow( sbWindows::window_handle handle, uint32_t message, uintptr_t message_data1, intptr_t message_data2 )
+bool should_quit = false;
+sbWindows::result_handle ProcessWindow( sbWindows::window_handle handle, sbWindows::message_t message, uintptr_t message_data1, intptr_t message_data2 )
 {
 	// yuk : tmp
 //#define WM_DESTROY                      0x0002
@@ -43,81 +52,291 @@ int64_t ProcessWindow( sbWindows::window_handle handle, uint32_t message, uintpt
 //	{
 //		return 0;
 //	}
-#define WM_CLOSE                        0x0010
-	if ( message == WM_CLOSE )
+	using message_t = sbWindows::message_t;
+	switch( message )
 	{
-		DestroyWindow( handle );
-		return 0;
+	case message_t::Close:
+		should_quit = true;
+		sbWindows::PostMessage( handle, sbWindows::message_t::Destroy, message_data1, message_data2 );
+		break;
+	case message_t::Destroy:
+		should_quit = true;
+		sbWindows::PostQuitMessage( 0 );
+		break;
+	default:
+		return sbWindows::DefWindowProc( handle, message, message_data1, message_data2 );
 	}
-	return sbWindows::default_win_proc( handle, message, message_data1, message_data2 );
+	return 0;
 }
 
-SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
+sbWindows::icon_handle create_ying_yang_icon( sbWindows::instance_handle instance = nullptr )
 {
-	sbWindows::window test( SB_SYSTEM_STRING( "sbMainWindowClass" ), ProcessWindow );
-	[[maybe_unused]] sbWindows::result_t result = test.register_class();
+	uint8_t ANDmaskIcon[(32 * 32) / CHAR_BIT] = {
+		0xFF, 0xFC, 0x3F, 0xFF,
+		0xFF, 0xC0, 0x03, 0xFF,
+		0xFF, 0x00, 0x00, 0xFF,
+		0xF8, 0x00, 0x00, 0x7F,
 
-	//////////////////////////////////////////////////////////////////////////
-	// temp ugly stuff
+		0xF8, 0x00, 0x00, 0x1F,
+		0xF0, 0x00, 0x00, 0x0F,
+		0xF0, 0x00, 0x00, 0x0F,
+		0xE0, 0x00, 0x00, 0x07,
+
+		0xC0, 0x00, 0x00, 0x03,
+		0xC0, 0x00, 0x00, 0x03,
+		0x80, 0x00, 0x00, 0x01,
+		0x80, 0x00, 0x00, 0x01,
+
+		0x80, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x80, 0x00, 0x00, 0x01,
+
+		0x80, 0x00, 0x00, 0x01,
+		0x80, 0x00, 0x00, 0x01,
+		0xC0, 0x00, 0x00, 0x03,
+		0xC0, 0x00, 0x00, 0x03,
+
+		0xE0, 0x00, 0x00, 0x07,
+		0xF0, 0x00, 0x00, 0x0F,
+		0xF0, 0x00, 0x00, 0x0F,
+		0xF8, 0x00, 0x80, 0x1F,
+
+		0xFE, 0x00, 0x00, 0x7F,
+		0xFF, 0x00, 0x00, 0xFF,
+		0xFF, 0xC0, 0x03, 0xFF,
+		0xFF, 0xFC, 0x3F, 0xFF,
+	};
+	uint8_t XORmaskIcon[(32*32) / CHAR_BIT] = {
+		0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xC3, 0xFF,
+		0xFF, 0xFF, 0x00, 0xFF,
+		0xFF, 0xFE, 0x00, 0x7F,
+
+		0xFF, 0xFC, 0x00, 0x1F,
+		0xFF, 0xF8, 0x00, 0x0F,
+		0xFF, 0xF8, 0x00, 0x0F,
+		0xFF, 0xF0, 0x38, 0x07,
+
+		0xFF, 0xF0, 0x7C, 0x03,
+		0xFF, 0xE0, 0x7C, 0x03,
+		0xFF, 0xE0, 0x7C, 0x01,
+		0xFF, 0xE0, 0x38, 0x01,
+
+		0xFF, 0xF0, 0x00, 0x01,
+		0xFF, 0xF0, 0x00, 0x00,
+		0xFF, 0xF8, 0x00, 0x00,
+		0xFF, 0xFC, 0x00, 0x00,
+
+		0xFF, 0xFF, 0x00, 0x00,
+		0xFF, 0xFF, 0x80, 0x00,
+		0xFF, 0xFF, 0xE0, 0x00,
+		0xFF, 0xFF, 0xE0, 0x01,
+
+		0xFF, 0xC7, 0xF0, 0x01,
+		0xFF, 0x83, 0xF0, 0x01,
+		0xFF, 0x83, 0xF0, 0x03,
+		0xFF, 0x83, 0xE0, 0x03,
+
+		0xFF, 0xC7, 0xE0, 0x07,
+		0xFF, 0xFF, 0xC0, 0x0F,
+		0xFF, 0xFF, 0xC0, 0x0F,
+		0xFF, 0xFF, 0x80, 0x1F,
+
+		0xFF, 0xFF, 0x00, 0x7F,
+		0xFF, 0xFC, 0x00, 0xFF,
+		0xFF, 0xF8, 0x03, 0xFF,
+		0xFF, 0xFC, 0x3F, 0xFF,
+	};
+
+	return sbWindows::CreateIcon( instance
+		, 32, 32                       // icon width / height
+		, 1, 1                         // number of XOR planes / number of bits per pixel
+		, ANDmaskIcon, XORmaskIcon     // AND / XOR bitmask
+	);
+}
+
+struct window_create_flags
+{
+	sbWindows::window_style_flags    creationFlags{ sbWindows::window_style_flags::OVERLAPPED };
+	sbWindows::window_style_flags_ex creationFlagsEx{};
+};
+static window_create_flags get_window_flags( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
+{
 	using window_style_flags = sbWindows::window_style_flags;
-	window_style_flags creationFlags = window_style_flags::OVERLAPPED;
+	window_create_flags window_flags{ window_style_flags::OVERLAPPEDWINDOW };
+	// tmp poor man's parsing
+	if (argc > 3)
+	{
+		bool isVisible = argv[3][0] > '0';
+		window_flags.creationFlags = ( window_flags.creationFlags & ~window_style_flags::VISIBLE ) | ( isVisible ? window_style_flags::VISIBLE : window_style_flags::OVERLAPPED );
+	}
 	if (argc > 4)
 	{
-		bool isVisible = argv[4][0] > '0'; // temp
-		creationFlags = ( creationFlags & ~window_style_flags::VISIBLE ) | ( isVisible ? window_style_flags::VISIBLE : window_style_flags::OVERLAPPED);
-	}
-	if (argc > 5)
-	{
-		bool isPopup = argv[5][0] > '0'; // temp
-		creationFlags = ( creationFlags & ~window_style_flags::POPUP ) | ( isPopup ? window_style_flags::POPUP : window_style_flags::OVERLAPPED );
+		bool isPopup = argv[4][0] > '0';
+		window_flags.creationFlags = ( window_flags.creationFlags & ~window_style_flags::POPUP ) | ( isPopup ? window_style_flags::POPUP : window_style_flags::OVERLAPPED );
 	}
 
 	using window_style_flags_ex = sbWindows::window_style_flags_ex;
-	window_style_flags_ex creationFlagsEx{};
-	if ( argc > 3 )
+	if (argc > 2)
 	{
-		bool forComposition = argv[3][0] > '0'; // temp
-		creationFlagsEx = ( creationFlagsEx & ~(window_style_flags_ex::NOREDIRECTIONBITMAP | window_style_flags_ex::OVERLAPPEDWINDOW) ) | ( forComposition ? window_style_flags_ex::NOREDIRECTIONBITMAP : window_style_flags_ex::OVERLAPPEDWINDOW );
+		bool forComposition = argv[2][0] > '0';
+		window_flags.creationFlagsEx = ( window_flags.creationFlagsEx & ~( window_style_flags_ex::NOREDIRECTIONBITMAP | window_style_flags_ex::OVERLAPPEDWINDOW ) ) | ( forComposition ? window_style_flags_ex::NOREDIRECTIONBITMAP : window_style_flags_ex::OVERLAPPEDWINDOW );
 	}
+	return window_flags;
+}
 
-	test.create_window(SB_SYSTEM_STRING("test/win32 - main"), { creationFlags, creationFlagsEx });
+int TestVulkan( void* hwnd );
+
+volatile long process_time_sample = 0;
+
+static inline constexpr long process_frequency_Hz = 48000;
+static inline constexpr long max_process_time_s = 30;
+static inline constexpr long max_process_time_sample = max_process_time_s * process_frequency_Hz;
+float sinTable[max_process_time_sample]{};
+float cosTable[max_process_time_sample]{};
+double sinTable2[max_process_time_sample]{};
+double cosTable2[max_process_time_sample]{};
+
+float zeroTable_R[max_process_time_sample]{};
+float zeroTable_I[max_process_time_sample]{};
+float oneTable[max_process_time_sample]{};
+double zeroTable2_R[max_process_time_sample]{};
+double zeroTable2_I[max_process_time_sample]{};
+double oneTable2[max_process_time_sample]{};
+uint32_t UpdateJob( void* )
+{
+	while( !should_quit )
+	{
+		long thread_process_sample = _InterlockedIncrement( &process_time_sample ) - 1;
+		if( thread_process_sample < max_process_time_sample/2 )
+		{
+			sinTable[thread_process_sample] = sinf( static_cast<float>( 2.0f * M_PI * thread_process_sample ) / static_cast<float>( max_process_time_sample ) );
+			sinTable2[thread_process_sample] = sin( static_cast<double>( 2.0 * M_PI * thread_process_sample ) / static_cast<double>( max_process_time_sample ) );
+			cosTable[thread_process_sample] = cosf( static_cast<float>( 2.0f * M_PI * thread_process_sample ) / static_cast<float>( max_process_time_sample ) );
+			cosTable2[thread_process_sample] = cos( static_cast<double>( 2.0 * M_PI * thread_process_sample ) / static_cast<double>( max_process_time_sample ) );
+		}
+		else if (thread_process_sample < max_process_time_sample)
+		{
+			sinTable[thread_process_sample] = sinf( static_cast<float>( 2.0f * M_PI * (thread_process_sample -
+				max_process_time_sample/2 ) ) / static_cast<float>( max_process_time_sample ) );
+			sinTable2[thread_process_sample] = sin( static_cast<double>( 2.0 * M_PI * thread_process_sample ) / static_cast<double>( max_process_time_sample ) );
+			cosTable[thread_process_sample] = cosf( static_cast<float>( 2.0f * M_PI * thread_process_sample ) / static_cast<float>( max_process_time_sample ) );
+			cosTable2[thread_process_sample] = cos( static_cast<double>( 2.0 * M_PI * thread_process_sample ) / static_cast<double>( max_process_time_sample ) );
+		}
+		else if (thread_process_sample < 2 * max_process_time_sample)
+		{
+			//noop, just garantees all tables are finished as all thread will have to go there first...
+		}
+		else if (thread_process_sample < 3*max_process_time_sample)
+		{
+			thread_process_sample -= 2*max_process_time_sample;
+			for (size_t exponent = 0; exponent < max_process_time_sample; ++exponent)
+			{
+				zeroTable_I[thread_process_sample] += sinTable[(exponent * thread_process_sample) % max_process_time_sample];
+				zeroTable_R[thread_process_sample] += cosTable[( exponent * thread_process_sample ) % max_process_time_sample];
+				oneTable[thread_process_sample] += sinTable[thread_process_sample]*sinTable[thread_process_sample] + cosTable[thread_process_sample]*cosTable[thread_process_sample];
+				zeroTable2_I[thread_process_sample] += sinTable2[(exponent * thread_process_sample) % max_process_time_sample];
+				zeroTable2_R[thread_process_sample] += sinTable2[( exponent * thread_process_sample ) % max_process_time_sample];
+				oneTable2[thread_process_sample] += sinTable2[thread_process_sample]*sinTable2[thread_process_sample] + cosTable2[thread_process_sample]*cosTable2[thread_process_sample];
+			}
+
+			//zeroTable[thread_process_sample] /= max_process_time_sample;
+			oneTable[thread_process_sample] /= max_process_time_sample;
+			//zeroTable2[thread_process_sample] /= max_process_time_sample;
+			oneTable2[thread_process_sample] /= max_process_time_sample;
+		}
+		else
+		{
+			break; // temp
+		}
+		if ( ((thread_process_sample + 4) % 8) < 4 )
+			sbWindows::sleep_ms( 1 );
+	}
+	return 0;
+}
 
 
-	// yuk : tmp
-#define SW_HIDE             0
-#define SW_SHOWNORMAL       1
-#define SW_NORMAL           1
-#define SW_SHOWMINIMIZED    2
-#define SW_SHOWMAXIMIZED    3
-#define SW_MAXIMIZE         3
-#define SW_SHOWNOACTIVATE   4
-#define SW_SHOW             5
-#define SW_MINIMIZE         6
-#define SW_SHOWMINNOACTIVE  7
-#define SW_SHOWNA           8
-#define SW_RESTORE          9
-#define SW_SHOWDEFAULT      10
-#define SW_FORCEMINIMIZE    11
-#define SW_MAX              11
-	if (!ShowWindow(test, SW_SHOW))
+SB_EXPORT_TYPE int SB_STDCALL test_win32( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
+{
+	sbWindows::icon_handle yang_icon = create_ying_yang_icon();
+	sbWindows::window_factory test = sbWindows::window_factory{ SB_SYSTEM_STRING("sbMainWindowClass"), ProcessWindow }
+		.set_style_flags()
+		.set_icon(yang_icon)
+		.set_cursor()
+		.set_brush()
+		.set_small_icon(yang_icon);
+	[[maybe_unused]] sbWindows::result_t result = test.register_class();
+
+	window_create_flags windowFlags = get_window_flags( argc, argv );
+	sbWindows::window_handle test_window = test.create_window(SB_SYSTEM_STRING("test/win32 - main"), { windowFlags.creationFlags, windowFlags.creationFlagsEx });
+
+#if 1
+	{
+		using dwm_window_attribute = sbWindows::dwm_window_attribute;
+		uint32_t enableDark = argc > 2 ? 1 : 0;
+		//result = DwmSetWindowAttribute( test_window, dwm_window_attribute::USE_IMMERSIVE_DARK_MODE_LEGACY, &enableDark, sizeof( enableDark ) );
+		result = DwmSetWindowAttribute( test_window, dwm_window_attribute::USE_IMMERSIVE_DARK_MODE, &enableDark, sizeof( enableDark ) );
+	}
+#endif
+
+	if (!ShowWindow(test_window, sbWindows::show_window_properties::SHOW))
 	{
 		result = sbWindows::GetLastError();
 	}
-	if (!UpdateWindow(test))
+	if (!UpdateWindow(test_window))
 	{
 		result = sbWindows::GetLastError();
 	}
 
-	sbWindows::MSG msg;
-	int32_t gotMessage;
-	while ((gotMessage = GetMessage(&msg, test)) != 0 && gotMessage != -1)
+	TestVulkan( test_window );
+
+
+	sbWindows::thread_handle threadHandle[4]{};
+	for( size_t index = 0; index < sbLibX::array_count(threadHandle); ++index)
+		threadHandle[index] = sbWindows::CreateThread( UpdateJob );
+
+	sbWindows::message msg;
+	do
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-		//if (callback.empty())
-		//	break;
-	}
+		msg = sbWindows::message{};
+		uint32_t gotMessage = sbWindows::PeekMessage( &msg );
+		if( gotMessage )
+		{
+			int32_t message_result = sbWindows::GetMessage( &msg );
+			if ( message_result )
+			{
+				TranslateMessage( &msg );
+				DispatchMessage( &msg );
+				if (message_result == -1)
+				{
+					msg.message_type = sbWindows::message_t::Destroy;
+				}
+			}
+		}
+	} while (msg.message_type != sbWindows::message_t::Destroy);
 	////////////////////////////////////////////////////////////////////////
+	test.destroy_window( test_window );
+	test_window = nullptr;
+
+	// WTF is going on here, I get invalid handles so I messed up something for sure!
+	for (size_t index = 0; index < sbLibX::array_count( threadHandle ); ++index)
+	{
+		if (threadHandle[index])
+		{
+			uint32_t waitResult = 0;
+			do 
+			{
+				waitResult = sbWindows::WaitForSingleObject( threadHandle[index], 100 );
+			} while ( waitResult != 0 ); // this is bad code ( temp w/ 0 = WAIT_OBJECT_0 )
+			threadHandle[index] = nullptr;
+		}
+	}
 	return 0;
 }
 
