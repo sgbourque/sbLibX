@@ -177,12 +177,6 @@ using default_coprime_hash_traits = coprime_hash_traits<hash_type, _SEED_>;
 		return crypt_impl<crypt_type, _VALUE_LENGTH_>( value_data.data(), _VALUE_LENGTH_, key_data.data(), _KEY_LENGTH_ ); \
 	}
 
-// Encrypt adapters are constexpr while Decrypt adapters are not.
-// This is to prevent compiler from optimizing the encrypt-decrypt at compile-time
-// instead of keeping static-encrypted strings in the binary data.
-#define SB_DEFINE_ENCRYPT_ADAPTERS( crypt, crypt_impl )					SB_DEFINE_CRYPT_ADAPTERS( crypt, crypt_impl, uintptr_t, constexpr )
-#define SB_DEFINE_DECRYPT_ADAPTERS( crypt, crypt_impl, crypt_type )		SB_DEFINE_CRYPT_ADAPTERS( crypt, crypt_impl, crypt_type )
-
 
 	template< size_t _SEED_, size_t _CRYPT_PASS_ = 1, size_t _PUBLIC_KEY_LENGTH_BITS_ = 512, template<typename, size_t> typename _KEY_HASH_TRAITS_ = default_coprime_hash_traits >
 struct demo_crypt
@@ -288,7 +282,7 @@ struct demo_crypt
 		else
 		{
 			using next_crypt_t = demo_crypt< _SEED_, _CRYPT_PASS_ - 1, _PUBLIC_KEY_LENGTH_BITS_, _KEY_HASH_TRAITS_ >;
-			return next_crypt_t::crypt<_CRYPT_TYPE_T, block_count>( encrypted.data(), encrypted.size(), key_data, key_length, seed + 1 );
+			return next_crypt_t::template crypt<_CRYPT_TYPE_T, block_count>( encrypted.data(), encrypted.size(), key_data, key_length, seed + 1 );
 		}
 	}
 
@@ -310,7 +304,7 @@ struct demo_crypt
 		if constexpr (_CRYPT_PASS_ >= 2)
 		{
 			using next_crypt_t = demo_crypt< _SEED_, _CRYPT_PASS_ - 1, _PUBLIC_KEY_LENGTH_BITS_, _KEY_HASH_TRAITS_ >;
-			auto temp = next_crypt_t::crypt_inverse<data_t, block_count + (_CRYPT_PASS_ - 1)>( encrypted_data, encrypted_length, key_data, key_length, seed + 1 );
+			auto temp = next_crypt_t::template crypt_inverse<data_t, block_count + (_CRYPT_PASS_ - 1)>( encrypted_data, encrypted_length, key_data, key_length, seed + 1 );
 			sb_static_assert( temp.size() == block_count, "failed: ", temp.size(), block_count )
 			intermediate = temp;
 			encrypted_data = intermediate.data();
@@ -378,29 +372,32 @@ struct demo_crypt
 //#define SB_CRYPT_PRE_SEED	0x68B27C027DE16CD5ull
 #define SB_CRYPT_PRE_SEED	7546228625962406389ull
 #define SB_CRYPT_SEED_KEY	"- \\_/SBLib© - Seed Key - " CSTR( SB_CRYPT_PRE_SEED )
-#pragma message( SB_CRYPT_SEED_KEY )
-static inline constexpr uint64_t compile_encryption_seed =  0x4000000000000000ull | ( 0x7FFFFFFFFFFFFFFFull &
-		default_coprime_hash_traits<uint64_t, SB_CRYPT_PRE_SEED>::combine( 0ull, SB_CRYPT_SEED_KEY, std::size( SB_CRYPT_SEED_KEY ))
-	);
-#define fast_encrypt_impl demo_crypt<compile_encryption_seed, 0>::crypt
+static inline constexpr uint64_t compile_time_pre_seed = default_coprime_hash_traits<uint64_t, SB_CRYPT_PRE_SEED>::combine( 0ull, SB_CRYPT_SEED_KEY, std::size( SB_CRYPT_SEED_KEY ) );
+static inline constexpr uint64_t compile_encryption_seed =  0x4000000000000000ull | ( 0x7FFFFFFFFFFFFFFFull & compile_time_pre_seed );
+
+
+// Encrypt adapters are constexpr while Decrypt adapters should never be.
+// This is to prevent compiler from optimizing the encrypt-decrypt at compile-time
+// instead of keeping static-encrypted strings in the binary data.
+#define fast_encrypt_impl demo_crypt<compile_encryption_seed, 0>::template crypt
 #define fast_decrypt_impl demo_crypt<compile_encryption_seed, 0>::crypt_inverse
-SB_DEFINE_ENCRYPT_ADAPTERS( fast_encrypt, fast_encrypt_impl )
-SB_DEFINE_DECRYPT_ADAPTERS( fast_decrypt, fast_decrypt_impl, char )
+SB_DEFINE_CRYPT_ADAPTERS( fast_encrypt, fast_encrypt_impl, uintptr_t, constexpr )
+SB_DEFINE_CRYPT_ADAPTERS( fast_decrypt, fast_decrypt_impl, char )
 
 #define default_encrypt_impl demo_crypt<compile_encryption_seed, 1>::crypt
 #define default_decrypt_impl demo_crypt<compile_encryption_seed, 1>::crypt_inverse
-SB_DEFINE_ENCRYPT_ADAPTERS( default_encrypt, default_encrypt_impl )
-SB_DEFINE_DECRYPT_ADAPTERS( default_decrypt, default_decrypt_impl, char )
+SB_DEFINE_CRYPT_ADAPTERS( default_encrypt, default_encrypt_impl, uintptr_t, constexpr )
+SB_DEFINE_CRYPT_ADAPTERS( default_decrypt, default_decrypt_impl, char )
 
 #define double_encrypt_impl demo_crypt<compile_encryption_seed, 2>::crypt
 #define double_decrypt_impl demo_crypt<compile_encryption_seed, 2>::crypt_inverse
-SB_DEFINE_ENCRYPT_ADAPTERS( double_encrypt, double_encrypt_impl )
-SB_DEFINE_DECRYPT_ADAPTERS( double_decrypt, double_decrypt_impl, char )
+SB_DEFINE_CRYPT_ADAPTERS( double_encrypt, double_encrypt_impl, uintptr_t, constexpr )
+SB_DEFINE_CRYPT_ADAPTERS( double_decrypt, double_decrypt_impl, char )
 
 #define quad_encrypt_impl demo_crypt<compile_encryption_seed, 4>::crypt
 #define quad_decrypt_impl demo_crypt<compile_encryption_seed, 4>::crypt_inverse
-SB_DEFINE_ENCRYPT_ADAPTERS( quad_encrypt, quad_encrypt_impl )
-SB_DEFINE_DECRYPT_ADAPTERS( quad_decrypt, quad_decrypt_impl, char )
+SB_DEFINE_CRYPT_ADAPTERS( quad_encrypt, quad_encrypt_impl, uintptr_t, constexpr )
+SB_DEFINE_CRYPT_ADAPTERS( quad_decrypt, quad_decrypt_impl, char )
 
 #define SB_STATIC_ENCRYPT	( SB_SUPPORTED & SB_STATIC_DATA_PROCESSING )
 
@@ -414,8 +411,6 @@ SB_DEFINE_DECRYPT_ADAPTERS( quad_decrypt, quad_decrypt_impl, char )
 #include <array>
 namespace SB { namespace LibX
 {
-//	template< typename _VALUE_TYPE_T, size_t _VALUE_LENGTH_, typename _KEY_TYPE_T, size_t _KEY_LENGTH_ >
-//static inline constexpr auto xor_impl( const std::array< _VALUE_TYPE_T, _VALUE_LENGTH_ >& value_data, const std::array< _KEY_TYPE_T, _KEY_LENGTH_ >& key_data )
 	template< size_t _VALUE_LENGTH_, typename _VALUE_TYPE_T, typename _KEY_TYPE_T >
 static inline constexpr auto xor_impl( const _VALUE_TYPE_T* value, size_t length, const _KEY_TYPE_T* key_data, size_t key_length )
 {
@@ -439,7 +434,7 @@ SB_EXPORT_TYPE int SB_STDCALL test_encrypt3( [[maybe_unused]] int argc, [[maybe_
 {
 	#define RAW_ENCRYPTION_MESSAGE	"" __TIME__ "-" __DATE__ "\\_/SBLib© - Encryption - "
 	static constexpr auto key = sbLibX::static_apply( quad_encrypt, RAW_ENCRYPTION_MESSAGE, RAW_ENCRYPTION_MESSAGE " Key" );
-	static constexpr char message[] = RAW_ENCRYPTION_MESSAGE "Should be kept safe/hidden.";
+	static constexpr char message[] = RAW_ENCRYPTION_MESSAGE "Message - Should be kept safe/hidden.";
 
 	constexpr auto fast_encrypted_key_0 = sbLibX::static_apply( fast_encrypt, message, key );
 	auto fast_decrypted_key_0 = sbLibX::dynamic_apply( fast_decrypt, fast_encrypted_key_0, key );
