@@ -15,6 +15,9 @@
     <Filter Include="res">
       <UniqueIdentifier>{b35a4f89-4c15-45b1-92a8-1926749ad119}</UniqueIdentifier>
     </Filter>
+    <Filter Include="res\dict">
+      <UniqueIdentifier>{7dff64da-046d-457f-bb78-02237d1c204b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test_main.cpp">
@@ -68,6 +71,9 @@
     <ClCompile Include="src\test_encrypt3.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\test_lexicon.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\test_precompile.h">
@@ -85,14 +91,14 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="res\english3.txt">
-      <Filter>res</Filter>
+    <Text Include="res\dict\english3.txt">
+      <Filter>res\dict</Filter>
     </Text>
-    <Text Include="res\francais.txt">
-      <Filter>res</Filter>
+    <Text Include="res\dict\francais.txt">
+      <Filter>res\dict</Filter>
     </Text>
-    <Text Include="res\simple_lexicon.txt">
-      <Filter>res</Filter>
+    <Text Include="res\dict\simple_lexicon.txt">
+      <Filter>res\dict</Filter>
     </Text>
   </ItemGroup>
 </Project>

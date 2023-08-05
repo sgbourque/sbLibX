@@ -9,12 +9,12 @@
     <RemoteDebuggerCommandArguments>run test_x64_debug/test_encrypt3</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-clang|x64'">
-    <LocalDebuggerCommandArguments>run test_x64_debug-clang/test_encrypt3</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run test_x64_debug-clang/test_lexicon -lexicon="francais" -build_dictionary -build_grammar -build_verbs</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(SolutionDir)bin\$(PlatformName)\sbDev_$(PlatformName)_debug.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
-    <RemoteDebuggerCommandArguments>run test_x64_debug-clang/test_encrypt3</RemoteDebuggerCommandArguments>
+    <RemoteDebuggerCommandArguments>run test_x64_debug-clang/test_lexicon -lexicon="francais" -build_dictionary -build_grammar -build_verbs</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug-exec|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>

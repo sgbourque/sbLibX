@@ -7,8 +7,16 @@
       "Command": "run",
       "Items": [
         {
+          "Id": "886dff58-cb7e-4b6d-aaba-c00e2c10d534",
+          "Command": "run $(TargetName)/test_lexicon -lexicon=\"francais\" -build_dictionary -build_grammar -build_verbs"
+        },
+        {
           "Id": "b2e6c09f-4dae-4202-8530-d85136a71ce8",
           "Command": "run $(TargetName)/test_encrypt3"
+        },
+        {
+          "Id": "371dc27b-5973-40ef-a2fc-9559c25e70f7",
+          "Command": "run $(TargetName)/test_hash2"
         },
         {
           "Id": "fc3d3e4a-884a-41e6-950a-7f13750913bf",

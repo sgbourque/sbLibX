@@ -50,6 +50,7 @@
     <ClCompile Include="src\test_hash_2.cpp" />
     <ClCompile Include="src\test_int_type.cpp" />
     <ClCompile Include="src\test_int_type2.cpp" />
+    <ClCompile Include="src\test_lexicon.cpp" />
     <ClCompile Include="src\test_processing.cpp" />
     <ClCompile Include="src\test_riemann.cpp" />
     <ClCompile Include="src\test_hash.cpp" />
@@ -77,9 +78,9 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="res\english3.txt" />
-    <Text Include="res\simple_lexicon.txt" />
-    <Text Include="res\francais.txt" />
+    <Text Include="res\dict\english3.txt" />
+    <Text Include="res\dict\francais.txt" />
+    <Text Include="res\dict\simple_lexicon.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

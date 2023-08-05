@@ -25,6 +25,7 @@ static inline _DATA_TYPE_T&& dynamic_data( _DATA_TYPE_T&& data ) { return std::m
 
 
 
+namespace SB { namespace LibX {
 // coprime_hash_traits_base_t is very good for string hashing and can be used for
 // good in encryption system since it is a reversible process.
 // However, is very unsafe precisely because it reversible.
@@ -55,7 +56,7 @@ struct coprime_hash_traits_base_t
 	static inline constexpr auto hash_combine( hash_t hash, _DATA_TYPE_ input )
 	{
 		static_assert( std::is_integral_v<_DATA_TYPE_>, "hash_traits: data should be divided in binary chunks of integral type." );
-		return hash ^ ( ( hash * integral_value + 1 ) / 2 + input * ( coprime + 1 ) );
+		return ( hash ^ integral_value ) ^ ( ( hash * integral_value + 1 ) / 2 + ( input * ( coprime + 1 ) ) ^ integral_value );
 	};
 	template< typename _DATA_TYPE_ >
 	static inline constexpr auto hash_unapply( [[maybe_unused]] hash_t hash, [[maybe_unused]] _DATA_TYPE_ input )
@@ -130,9 +131,10 @@ struct coprime_hash_traits
 };
 	template<typename hash_type, uint64_t _SEED_>
 using default_coprime_hash_traits = coprime_hash_traits<hash_type, _SEED_>;
+}}
 
 
-
+namespace SB { namespace LibX {
 // Crypt functions usually are binary functions, taking two buffers as input :
 // - the data buffer to be encrypted/decrypted;
 // - the key buffer which is used a key;
@@ -215,7 +217,7 @@ struct demo_crypt
 		template< typename _VALUE_TYPE_T, size_t _VALUE_LENGTH_ >
 	static inline constexpr size_t encrypt_size = sbLibX::align_up( sizeof( key_t ) + _VALUE_LENGTH_ * sizeof( _VALUE_TYPE_T ), sizeof( data_t ) );
 		template< typename _CRYPT_TYPE_T, size_t _MAX_LENGTH_, typename _VALUE_TYPE_T, typename _KEY_TYPE_T >
-	static inline constexpr auto crypt( const _VALUE_TYPE_T* value_data, size_t value_length, const _KEY_TYPE_T* key_data, size_t key_length, size_t seed = ( 2 * prime * coprime ) + 1 )
+	static inline constexpr auto crypt( const _VALUE_TYPE_T* value_data, size_t value_length, const _KEY_TYPE_T* key_data, size_t key_length, size_t residue = 0 )
 	{
 		using value_t = std::remove_cvref_t<_VALUE_TYPE_T>;
 		static_assert( std::is_integral_v<value_t> );
@@ -223,15 +225,17 @@ struct demo_crypt
 		using return_t = std::array<data_t, block_count>;
 		return_t encrypted{};
 
+		size_t seed = sbLibX::modular_inverse( ( 2 * ( prime * coprime + _CRYPT_PASS_ ) ) + 1 ) ^ coprime;
+		size_t value_length_seed = ( residue == 0 ) ? value_length : residue;
+
 		key_t private_key = generate_private_key_hash( key_data, key_length, ( seed + coprime * _CRYPT_PASS_ + prime * key_length ) | 1 );
-		key_t private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * key_length ) );
+		key_t private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * seed ) );
 		// encrypt uses the inverse of private_key; decrypt uses linear public_key.
 		key_t private_key_inverse = sbLibX::modular_inverse( private_key );
 
-		// if value_length == 0 && key_length == 0, encrypted should be 0.
-		data_t residue = ( key_length * coprime * private_key + 1 ) / 2;
-		data_t residue_factor = ( value_length * prime * private_key_inverse + residue ) ^ private_mask;
-		encrypted[0] = residue_factor;
+		residue = ( key_length * coprime * private_key + 1 ) / 2;
+		data_t residue_encrypted = ( value_length_seed * prime * private_key_inverse + residue ) ^ private_mask;
+		encrypted[0] = residue_encrypted;
 
 		data_t key_power = private_key_inverse;
 		size_t index_begin = 0;
@@ -265,13 +269,13 @@ struct demo_crypt
 			}
 			else
 			{
-				private_key = generate_private_key_hash( key_data, key_length, private_key );
-				private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * key_length ) );
+				private_key = generate_private_key_hash( &private_key, 1, private_key );
+				private_mask = generate_private_key_hash( &private_key, 1, ( private_key + coprime * key_length ) ^ private_mask );
 				encryption_mask = generate_private_key_hash( &private_key, 1, private_mask );
 				private_key_inverse = sbLibX::modular_inverse( private_key );
 			}
 			key_power *= private_key_inverse;
-			data_t encrypted_block = ( block * prime + value_length * coprime ) * key_power + residue;
+			data_t encrypted_block = ( block * prime + value_length_seed * coprime ) * key_power + residue;
 			encrypted[block_index] = ( encrypted_block ^ encryption_mask );
 			residue = key_hash_t::combine( residue, block );
 		}
@@ -282,14 +286,14 @@ struct demo_crypt
 		else
 		{
 			using next_crypt_t = demo_crypt< _SEED_, _CRYPT_PASS_ - 1, _PUBLIC_KEY_LENGTH_BITS_, _KEY_HASH_TRAITS_ >;
-			return next_crypt_t::template crypt<_CRYPT_TYPE_T, block_count>( encrypted.data(), encrypted.size(), key_data, key_length, seed + 1 );
+			return next_crypt_t::template crypt<_CRYPT_TYPE_T, block_count>( encrypted.data(), encrypted.size(), key_data, key_length, (value_length_seed ^ residue) );
 		}
 	}
 
 		template< typename _VALUE_TYPE_T, size_t _VALUE_LENGTH_, size_t _PASS_ >
 	static inline constexpr size_t decrypt_size = sbLibX::align_up( _VALUE_LENGTH_ * sizeof( _VALUE_TYPE_T ) - ( _PASS_ >= 2 ? _PASS_ : 1 ) * sizeof( key_t ), sizeof( _VALUE_TYPE_T ) );
 		template< typename _CHAR_TYPE_, size_t _MAX_LENGTH_, typename _VALUE_TYPE_T, typename _KEY_TYPE_T >
-	static inline auto crypt_inverse( const _VALUE_TYPE_T* encrypted_data, size_t encrypted_length, const _KEY_TYPE_T* key_data, size_t key_length, size_t seed = ( 2 * prime * coprime ) + 1 )
+	static inline auto crypt_inverse( const _VALUE_TYPE_T* encrypted_data, size_t encrypted_length, const _KEY_TYPE_T* key_data, size_t key_length )
 	{
 		using value_t = _CHAR_TYPE_;
 		static_assert( std::is_integral_v<value_t> );
@@ -304,22 +308,23 @@ struct demo_crypt
 		if constexpr (_CRYPT_PASS_ >= 2)
 		{
 			using next_crypt_t = demo_crypt< _SEED_, _CRYPT_PASS_ - 1, _PUBLIC_KEY_LENGTH_BITS_, _KEY_HASH_TRAITS_ >;
-			auto temp = next_crypt_t::template crypt_inverse<data_t, block_count + (_CRYPT_PASS_ - 1)>( encrypted_data, encrypted_length, key_data, key_length, seed + 1 );
+			auto temp = next_crypt_t::template crypt_inverse<data_t, block_count + (_CRYPT_PASS_ - 1)>( encrypted_data, encrypted_length, key_data, key_length );
 			sb_static_assert( temp.size() == block_count, "failed: ", temp.size(), block_count )
 			intermediate = temp;
 			encrypted_data = intermediate.data();
 			encrypted_length = intermediate.size() * sizeof( data_t ) / sizeof( _VALUE_TYPE_T );
 		}
 
+		size_t seed = sbLibX::modular_inverse( ( 2 * ( prime * coprime + _CRYPT_PASS_ ) ) + 1 ) ^ coprime;
 		key_t private_key = generate_private_key_hash( key_data, key_length, ( seed + coprime * _CRYPT_PASS_ + prime * key_length ) | 1 );
-		key_t private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * key_length ) );
+		key_t private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * seed ) );
 		// encrypt uses the inverse of private_key; decrypt uses linear public_key.
 		//[[maybe_unused]] key_t private_key_inverse = sbLibX::modular_inverse( private_key );
 
 		// if value_length == 0 && key_length == 0, encrypted should be 0.
-		data_t residue_factor = encrypted_data[0];
+		data_t residue_encrypted = encrypted_data[0];
 		data_t residue = ( key_length * coprime * private_key + 1 ) / 2;
-		size_t value_length = ( (residue_factor ^ private_mask) - residue ) * prime_inverse * private_key;
+		size_t value_length_seed = ( (residue_encrypted ^ private_mask) - residue ) * prime_inverse * private_key;
 
 		data_t key_power = private_key;
 		size_t value_index = 0;
@@ -333,18 +338,18 @@ struct demo_crypt
 			}
 			else
 			{
-				private_key = generate_private_key_hash( key_data, key_length, private_key );
-				private_mask = generate_private_key_hash( key_data, key_length, ( private_key + coprime * key_length ) );
+				private_key = generate_private_key_hash( &private_key, 1, private_key );
+				private_mask = generate_private_key_hash( &private_key, 1, ( private_key + coprime * key_length ) ^ private_mask );
 				encryption_mask = generate_private_key_hash( &private_key, 1, private_mask );
 			}
 			key_power *= private_key;
 
 			data_t encrypted_block = ( encrypted_data[block_index] ^ encryption_mask );
-			data_t block = ( ( encrypted_block - residue ) * key_power - value_length * coprime ) * prime_inverse;
+			data_t block = ( ( encrypted_block - residue ) * key_power - value_length_seed * coprime ) * prime_inverse;
 			residue = key_hash_t::combine( residue, block );
 			if constexpr ( sizeof( value_t ) < sizeof( data_t ) )
 			{
-				const size_t next_end = std::min( value_length, sbLibX::align_up( ( value_index + 1 ) * sizeof( value_t ), sizeof( data_t ) ) );
+				const size_t next_end = std::min( _CRYPT_PASS_ < 2 ? value_length_seed : ~0ull, sbLibX::align_up( ( value_index + 1 ) * sizeof( value_t ), sizeof( data_t ) ) );
 				for (; value_index < next_end; ++value_index)
 				{
 					constexpr size_t value_bits = ( sizeof( value_t ) * CHAR_BIT );
@@ -363,8 +368,6 @@ struct demo_crypt
 	}
 };
 
-
-
 //////////////////////////////////////////////////////////////////////////
 // Start of "unit" test
 //#define SB_CRYPT_PRE_SEED	14331699416581894933ull
@@ -374,7 +377,6 @@ struct demo_crypt
 #define SB_CRYPT_SEED_KEY	"- \\_/SBLib© - Seed Key - " CSTR( SB_CRYPT_PRE_SEED )
 static inline constexpr uint64_t compile_time_pre_seed = default_coprime_hash_traits<uint64_t, SB_CRYPT_PRE_SEED>::combine( 0ull, SB_CRYPT_SEED_KEY, std::size( SB_CRYPT_SEED_KEY ) );
 static inline constexpr uint64_t compile_encryption_seed =  0x4000000000000000ull | ( 0x7FFFFFFFFFFFFFFFull & compile_time_pre_seed );
-
 
 // Encrypt adapters are constexpr while Decrypt adapters should never be.
 // This is to prevent compiler from optimizing the encrypt-decrypt at compile-time
@@ -400,6 +402,8 @@ SB_DEFINE_CRYPT_ADAPTERS( quad_encrypt, quad_encrypt_impl, uintptr_t, constexpr 
 SB_DEFINE_CRYPT_ADAPTERS( quad_decrypt, quad_decrypt_impl, char )
 
 #define SB_STATIC_ENCRYPT	( SB_SUPPORTED & SB_STATIC_DATA_PROCESSING )
+}}
+
 
 #include "common/include/sb_utilities.h"
 #include <unordered_map>
@@ -411,11 +415,11 @@ SB_DEFINE_CRYPT_ADAPTERS( quad_decrypt, quad_decrypt_impl, char )
 #include <array>
 namespace SB { namespace LibX
 {
-	template< size_t _VALUE_LENGTH_, typename _VALUE_TYPE_T, typename _KEY_TYPE_T >
+	template< typename _CHAR_TYPE_, size_t _MAX_LENGTH_, typename _VALUE_TYPE_T, typename _KEY_TYPE_T >
 static inline constexpr auto xor_impl( const _VALUE_TYPE_T* value, size_t length, const _KEY_TYPE_T* key_data, size_t key_length )
 {
 	using value_t = std::remove_cvref_t< _VALUE_TYPE_T >;
-	std::array< value_t, _VALUE_LENGTH_ > output{};
+	std::array< value_t, _MAX_LENGTH_ > output{};
 	for ( size_t index = 0; index < length; ++index )
 	{
 		value_t xor_mask = key_data[index % key_length] & value_t( -1 );
@@ -427,29 +431,37 @@ static inline constexpr auto xor_impl( const _VALUE_TYPE_T* value, size_t length
 #define xor_crypt_impl xor_impl
 SB_DEFINE_CRYPT_ADAPTERS( xor_crypt, sbLibX::xor_crypt_impl, char, constexpr )
 
-//#define test_encrypt_algorithm		demo_encrypt
-//#define test_decrypt_algorithm		demo_decrypt
+#define test_encrypt_algorithm		xor_crypt
+#define test_decrypt_algorithm		xor_crypt
 
 SB_EXPORT_TYPE int SB_STDCALL test_encrypt3( [[maybe_unused]] int argc, [[maybe_unused]] const char* const argv[] )
 {
 	#define RAW_ENCRYPTION_MESSAGE	"" __TIME__ "-" __DATE__ "\\_/SBLib© - Encryption - "
-	static constexpr auto key = sbLibX::static_apply( quad_encrypt, RAW_ENCRYPTION_MESSAGE, RAW_ENCRYPTION_MESSAGE " Key" );
-	static constexpr char message[] = RAW_ENCRYPTION_MESSAGE "Message - Should be kept safe/hidden.";
+	static constexpr auto key = sbLibX::static_apply( sbLibX::quad_encrypt, RAW_ENCRYPTION_MESSAGE, RAW_ENCRYPTION_MESSAGE " Key" );
+	// even as a static constexpr, the compiler may decide to keep message in binary when unstripped
+	#define message RAW_ENCRYPTION_MESSAGE "Message - Should be kept safe/hidden.\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+	//static constexpr char message[] = RAW_ENCRYPTION_MESSAGE "Message - Should be kept safe/hidden.";
 
-	constexpr auto fast_encrypted_key_0 = sbLibX::static_apply( fast_encrypt, message, key );
-	auto fast_decrypted_key_0 = sbLibX::dynamic_apply( fast_decrypt, fast_encrypted_key_0, key );
+	constexpr auto poorman_encrypted = sbLibX::static_apply( xor_crypt, message, key );
+	auto poorman_decrypted = sbLibX::dynamic_apply( xor_crypt, poorman_encrypted, key );
+	std::cout << poorman_decrypted.data() << std::endl;
+
+
+
+	constexpr auto fast_encrypted_key_0 = sbLibX::static_apply( sbLibX::fast_encrypt, message, key );
+	auto fast_decrypted_key_0 = sbLibX::dynamic_apply( sbLibX::fast_decrypt, fast_encrypted_key_0, key );
 	std::cout << fast_decrypted_key_0.data() << std::endl;
 
-	constexpr auto default_encrypted_key_0 = sbLibX::static_apply( default_encrypt, message, key );
-	auto default_decrypted_key_0 = sbLibX::dynamic_apply( default_decrypt, default_encrypted_key_0, key );
+	constexpr auto default_encrypted_key_0 = sbLibX::static_apply( sbLibX::default_encrypt, message, key );
+	auto default_decrypted_key_0 = sbLibX::dynamic_apply( sbLibX::default_decrypt, default_encrypted_key_0, key );
 	std::cout << default_decrypted_key_0.data() << std::endl;
 
-	constexpr auto double_encrypted_key_0 = sbLibX::static_apply( double_encrypt, message, key );
-	auto double_decrypted_key_0 = sbLibX::dynamic_apply( double_decrypt, double_encrypted_key_0, key );
+	auto double_encrypted_key_0 = sbLibX::dynamic_apply( sbLibX::double_encrypt, message, key );
+	auto double_decrypted_key_0 = sbLibX::dynamic_apply( sbLibX::double_decrypt, double_encrypted_key_0, key );
 	std::cout << double_decrypted_key_0.data() << std::endl;
  
-	constexpr auto quad_encrypted_key_0 = sbLibX::static_apply( quad_encrypt, message, key );
-	auto quad_decrypted_key_0 = sbLibX::dynamic_apply( quad_decrypt, quad_encrypted_key_0, key );
+	constexpr auto quad_encrypted_key_0 = sbLibX::static_apply( sbLibX::quad_encrypt, message, key );
+	auto quad_decrypted_key_0 = sbLibX::dynamic_apply( sbLibX::quad_decrypt, quad_encrypted_key_0, key );
 	std::cout << quad_decrypted_key_0.data() << std::endl;
 
 	return 0;
